@@ -1,0 +1,9 @@
+{
+  "name": "twerk-api",
+  "version": "0.0.1",
+  "description": "The API that powers Twerk",
+  "scripts": {
+    "test": "karma start"
+  },
+  "author": "Shahzain Badruddin"
+}
