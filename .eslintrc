@@ -1,0 +1,15 @@
+{
+  "extends": "airbnb-base",
+  "env": {
+    "mocha": true,
+    "jquery": true
+  },
+  "rules": {
+    "space-before-function-paren": ["error", "always"],
+    "brace-style": ["error", "stroustrup"],
+    "no-param-reassign": 0,
+    "no-underscore-dangle": 0,
+    "no-console": 0,
+    "no-restricted-syntax": 0
+  }
+}

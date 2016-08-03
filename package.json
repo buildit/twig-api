@@ -1,7 +1,7 @@
 {
-  "name": "twerk-api",
+  "name": "twig-api",
   "version": "0.0.1",
-  "description": "The API that powers Twerk",
+  "description": "The API that powers Twig",
   "scripts": {
     "test": "karma start"
   },
