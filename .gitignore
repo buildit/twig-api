@@ -12,4 +12,5 @@ dist
 .idea
 
 *.DS_Store
-backups
+config.toml
+logs/*.log.*

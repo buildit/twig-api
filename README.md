@@ -12,8 +12,14 @@ WIP. See develop branch for more.
 ### Getting Started
 ---
 
+```
+npm i
+npm start
+```
+
 ### Where is it deployed?
 ---
+Nowhere yet.
 
 ### Coding Standards
 ---
@@ -21,6 +27,7 @@ At the moment, still following the guidelines as found on [confluence](https://d
 
 ### How to contribute
 ---
+Create a branch, do your stuff, raise a PR
 
 ### Changelog
 ---
