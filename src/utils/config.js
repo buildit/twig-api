@@ -11,7 +11,7 @@ let mode;
  * @param {string} file Path of config.toml file
  * @param {string} defaultMode Name of the default dev mode. Usually you wouldn't pass this in
  */
-function init(file, defaultMode = 'local') {
+function init (file, defaultMode = 'local') {
   mode = process.env.MODE || process.env.NODE_ENV || defaultMode;
   const configPath = join(__dirname, file);
 
@@ -21,7 +21,7 @@ function init(file, defaultMode = 'local') {
     config = reader(configPath)[mode];
   }
   else {
-    console.log(`config.toml file not found. Environment variables will be used.`);
+    console.log('config.toml file not found. Environment variables will be used.');
   }
 }
 
@@ -36,7 +36,7 @@ function init(file, defaultMode = 'local') {
  * @param {string} key The key that you're looking for
  * @returns {string} The value of the key
  */
-function getEnv(key) {
+function getEnv (key) {
   if (mode === 'local') {
     if (config) {
       return config[key];
@@ -53,6 +53,7 @@ function getEnv(key) {
       return config[key];
     }
   }
+  return 'local';
 }
 
 /**
@@ -61,7 +62,7 @@ function getEnv(key) {
  * Local, Development, Staging, Production
  * @returns {string} mode
  */
-function getMode() {
+function getMode () {
   return mode;
 }
 

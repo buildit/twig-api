@@ -1,17 +1,11 @@
 const winston = require('winston');
 const WinstonDailyRotateFile = require('winston-daily-rotate-file');
 const { join } = require('path');
-const fs = require('fs');
-const glob = require('glob');
 const config = require('./config');
 
 const LOG_FOLDER = join(__dirname, '../../logs');
 
-winston.loggers.add('all', transportFactory('all.log'));
-winston.loggers.add('db', transportFactory('db.log'));
-winston.loggers.add('routes', transportFactory('routes.log'));
-
-function transportFactory(fileName) {
+function transportFactory (fileName) {
   const transports = [];
 
   if ((/local|testing/i).test(config.getMode())) {
@@ -23,7 +17,8 @@ function transportFactory(fileName) {
       json: true,
       prettyPrint: true
     }));
-  } else {
+  }
+  else {
     // TODO: Production Logs would go here. Decide on whether Logzio, or other.
   }
 
@@ -32,7 +27,7 @@ function transportFactory(fileName) {
     colorize: true,
     json: false,
     level: config.getEnv('LOG_LEVEL')
-  }) );
+  }));
 
   return { transports };
 }
@@ -40,8 +35,8 @@ function transportFactory(fileName) {
 const logger = winston.loggers.get('all');
 
 /**
- * Main Log function. By default, it uses the 'all' winston logger defined above. But you can specify your own by
- * defining it like this:
+ * Main Log function. By default, it uses the 'all' winston logger defined above.
+ * But you can specify your own by defining it like this:
  *
  * winston.loggers.add('images', {
  *  transports: [
@@ -68,37 +63,38 @@ const logger = winston.loggers.get('all');
  * @returns {*}
  * @constructor
  */
-function Log(ns = 'Logger', log = logger){
-  ns = ns + '::';
+function Log (ns = 'Logger', log = logger) {
+  ns += '::';
   return [
     'log', 'error', 'warn', 'info', 'debug'
   ].reduce((type, fn) => {
     if (fn === 'error') {
       type[fn] = err => {
         if (err.message && err.stack) {
-          log.error(ns + ' ' + err.message, err.stack);
-        } else {
-          log.error(ns + ' ' + err);
+          log.error(`${ns} ${err.message}`, err.stack);
         }
-      }
+        else {
+          log.error(`${ns} ${err}`);
+        }
+      };
     }
     else {
       type[fn] = (...messages) => {
-        var arr = [ns];
-        arr = arr.concat(messages);
-        (fn === 'log') ? log.info.apply(null, arr) : log[fn].apply(null, arr);
+        const arr = [ns].concat(messages);
+        if (fn === 'log') {
+          log.info.apply(null, arr);
+        }
+        else {
+          log[fn].apply(null, arr);
+        }
       };
     }
     return type;
   }, {});
 }
 
-/**
- * Cleans up the logs directory
- */
-function deleteLogFiles() {
-  const files = glob.sync('logs/*log*');
-  files.forEach(logFile => fs.unlinkSync(logFile));
-}
+winston.loggers.add('all', transportFactory('all.log'));
+winston.loggers.add('db', transportFactory('db.log'));
+winston.loggers.add('routes', transportFactory('routes.log'));
 
 module.exports = Log;

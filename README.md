@@ -38,7 +38,7 @@ Create a branch, do your stuff, raise a PR
 Shahzain Badruddin
 Paul Karsten
 David Moss
-Andy Oschner
+Andy Ochsner
 Andrew Urmston
 
 ### License
