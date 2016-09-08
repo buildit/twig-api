@@ -57,25 +57,26 @@ const loginPost = (request, reply) => {
     return reply.redirect('/');
   }
 
-  return validate(request, request.payload.username, request.payload.password, (err, success, user) => {
-    if (err) throw err;
-    if (!success) {
-      return reply.redirect('/login');
-    }
+  return validate(request, request.payload.username, request.payload.password,
+    (err, success, user) => {
+      if (err) throw err;
+      if (!success) {
+        return reply.redirect('/login');
+      }
 
-    request.cookieAuth.set(user);
-    return reply.redirect('/');
-    // put user in cache w/ a session id as key..put session id in cookie
-    // const sid = String(++this.uuid);
-    // request.server.app.cache.set(sid, { user }, 0, (error) => {
-    //   if (error) {
-    //     reply(error);
-    //   }
+      request.cookieAuth.set(user);
+      return reply.redirect('/');
+      // put user in cache w/ a session id as key..put session id in cookie
+      // const sid = String(++this.uuid);
+      // request.server.app.cache.set(sid, { user }, 0, (error) => {
+      //   if (error) {
+      //     reply(error);
+      //   }
 
-    //   request.cookieAuth.set({ sid });
-    //   return reply.redirect('/');
-    // });
-  });
+      //   request.cookieAuth.set({ sid });
+      //   return reply.redirect('/');
+      // });
+    });
 };
 
 const logout = (request, reply) => {
