@@ -3,8 +3,8 @@ AWS_KEY = ""
 AWS_SECRET = ""
 AWS_REGION = ""
 COUCHDB_URL = ""
+LDAP_URL = ""
 ENVIRONMENT = "local"
-SERVER_PORT = 3001
 LOG_LEVEL = "debug"
 
 [development]
@@ -12,8 +12,8 @@ AWS_KEY = ""
 AWS_SECRET = ""
 AWS_REGION = ""
 COUCHDB_URL = ""
+LDAP_URL = ""
 ENVIRONMENT = "development"
-SERVER_PORT = 3000
 LOG_LEVEL = "debug"
 
 [staging]
@@ -21,8 +21,8 @@ AWS_KEY = ""
 AWS_SECRET = ""
 AWS_REGION = ""
 COUCHDB_URL = ""
+LDAP_URL = ""
 ENVIRONMENT = "staging"
-SERVER_PORT = 3000
 LOG_LEVEL = "warn"
 
 [production]
@@ -30,6 +30,6 @@ AWS_KEY = ""
 AWS_SECRET = ""
 AWS_REGION = ""
 COUCHDB_URL = ""
+LDAP_URL = ""
 ENVIRONMENT = "production"
-SERVER_PORT = 3000
 LOG_LEVEL = "error"

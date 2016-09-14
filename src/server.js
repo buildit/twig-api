@@ -5,16 +5,17 @@ const logger = require('./utils/log')('SERVER');
 const config = require('./utils/config');
 const ldap = require('ldapjs');
 const Joi = require('joi');
+const Boom = require('boom');
 
 const server = new Hapi.Server();
 
 server.connection({
-  port: config.getEnv('SERVER_PORT')
+  port: 3000
 });
 
 const validate = (request, username, password, callback) => {
   const opts = {
-    url: 'ldap://corp.riglet.io',
+    url: config.getEnv('LDAP_URL'),
     timeout: 5000,
     connectTimeout: 10000
   };
@@ -23,6 +24,7 @@ const validate = (request, username, password, callback) => {
     const status = (err ? err.message : false) || 'OK';
     client.unbind();
     if (status !== 'OK') {
+      logger.log(status);
       return callback(null, false);
     }
     return callback(err, true, {
@@ -33,39 +35,24 @@ const validate = (request, username, password, callback) => {
 };
 
 const home = (request, reply) => {
-  reply(`<html><head><title>Login page</title></head><body><h3>Welcome
-      ${request.auth.credentials.name}
-      !</h3><br/><form method="get" action="/logout">
-      <input type="submit" value="Logout">
-      </form></body></html>`);
+  reply({
+    statusCode: 200,
+    message: `Hello ${request.auth.isAuthenticated ? request.auth.credentials.name : 'World'}`
+  });
 };
 
-const loginGet = (request, reply) => {
-  if (request.auth.isAuthenticated) {
-    return reply.redirect('/');
-  }
-
-  return reply(`<html><head><title>Login page</title></head><body>
-      <form method="post" action="/login">
-      Username: <input type="text" name="username"><br>
-      Password: <input type="password" name="password"><br/>
-      <input type="submit" value="Login"></form></body></html>`);
-};
-
-const loginPost = (request, reply) => {
-  if (request.auth.isAuthenticated) {
-    return reply.redirect('/');
-  }
-
-  return validate(request, request.payload.username, request.payload.password,
+const loginPost = (request, reply) =>
+  validate(request, request.payload.email, request.payload.password,
     (err, success, user) => {
       if (err) throw err;
       if (!success) {
-        return reply.redirect('/login');
+        return reply(Boom.unauthorized('Invalid email/password'));
       }
 
       request.cookieAuth.set(user);
-      return reply.redirect('/');
+      return reply({
+        user
+      });
       // put user in cache w/ a session id as key..put session id in cookie
       // const sid = String(++this.uuid);
       // request.server.app.cache.set(sid, { user }, 0, (error) => {
@@ -77,11 +64,25 @@ const loginPost = (request, reply) => {
       //   return reply.redirect('/');
       // });
     });
-};
 
 const logout = (request, reply) => {
   request.cookieAuth.clear();
-  return reply.redirect('/');
+  return reply({
+    statusCode: 200,
+    message: 'Logged Out'
+  });
+};
+
+const loginGet = (request, reply) => {
+  if (request.auth.isAuthenticated) {
+    return reply.redirect('/');
+  }
+
+  return reply(`<html><head><title>Login page</title></head><body>
+      <form method="post" action="/login">
+      Email: <input type="text" name="email"><br>
+      Password: <input type="password" name="password"><br/>
+      <input type="submit" value="Login"></form></body></html>`);
 };
 
 server.register(cookieAuth, (err) => {
@@ -92,10 +93,9 @@ server.register(cookieAuth, (err) => {
   // const cache = server.cache({ segment: 'sessions', expiresIn: 3 * 24 * 60 * 60 * 1000 });
   // server.app.cache = cache;
 
-  server.auth.strategy('session', 'cookie', true, {
+  server.auth.strategy('session', 'cookie', false, {
     password: 'password-should-be-32-characters',
-    redirectTo: '/login',
-    isSecure: false,
+    isSecure: false
     // validate cookie is still in cache and/or user still exists/valid
     // validateFunc: (request, session, callback) => {
     //   cache.get(session.sid, (error, cached) => {
@@ -117,19 +117,18 @@ server.route([
   {
     method: 'GET',
     path: '/',
-    handler: home
-  },
-  {
-    method: ['GET'],
-    path: '/login',
-    handler: loginGet,
     config: {
       auth: {
         mode: 'try',
         strategy: 'session'
       },
-      plugins: { 'hapi-auth-cookie': { redirectTo: false } }
-    }
+    },
+    handler: home
+  },
+  {
+    method: 'GET',
+    path: '/login',
+    handler: loginGet
   },
   {
     method: ['POST'],
@@ -140,16 +139,23 @@ server.route([
         mode: 'try',
         strategy: 'session'
       },
+      cors: true,
       validate: {
         payload: {
-          username: Joi.string().email().required(),
+          email: Joi.string().email().required(),
           password: Joi.string().required()
         }
       },
-      plugins: { 'hapi-auth-cookie': { redirectTo: false } }
     }
   },
-  { method: 'GET', path: '/logout', handler: logout }
+  {
+    method: 'POST',
+    path: '/logout',
+    config: {
+      cors: true,
+    },
+    handler: logout
+  }
 ]);
 
 dynogels.AWS.config.update({
