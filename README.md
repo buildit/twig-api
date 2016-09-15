@@ -17,6 +17,12 @@ npm i
 npm start
 ```
 
+### Releasing
+To release a new version just bump the version with
+- `npm version [<newversion> | major | minor | patch ]`
+
+This will update package.json, commit the version update, git tag and push to master. The new tag will trigger the deployment build which will run the tests, static code analysis, build and deploy.
+
 ### Where is it deployed?
 ---
 Nowhere yet.

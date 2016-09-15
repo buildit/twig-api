@@ -6,7 +6,9 @@
     "lint": "eslint src",
     "security": "nsp check",
     "start": "nodemon --watch src src/server.js",
-    "validate": "npm ls"
+    "validate": "npm ls",
+    "version": "git add package.json",
+    "postversion": "git push && git push origin HEAD:master && git push --tags"
   },
   "author": "Shahzain Badruddin",
   "repository": {
