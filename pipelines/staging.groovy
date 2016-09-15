@@ -14,7 +14,8 @@ node {
         convox = load "lib/convox.groovy"
         template = load "lib/template.groovy"
 
-        def registry = "https://006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+        def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+        def registry = "https://${registry_base}"
         def appUrl = "http://twig-api.staging.buildit.tools"
         def appName = "twig-api"
 
@@ -64,7 +65,7 @@ node {
 
       stage "Deploy To AWS"
         def tmpFile = UUID.randomUUID().toString() + ".tmp"
-        def ymlData = template.transform(readFile("docker-compose.yml.template"), [tag :tag])
+        def ymlData = template.transform(readFile("docker-compose.yml.template"), [tag :tag, registryBase :registryBase])
         writeFile(file: tmpFile, text: ymlData)
 
         sh "convox login ${env.CONVOX_RACKNAME} --password ${env.CONVOX_PASSWORD}"
