@@ -44,7 +44,7 @@ node {
         // publishHTML(target: [reportDir: 'reports/coverage', reportFiles: 'index.html', reportName: 'Coverage Results'])
 
       stage "Analysis"
-        sh "npm run eslint"
+        sh "npm run lint"
         sh "npm run validate"
         sh "npm run security"
         // sh "/usr/local/sonar-scanner-2.6.1/bin/sonar-scanner -e -Dsonar.projectVersion=${version}"
