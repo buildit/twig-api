@@ -16,10 +16,10 @@ node {
 
         def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         def registry = "https://${registryBase}"
-        def appUrl = "http://twig-api.staging.buildit.tools"
         def appName = "twig-api"
 
         // global for exception handling
+        appUrl = "http://twig-api.staging.buildit.tools"
         slackChannel = "twig"
         gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
 
