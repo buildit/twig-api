@@ -15,7 +15,7 @@ node {
         template = load "lib/template.groovy"
 
         def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
-        def registry = "https://${registry_base}"
+        def registry = "https://${registryBase}"
         def appUrl = "http://twig-api.staging.buildit.tools"
         def appName = "twig-api"
 
