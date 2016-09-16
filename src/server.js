@@ -94,7 +94,7 @@ server.register(cookieAuth, (err) => {
   // server.app.cache = cache;
 
   server.auth.strategy('session', 'cookie', false, {
-    password: 'password-should-be-32-characters',
+    password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
     isSecure: false
     // validate cookie is still in cache and/or user still exists/valid
     // validateFunc: (request, session, callback) => {
