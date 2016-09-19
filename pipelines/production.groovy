@@ -24,6 +24,8 @@ node {
       appUrl = "http://twig-api.buildit.tools"
       slackChannel = "twig"
       gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
+      // clean the workspace before checking out
+      sh "git clean -ffdx"
 
     stage "Write docker-compose"
       // global for exception handling

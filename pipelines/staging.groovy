@@ -22,6 +22,8 @@ node {
         appUrl = "http://twig-api.staging.buildit.tools"
         slackChannel = "twig"
         gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
+        // clean the workspace before checking out
+        sh "git clean -ffdx"
 
       stage "Checkout"
         checkout scm
