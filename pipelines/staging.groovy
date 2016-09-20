@@ -37,14 +37,13 @@ node {
         sh "npm install"
 
       stage "Test"
-        // try {
-        //   sh "npm run test:ci"
-        // }
-        // finally {
-        //   junit 'reports/test-results.xml'
-        //   publishHTML(target: [reportDir: 'reports', reportFiles: 'test-results.html', reportName: 'Test Results'])
-        // }
-        // publishHTML(target: [reportDir: 'reports/coverage', reportFiles: 'index.html', reportName: 'Coverage Results'])
+        try {
+          sh "npm run test:ci"
+        }
+        finally {
+          junit 'reports/test-results.xml'
+        }
+        publishHTML(target: [reportDir: 'reports/lcov-report', reportFiles: 'index.html', reportName: 'Coverage Results'])
 
       stage "Analysis"
         sh "npm run lint"
