@@ -6,7 +6,7 @@ node {
 
   try {
 
-    stage "Set Up" {
+    stage("Set Up") {
       checkout scm
 
       sh "curl -L https://dl.bintray.com/buildit/maven/jenkins-pipeline-libraries-${env.PIPELINE_LIBS_VERSION}.zip -o lib.zip && echo 'A' | unzip lib.zip"
@@ -28,7 +28,7 @@ node {
       sh "git clean -ffdx"
     }
 
-    stage "Write docker-compose" {
+    stage("Write docker-compose") {
       // global for exception handling
       tag = ui.selectTag(ecr.imageTags(appName, env.AWS_REGION))
       def tmpFile = UUID.randomUUID().toString() + ".tmp"
@@ -37,7 +37,7 @@ node {
       writeFile(file: tmpFile, text: ymlData)
     }
 
-    stage "Deploy to production" {
+    stage("Deploy to production") {
       sh "convox login ${env.CONVOX_RACKNAME} --password ${env.CONVOX_PASSWORD}"
       sh "convox deploy --app ${appName} --description '${tag}' --file ${tmpFile}"
       sh "rm ${tmpFile}"
