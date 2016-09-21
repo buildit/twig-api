@@ -31,8 +31,8 @@ node {
 
         // global for exception handling
         shortCommitHash = git.getShortCommit()
-        def commitMessage = git.getCommitMessage()
-        def version = npm.getVersion()
+        commitMessage = git.getCommitMessage()
+        version = npm.getVersion()
       }
 
       stage("Install") {
@@ -61,8 +61,8 @@ node {
       }
 
       stage("Docker Image Build") {
-        def tag = "${version}-${shortCommitHash}-${env.BUILD_NUMBER}"
-        def image = docker.build("${appName}:${tag}", '.')
+        tag = "${version}-${shortCommitHash}-${env.BUILD_NUMBER}"
+        image = docker.build("${appName}:${tag}", '.')
         ecr.authenticate(env.AWS_REGION)
       }
 
