@@ -14,14 +14,13 @@ node {
         convox = load "lib/convox.groovy"
         template = load "lib/template.groovy"
 
-        def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
-        def registry = "https://${registryBase}"
-        def appName = "twig-api"
-
-        // global for exception handling
+        registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+        registry = "https://${registryBase}"
+        appName = "twig-api"
         appUrl = "http://twig-api.staging.buildit.tools"
         slackChannel = "twig"
         gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
+
         // clean the workspace before checking out
         sh "git clean -ffdx"
       }
