@@ -17,21 +17,21 @@ node {
       template = load "lib/template.groovy"
       convox = load "lib/convox.groovy"
 
-      def appName = "twig-api"
-      def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
-
-      // global for exception handling
+      appName = "twig-api"
+      registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
       appUrl = "http://twig-api.buildit.tools"
       slackChannel = "twig"
       gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
+      tmpFile = UUID.randomUUID().toString() + ".tmp"
+
+      // select the tag
+      tag = ui.selectTag(ecr.imageTags(appName, env.AWS_REGION))
+
       // clean the workspace before checking out
       sh "git clean -ffdx"
     }
 
     stage("Write docker-compose") {
-      // global for exception handling
-      tag = ui.selectTag(ecr.imageTags(appName, env.AWS_REGION))
-      def tmpFile = UUID.randomUUID().toString() + ".tmp"
       def ymlData = template.transform(readFile("docker-compose.yml.template"), [tag :tag, registryBase :registryBase])
 
       writeFile(file: tmpFile, text: ymlData)

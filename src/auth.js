@@ -3,14 +3,14 @@ const ldap = require('ldapjs');
 const Boom = require('boom');
 const logger = require('./utils/log')('SERVER');
 
-const validate = (username, password) => {
+const validate = (email, password) => {
   const client = ldap.createClient({
     url: config.getEnv('LDAP_URL'),
     timeout: 5000,
     connectTimeout: 10000
   });
   return new Promise((resolve, reject) =>
-    client.bind(username, password, (err) => {
+    client.bind(email, password, (err) => {
       const status = (err ? err.message : false) || 'OK';
       client.unbind();
       if (status !== 'OK') {
@@ -19,8 +19,8 @@ const validate = (username, password) => {
       }
 
       return resolve({
-        id: username,
-        name: username
+        id: email,
+        name: email
       });
     }));
 };
