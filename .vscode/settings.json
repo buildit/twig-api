@@ -12,6 +12,7 @@
     "**/reports/**": true
   },
   "search.exclude": {
-    "**/node_modules": true
+    "**/node_modules": true,
+    "**/reports/**": true
   }
 }

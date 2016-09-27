@@ -1,7 +1,13 @@
-node:
-  restart: always
-  image: ${registryBase}/twig-api:${tag}
-  ports:
-    - 80:3000
-  environment:
-    - LDAP_URL=ldap://corp.riglet.io
+version: '2'
+services:
+  node:
+    restart: always
+    image: ${registryBase}/twig-api:${tag}
+    ports:
+      - 80:3000
+    environment:
+      - TWIG_LDAP_URL=ldap://corp.riglet.io
+      - TWIG_API_LOG_CONSOLE=true
+      - TWIG_API_LOG_FILE=true
+      - TWIG_API_LOG_LEVEL=info
+

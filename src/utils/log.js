@@ -8,7 +8,7 @@ const LOG_FOLDER = join(__dirname, '../../logs');
 function transportFactory (fileName) {
   const transports = [];
 
-  if ((/local|testing/i).test(config.getMode())) {
+  if (config.LOG_FILE) {
     transports.push(new WinstonDailyRotateFile({
       name: 'file',
       datePattern: '.yyyy-MM-ddTHH',
@@ -18,16 +18,15 @@ function transportFactory (fileName) {
       prettyPrint: true
     }));
   }
-  else {
-    // TODO: Production Logs would go here. Decide on whether Logzio, or other.
-  }
 
-  transports.push(new (winston.transports.Console)({
-    prettyPrint: true,
-    colorize: true,
-    json: false,
-    level: config.getEnv('LOG_LEVEL')
-  }));
+  if (config.LOG_CONSOLE) {
+    transports.push(new (winston.transports.Console)({
+      prettyPrint: true,
+      colorize: true,
+      json: false,
+      level: config.LOG_LEVEL
+    }));
+  }
 
   return { transports };
 }

@@ -1,10 +1,9 @@
 const Hapi = require('hapi');
 const cookieAuth = require('hapi-auth-cookie');
-const dynogels = require('dynogels');
 const logger = require('./utils/log')('SERVER');
-const config = require('./utils/config');
 const Joi = require('joi');
 const Auth = require('./auth');
+const Ping = require('./ping');
 
 const server = new Hapi.Server();
 
@@ -46,6 +45,9 @@ server.register(cookieAuth, (err) => {
 
 server.route([
   {
+    method: ['GET'], path: '/ping', handler: Ping.ping
+  },
+  {
     method: ['POST'],
     path: '/login',
     handler: Auth.login,
@@ -68,12 +70,6 @@ server.route([
     handler: Auth.logout
   }
 ]);
-
-dynogels.AWS.config.update({
-  accessKeyId: config.getEnv('AWS_KEY'),
-  secretAccessKey: config.getEnv('AWS_SECRET'),
-  region: config.getEnv('AWS_REGION')
-});
 
 server.start(err => {
   if (err) {

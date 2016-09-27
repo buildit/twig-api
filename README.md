@@ -14,6 +14,7 @@ WIP. See develop branch for more.
 
 ```
 npm i
+cp .env.example .env
 npm start
 ```
 

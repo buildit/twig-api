@@ -5,7 +5,7 @@ const logger = require('./utils/log')('SERVER');
 
 const validate = (email, password) => {
   const client = ldap.createClient({
-    url: config.getEnv('LDAP_URL'),
+    url: config.LDAP_URL,
     timeout: 5000,
     connectTimeout: 10000
   });
@@ -25,7 +25,7 @@ const validate = (email, password) => {
     }));
 };
 
-exports.login = (request, reply) =>
+module.exports.login = (request, reply) =>
   validate(request.payload.email, request.payload.password)
     .then((user) => {
       // put user in cache w/ a session id as key..put session id in cookie
@@ -45,7 +45,7 @@ exports.login = (request, reply) =>
     })
     .catch(() => reply(Boom.unauthorized('Invalid email/password')));
 
-exports.logout = (request, reply) => {
+module.exports.logout = (request, reply) => {
   request.cookieAuth.clear();
   return reply({
     statusCode: 200,

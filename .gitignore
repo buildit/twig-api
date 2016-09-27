@@ -13,4 +13,5 @@ npm-shrinkwrap.json
 
 *.DS_Store
 config.toml
+.env
 logs/*.log.*
