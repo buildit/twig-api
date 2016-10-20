@@ -47,8 +47,5 @@ module.exports.login = (request, reply) =>
 
 module.exports.logout = (request, reply) => {
   request.cookieAuth.clear();
-  return reply({
-    statusCode: 200,
-    message: 'Logged Out'
-  });
+  return reply('Logged Out');
 };

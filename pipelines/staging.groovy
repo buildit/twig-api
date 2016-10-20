@@ -77,7 +77,7 @@ node {
         writeFile(file: tmpFile, text: ymlData)
 
         sh "convox login ${env.CONVOX_RACKNAME} --password ${env.CONVOX_PASSWORD}"
-        sh "convox deploy --app ${appName}-staging --description '${tag}' --file ${tmpFile}"
+        sh "convox deploy --app ${appName}-staging --description '${tag}' --file ${tmpFile} --wait"
         // wait until the app is deployed
         convox.waitUntilDeployed("${appName}-staging")
         convox.ensureSecurityGroupSet("${appName}-staging", env.CONVOX_SECURITYGROUP)
