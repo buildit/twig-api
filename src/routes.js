@@ -2,6 +2,7 @@ const Joi = require('joi');
 const Auth = require('./auth');
 const Twiglets = require('./twiglets');
 const Ping = require('./ping');
+const Changelog = require('./changelog');
 
 module.exports = [
   {
@@ -22,6 +23,11 @@ module.exports = [
         }
       }
     }
+  },
+  {
+    method: ['GET'],
+    path: '/twiglets/{id}/changelog',
+    handler: Changelog.get,
   },
   {
     method: ['POST'],
