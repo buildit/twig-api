@@ -1,6 +1,5 @@
 /* eslint no-unused-expressions: 0 */
 const expect = require('chai').expect;
-const assert = require('chai').assert;
 const sinon = require('sinon');
 const Twiglets = require('../twiglets');
 const PouchDb = require('pouchdb');
@@ -15,7 +14,9 @@ describe('/twiglets/{id}', () => {
     payload: {
       nodes: [],
       links: [],
-      commitMessage: 'Foo',
+      commit: {
+        commitMessage: 'Foo',
+      },
     },
     auth: {
       credentials: {
@@ -55,7 +56,6 @@ describe('/twiglets/{id}', () => {
       ]
     }));
     const putCall = sandbox.stub(PouchDb.prototype, 'put').returns(Promise.resolve());
-    req.payload.commitMessage = 'Second commit';
     const now = new Date();
 
     // act
@@ -64,7 +64,7 @@ describe('/twiglets/{id}', () => {
         // assert
         expect(response).to.exist;
         expect(putCall.firstCall.args[0].data).to.have.length.of(2);
-        expect(putCall.firstCall.args[0].data[1].message).to.be.eq('Second commit');
+        expect(putCall.firstCall.args[0].data[1].message).to.be.eq('Foo');
         expect(putCall.firstCall.args[0].data[1].user).to.be.eq('bar@baz.com');
         const commitDate = Date.parse(putCall.firstCall.args[0].data[1].timestamp);
         expect(commitDate).to.be.at.least(now.getTime());

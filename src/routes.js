@@ -16,7 +16,9 @@ module.exports = [
         payload: {
           nodes: Joi.array().required(),
           links: Joi.array().required(),
-          commitMessage: Joi.string().required(),
+          commit: Joi.object().keys({
+            commitMessage: Joi.string().required(),
+          }).required(),
         }
       }
     }

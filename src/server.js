@@ -8,7 +8,15 @@ const server = new Hapi.Server();
 server.connection({
   port: 3000,
   routes: {
-    cors: true
+    cors: {
+      origin: [
+        'http://localhost:*',
+        'https://localhost:*',
+        'http://twig.*',
+        'https://twig.*',
+      ],
+      credentials: true,
+    }
   }
 });
 

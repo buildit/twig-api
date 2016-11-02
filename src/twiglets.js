@@ -14,7 +14,7 @@ module.exports.update = (request, reply) => {
       }))
     .then((doc) => {
       const commit = {
-        message: request.payload.commitMessage,
+        message: request.payload.commit.commitMessage,
         user: request.auth.credentials.name,
         timestamp: new Date().toISOString(),
       };
