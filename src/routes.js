@@ -1,6 +1,5 @@
 const Joi = require('joi');
 const Auth = require('./auth');
-const Twiglets = require('./twiglets');
 const Ping = require('./ping');
 const Changelog = require('./changelog');
 
@@ -10,16 +9,12 @@ module.exports = [
   },
   {
     method: ['POST'],
-    path: '/twiglets/{id}',
-    handler: Twiglets.update,
+    path: '/twiglets/{id}/changelog',
+    handler: Changelog.add,
     config: {
       validate: {
         payload: {
-          nodes: Joi.array().required(),
-          links: Joi.array().required(),
-          commit: Joi.object().keys({
-            commitMessage: Joi.string().required(),
-          }).required(),
+          commitMessage: Joi.string().required(),
         }
       }
     }
