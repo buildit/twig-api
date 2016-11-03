@@ -89,9 +89,7 @@ describe('/twiglets/{id}/changelog', () => {
         id: '12345'
       },
       payload: {
-        commit: {
-          commitMessage: 'Foo',
-        },
+        commitMessage: 'Foo',
       },
       auth: {
         credentials: {

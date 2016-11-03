@@ -14,7 +14,7 @@ module.exports = [
     config: {
       validate: {
         payload: {
-          commitMessage: Joi.string().required(),
+          commitMessage: Joi.string().required().trim(),
         }
       }
     }
@@ -35,8 +35,8 @@ module.exports = [
       },
       validate: {
         payload: {
-          email: Joi.string().email().required(),
-          password: Joi.string().required()
+          email: Joi.string().email().required().trim(),
+          password: Joi.string().required().trim()
         }
       },
     }

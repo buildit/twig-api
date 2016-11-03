@@ -47,5 +47,5 @@ module.exports.login = (request, reply) =>
 
 module.exports.logout = (request, reply) => {
   request.cookieAuth.clear();
-  return reply('Logged Out');
+  return reply({}).code(204);
 };

@@ -35,6 +35,6 @@ module.exports.add = (request, reply) => {
       doc.data.unshift(commit);
       return db.put(doc);
     })
-    .then(() => reply())
+    .then(() => reply({}).code(204))
     .catch((error) => reply(Boom.wrap(error, error.status, error.message)));
 };
