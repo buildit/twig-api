@@ -185,18 +185,31 @@ describe('Node', () => {
       const host = config.COUCHDB_URL;
       const database = 'twig-unittest';
       const foundResponseData = {
-        id: '_design/nodes',
-        _rev: '4-a3df20622dd9a8eb9362fe1d76aeed9c',
-        views: {
-          by_nodes: {
-            map: 'function (doc) ...',
-            reduce: 'function (key, values) ...'
+        rows: [
+          {
+            key: 'nodes',
+            value: [
+              {
+                type: 'tribe',
+                names: ['Mobile Tribe'],
+                attrs: []
+              },
+              {
+                type: 'person',
+                names: [
+                  'Tribal Leader', 'London Tribal Members', 'USA Tribal Members'
+                ],
+                attrs: [
+                  'firstname', 'lastname', 'members'
+                ]
+              }
+            ]
           }
-        }
+        ]
       };
       const foundResponse = {
         statusCode: 200,
-        statusMessage: 'found'
+        statusMessage: ''
       };
 
       restler.get.returns({
@@ -204,37 +217,12 @@ describe('Node', () => {
       });
 
       // act
-      return node.nodeRollupViewExists(host, database)
+      return node.nodeRollupViewData(host, database)
         .then((response) => {
           // assert
           expect(response).to.exist;
-          expect(response).to.equal(true);
-        });
-    });
-
-    it('Does not find the node rolled up view', () => {
-      // setup
-      const host = config.COUCHDB_URL;
-      const database = 'twig-unittest';
-      const notFoundResponseData = {
-        error: 'not_found',
-        reason: 'missing'
-      };
-      const notFoundResponse = {
-        statusCode: 404,
-        statusMessage: 'missing'
-      };
-
-      restler.get.returns({
-        on: sinon.stub().yields(notFoundResponseData, notFoundResponse)
-      });
-
-      // act
-      return node.nodeRollupViewExists(host, database)
-        .then((response) => {
-          // assert
-          expect(response).to.exist;
-          expect(response).to.equal(false);
+          expect(response.rows).to.exist;
+          expect(response.rows.length).to.equal(1);
         });
     });
   });

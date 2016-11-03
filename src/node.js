@@ -195,6 +195,41 @@ exports.nodeRollupViewExists = (host, database) => {
   });
 };
 
+exports.nodeRollupViewData = (host, database) => {
+  const nodesURL = `${host}/${database}/_design/nodes/_view/node_rollup?group=true`;
+  const headers = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json'
+  };
+
+  return new Promise((resolve, reject) => {
+    restler.get(nodesURL, { headers })
+      .on('complete', (data, response) => {
+        if (response && response.statusCode === 200) {
+          resolve(data);
+        }
+        else {
+          logger.error(`FAIL: ${response.statusCode} MESSAGE ${response.statusMessage}`);
+          reject({
+            error: {
+              statusCode: response.statusCode,
+              message: `Error creating nodes rollup view: ${response.statusMessage}`
+            }
+          });
+        }
+      }).on('error', (data, response) => {
+        logger.debug('nodeRollupViewExists - ERROR');
+        logger.error(`FAIL: ${response.statusCode} - MESSAGE ${response.statusMessage}`);
+        reject({
+          error: {
+            statusCode: response.statusCode,
+            message: `Error getting nodes rollup view: ${response.statusMessage}`
+          }
+        });
+      });
+  });
+};
+
 exports.nodeRollupView = (request, reply) => {
   const twigDb = request.payload.twigDb;
   const couchdbHost = config.COUCHDB_URL;
