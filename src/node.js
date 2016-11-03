@@ -142,12 +142,53 @@ exports.publishView = (host, database, viewJson) => {
           }
         });
       }).on('error', (data, response) => {
-        logger.debug('getTimeEntries - ERROR');
+        logger.debug('publishView - ERROR');
         logger.error(`FAIL: ${response.statusCode} - MESSAGE ${response.statusMessage}`);
         reject({
           error: {
             statusCode: response.statusCode,
             message: `Error creating nodes rollup view: ${response.statusMessage}`
+          }
+        });
+      });
+  });
+};
+
+exports.nodeRollupViewExists = (host, database) => {
+  let doesExist = false;
+  const nodesURL = `${host}/${database}/_design/nodes/`;
+  const headers = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json'
+  };
+
+  return new Promise((resolve, reject) => {
+    restler.get(nodesURL, { headers })
+      .on('complete', (data, response) => {
+        if (response && response.statusCode === 200) {
+          doesExist = true;
+        }
+        else if (response && response.statusCode === 404) {
+          doesExist = false;
+        }
+        else {
+          logger.error(`FAIL: ${response.statusCode} MESSAGE ${response.statusMessage}`);
+          reject({
+            error: {
+              statusCode: response.statusCode,
+              message: `Error creating nodes rollup view: ${response.statusMessage}`
+            }
+          });
+        }
+
+        resolve(doesExist);
+      }).on('error', (data, response) => {
+        logger.debug('nodeRollupViewExists - ERROR');
+        logger.error(`FAIL: ${response.statusCode} - MESSAGE ${response.statusMessage}`);
+        reject({
+          error: {
+            statusCode: response.statusCode,
+            message: `Error getting nodes rollup view: ${response.statusMessage}`
           }
         });
       });

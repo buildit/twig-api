@@ -13,7 +13,7 @@ describe('Node', () => {
         twigDb: 'twig-unittest',
       }
     };
-    const ROLLEDUPRESPONSE = {
+    const rolledUpResponse = {
       ok: true,
       id: '_design/nodes',
       rev: '4-a3df20622dd9a8eb9362fe1d76aeed9c'
@@ -73,7 +73,7 @@ describe('Node', () => {
       const viewJson = '';
 
       restler.put.returns({
-        on: sinon.stub().yields(ROLLEDUPRESPONSE, null)
+        on: sinon.stub().yields(rolledUpResponse, null)
       });
 
       // act
@@ -88,17 +88,153 @@ describe('Node', () => {
       // setup
       const publishView = sinon.spy(node, 'publishView');
       restler.put.returns({
-        on: sinon.stub().yields(ROLLEDUPRESPONSE, null)
+        on: sinon.stub().yields(rolledUpResponse, null)
       });
 
       // act
       return node.nodeRollupView(request, reply)
         .then((response) => {
           // assert
-          console.log(`Test Reply: ${JSON.stringify(response)}`);
+          // console.log(`Test Reply: ${JSON.stringify(response)}`);
           expect(publishView.calledOnce).to.be.true;
           expect(response.statusCode).to.equal(201);
           expect(response.message).to.equal('Nodes Rollup View Created');
+        });
+    });
+  });
+
+  describe('Looksup the Rollup View', () => {
+    beforeEach(() => {
+      sinon.stub(restler, 'get');
+    });
+
+    afterEach(() => {
+      restler.get.restore();
+    });
+
+    it('Finds the node rolled up view', () => {
+      // setup
+      const host = config.COUCHDB_URL;
+      const database = 'twig-unittest';
+      const foundResponseData = {
+        id: '_design/nodes',
+        _rev: '4-a3df20622dd9a8eb9362fe1d76aeed9c',
+        views: {
+          by_nodes: {
+            map: 'function (doc) ...',
+            reduce: 'function (key, values) ...'
+          }
+        }
+      };
+      const foundResponse = {
+        statusCode: 200,
+        statusMessage: 'found'
+      };
+
+      restler.get.returns({
+        on: sinon.stub().yields(foundResponseData, foundResponse)
+      });
+
+      // act
+      return node.nodeRollupViewExists(host, database)
+        .then((response) => {
+          // assert
+          expect(response).to.exist;
+          expect(response).to.equal(true);
+        });
+    });
+
+    it('Does not find the node rolled up view', () => {
+      // setup
+      const host = config.COUCHDB_URL;
+      const database = 'twig-unittest';
+      const notFoundResponseData = {
+        error: 'not_found',
+        reason: 'missing'
+      };
+      const notFoundResponse = {
+        statusCode: 404,
+        statusMessage: 'missing'
+      };
+
+      restler.get.returns({
+        on: sinon.stub().yields(notFoundResponseData, notFoundResponse)
+      });
+
+      // act
+      return node.nodeRollupViewExists(host, database)
+        .then((response) => {
+          // assert
+          expect(response).to.exist;
+          expect(response).to.equal(false);
+        });
+    });
+  });
+
+  describe('Fetch the Rollup View Data', () => {
+    beforeEach(() => {
+      sinon.stub(restler, 'get');
+    });
+
+    afterEach(() => {
+      restler.get.restore();
+    });
+
+    it('Retrieves the data', () => {
+      // setup
+      const host = config.COUCHDB_URL;
+      const database = 'twig-unittest';
+      const foundResponseData = {
+        id: '_design/nodes',
+        _rev: '4-a3df20622dd9a8eb9362fe1d76aeed9c',
+        views: {
+          by_nodes: {
+            map: 'function (doc) ...',
+            reduce: 'function (key, values) ...'
+          }
+        }
+      };
+      const foundResponse = {
+        statusCode: 200,
+        statusMessage: 'found'
+      };
+
+      restler.get.returns({
+        on: sinon.stub().yields(foundResponseData, foundResponse)
+      });
+
+      // act
+      return node.nodeRollupViewExists(host, database)
+        .then((response) => {
+          // assert
+          expect(response).to.exist;
+          expect(response).to.equal(true);
+        });
+    });
+
+    it('Does not find the node rolled up view', () => {
+      // setup
+      const host = config.COUCHDB_URL;
+      const database = 'twig-unittest';
+      const notFoundResponseData = {
+        error: 'not_found',
+        reason: 'missing'
+      };
+      const notFoundResponse = {
+        statusCode: 404,
+        statusMessage: 'missing'
+      };
+
+      restler.get.returns({
+        on: sinon.stub().yields(notFoundResponseData, notFoundResponse)
+      });
+
+      // act
+      return node.nodeRollupViewExists(host, database)
+        .then((response) => {
+          // assert
+          expect(response).to.exist;
+          expect(response).to.equal(false);
         });
     });
   });
