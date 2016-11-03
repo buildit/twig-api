@@ -7,7 +7,7 @@ services:
       - 80:3000
     environment:
       - TWIG_API_LDAP_URL=ldap://10.10.243.55
+      - TWIG_API_COUCHDB_URL=http://couchdb.riglet:5984
       - TWIG_API_LOG_CONSOLE=true
       - TWIG_API_LOG_FILE=true
       - TWIG_API_LOG_LEVEL=info
-

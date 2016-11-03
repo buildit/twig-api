@@ -4,6 +4,7 @@ const logger = require('./utils/log')('SERVER');
 const Joi = require('joi');
 const Auth = require('./auth');
 const Ping = require('./ping');
+const Node = require('./node');
 
 const server = new Hapi.Server();
 
@@ -13,7 +14,6 @@ server.connection({
     cors: true
   }
 });
-
 
 server.register(cookieAuth, (err) => {
   if (err) {
@@ -46,6 +46,9 @@ server.register(cookieAuth, (err) => {
 server.route([
   {
     method: ['GET'], path: '/ping', handler: Ping.ping
+  },
+  {
+    method: 'POST', path: '/nodes', handler: Node.nodeRollupView
   },
   {
     method: ['POST'],
