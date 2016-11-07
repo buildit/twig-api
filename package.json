@@ -1,6 +1,6 @@
 {
   "name": "twig-api",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "The API that powers Twig",
   "scripts": {
     "lint": "eslint src",
