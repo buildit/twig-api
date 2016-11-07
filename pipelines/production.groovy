@@ -8,6 +8,8 @@ node {
 
     stage("Set Up") {
       checkout scm
+      // clean the workspace before checking out
+      sh "git clean -ffdx"
 
       sh "curl -L https://dl.bintray.com/buildit/maven/jenkins-pipeline-libraries-${env.PIPELINE_LIBS_VERSION}.zip -o lib.zip && echo 'A' | unzip lib.zip"
 
@@ -26,9 +28,6 @@ node {
 
       // select the tag
       tag = ui.selectTag(ecr.imageTags(appName, env.AWS_REGION))
-
-      // clean the workspace before checking out
-      sh "git clean -ffdx"
     }
 
     stage("Write docker-compose") {
