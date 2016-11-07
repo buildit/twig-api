@@ -7,12 +7,6 @@ const restler = require('restler');
 /* eslint-disable no-unused-expressions */
 describe('Node', () => {
   describe('Builds the Rollup View', () => {
-    const reply = (response) => response;
-    const request = {
-      payload: {
-        twigDb: 'twig-unittest',
-      }
-    };
     const rolledUpResponse = {
       ok: true,
       id: '_design/nodes',
@@ -83,24 +77,6 @@ describe('Node', () => {
           expect(response).to.exist;
         });
     });
-
-    it('Is called from REST API', () => {
-      // setup
-      const publishView = sinon.spy(node, 'publishView');
-      restler.put.returns({
-        on: sinon.stub().yields(rolledUpResponse, null)
-      });
-
-      // act
-      return node.nodeRollupView(request, reply)
-        .then((response) => {
-          // assert
-          // console.log(`Test Reply: ${JSON.stringify(response)}`);
-          expect(publishView.calledOnce).to.be.true;
-          expect(response.statusCode).to.equal(201);
-          expect(response.message).to.equal('Nodes Rollup View Created');
-        });
-    });
   });
 
   describe('Looksup the Rollup View', () => {
@@ -136,11 +112,11 @@ describe('Node', () => {
       });
 
       // act
-      return node.nodeRollupViewExists(host, database)
+      return node.nodeRollupViewDoesNotExists(host, database)
         .then((response) => {
           // assert
           expect(response).to.exist;
-          expect(response).to.equal(true);
+          expect(response).to.equal(false);
         });
     });
 
@@ -162,11 +138,11 @@ describe('Node', () => {
       });
 
       // act
-      return node.nodeRollupViewExists(host, database)
+      return node.nodeRollupViewDoesNotExists(host, database)
         .then((response) => {
           // assert
           expect(response).to.exist;
-          expect(response).to.equal(false);
+          expect(response).to.equal(true);
         });
     });
   });
@@ -223,6 +199,98 @@ describe('Node', () => {
           expect(response).to.exist;
           expect(response.rows).to.exist;
           expect(response.rows.length).to.equal(1);
+        });
+    });
+  });
+
+  describe('REST API', () => {
+    const reply = (response) => response;
+    const request = {
+      payload: {
+        twigDb: 'twig-unittest',
+      }
+    };
+    const notFoundResponseData = {
+      error: 'not_found',
+      reason: 'missing'
+    };
+    const notFoundResponse = {
+      statusCode: 404,
+      statusMessage: 'missing'
+    };
+    const publishViewResponseData = {
+      ok: true,
+      id: '_design/nodes',
+      rev: '4-a3df20622dd9a8eb9362fe1d76aeed9c'
+    };
+    const foundResponseData = {
+      rows: [
+        {
+          key: 'nodes',
+          value: [
+            {
+              type: 'tribe',
+              names: ['Mobile Tribe'],
+              attrs: []
+            },
+            {
+              type: 'person',
+              names: [
+                'Tribal Leader', 'London Tribal Members', 'USA Tribal Members'
+              ],
+              attrs: [
+                'firstname', 'lastname', 'members'
+              ]
+            }
+          ]
+        }
+      ]
+    };
+    const foundResponse = {
+      statusCode: 200,
+      statusMessage: ''
+    };
+
+    beforeEach(() => {
+      sinon.stub(restler, 'put');
+      sinon.stub(restler, 'get');
+    });
+
+    afterEach(() => {
+      restler.put.restore();
+      restler.get.restore();
+    });
+
+    it('Creates view and gets node rolled up view data', () => {
+      // setup
+      const nodeRollupViewDoesNotExists = sinon.spy(node, 'nodeRollupViewDoesNotExists');
+      const publishView = sinon.spy(node, 'publishView');
+      const nodeRollupViewData = sinon.spy(node, 'nodeRollupViewData');
+
+      restler.get.onCall(0).returns({
+        on: sinon.stub().yields(notFoundResponseData, notFoundResponse)
+      });
+
+      restler.put.returns({
+        on: sinon.stub().yields(publishViewResponseData, null)
+      });
+
+      restler.get.onCall(1).returns({
+        on: sinon.stub().yields(foundResponseData, foundResponse)
+      });
+
+      // act
+      return node.nodeRollupView(request, reply)
+        .then((response) => {
+          // assert
+          expect(nodeRollupViewDoesNotExists.calledOnce,
+            'nodeRolledupViewDoesNotExist was not called just once.').to.be.true;
+          expect(publishView.calledOnce,
+            'publishView was not called just once.').to.be.true;
+          expect(nodeRollupViewData.calledOnce,
+            'nodeRollupViewData was not called just once.').to.be.true;
+          expect(response.statusCode).to.equal(200);
+          expect(response.message).to.equal('SUCCESS');
         });
     });
   });

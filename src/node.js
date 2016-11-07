@@ -154,8 +154,8 @@ exports.publishView = (host, database, viewJson) => {
   });
 };
 
-exports.nodeRollupViewExists = (host, database) => {
-  let doesExist = false;
+exports.nodeRollupViewDoesNotExists = (host, database) => {
+  let doesNotExist = true;
   const nodesURL = `${host}/${database}/_design/nodes/`;
   const headers = {
     Accept: 'application/json',
@@ -166,10 +166,10 @@ exports.nodeRollupViewExists = (host, database) => {
     restler.get(nodesURL, { headers })
       .on('complete', (data, response) => {
         if (response && response.statusCode === 200) {
-          doesExist = true;
+          doesNotExist = false;
         }
         else if (response && response.statusCode === 404) {
-          doesExist = false;
+          doesNotExist = true;
         }
         else {
           logger.error(`FAIL: ${response.statusCode} MESSAGE ${response.statusMessage}`);
@@ -181,16 +181,7 @@ exports.nodeRollupViewExists = (host, database) => {
           });
         }
 
-        resolve(doesExist);
-      }).on('error', (data, response) => {
-        logger.debug('nodeRollupViewExists - ERROR');
-        logger.error(`FAIL: ${response.statusCode} - MESSAGE ${response.statusMessage}`);
-        reject({
-          error: {
-            statusCode: response.statusCode,
-            message: `Error getting nodes rollup view: ${response.statusMessage}`
-          }
-        });
+        resolve(doesNotExist);
       });
   });
 };
@@ -233,18 +224,46 @@ exports.nodeRollupViewData = (host, database) => {
 exports.nodeRollupView = (request, reply) => {
   const twigDb = request.payload.twigDb;
   const couchdbHost = config.COUCHDB_URL;
-  const mapFunc = this.buildMapFunc();
-  const reduceFunc = this.buildReduceFunc();
-  const viewJson = this.buildViewJson(mapFunc, reduceFunc);
 
-  return this.publishView(couchdbHost, twigDb, viewJson)
-    .then((data) => {
-      console.log(`Publish View Data: ${JSON.stringify(data)}`);
-      return reply({
-        statusCode: 201,
-        message: 'Nodes Rollup View Created'
-      });
+  reply({});
+
+  this.nodeRollupViewDoesNotExists(couchdbHost, twigDb)
+    .then((viewDoesNotExists) => {
+      if (viewDoesNotExists) {
+        const mapFunc = this.buildMapFunc();
+        const reduceFunc = this.buildReduceFunc();
+        const viewJson = this.buildViewJson(mapFunc, reduceFunc);
+
+        this.publishView(couchdbHost, twigDb, viewJson)
+          .then(() => {
+            console.log('Created node rolled up view.');
+          })
+          .catch((error) =>
+            reply({
+              statusCode: error.error.statusCode,
+              message: error.error.message
+            })
+          );
+      }
     })
+    .catch((error) =>
+      reply({
+        statusCode: error.error.statusCode,
+        message: error.error.message
+      })
+    );
+
+  if (reply.statusCode) {
+    return reply;
+  }
+
+  return this.nodeRollupViewData(couchdbHost, twigDb)
+    .then((data) =>
+      reply({
+        statusCode: 200,
+        message: 'SUCCESS',
+        data
+      }))
     .catch((error) =>
       reply({
         statusCode: error.error.statusCode,
