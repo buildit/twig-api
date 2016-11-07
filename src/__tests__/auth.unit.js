@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const Auth = require('../auth');
 const ldap = require('ldapjs');
 
-describe('Auth', () => {
+describe('/login', () => {
   let sandbox = sinon.sandbox.create();
   const reply = (response) => response;
   let userCookie;

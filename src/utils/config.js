@@ -9,6 +9,7 @@ const config = {
   LOG_CONSOLE: process.env.TWIG_API_LOG_CONSOLE === 'true',
   LOG_FILE: process.env.TWIG_API_LOG_FILE === 'true',
   LOG_LEVEL: process.env.TWIG_API_LOG_LEVEL,
+  DB_URL: process.env.TWIG_API_DB_URL,
 };
 
 function clearEnvVars () {
