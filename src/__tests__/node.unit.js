@@ -6,20 +6,24 @@ const restler = require('restler');
 
 /* eslint-disable no-unused-expressions */
 describe('Node', () => {
+  let sandbox = sinon.sandbox.create();
+
+  beforeEach(() => {
+    sandbox = sinon.sandbox.create();
+    sandbox.stub(restler, 'get');
+    sandbox.stub(restler, 'put');
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   describe('Builds the Rollup View', () => {
     const rolledUpResponse = {
       ok: true,
       id: '_design/nodes',
       rev: '4-a3df20622dd9a8eb9362fe1d76aeed9c'
     };
-
-    beforeEach(() => {
-      sinon.stub(restler, 'put');
-    });
-
-    afterEach(() => {
-      restler.put.restore();
-    });
 
     it('Builds the map function', () => {
       // setup
@@ -62,12 +66,12 @@ describe('Node', () => {
 
     it('Publishes the nodes rollup view', () => {
       // setup
-      const host = config.COUCHDB_URL;
+      const host = config.DB_URL;
       const database = 'twig-unittest';
       const viewJson = '';
 
       restler.put.returns({
-        on: sinon.stub().yields(rolledUpResponse, null)
+        on: sandbox.stub().yields(rolledUpResponse, null)
       });
 
       // act
@@ -80,17 +84,9 @@ describe('Node', () => {
   });
 
   describe('Looksup the Rollup View', () => {
-    beforeEach(() => {
-      sinon.stub(restler, 'get');
-    });
-
-    afterEach(() => {
-      restler.get.restore();
-    });
-
     it('Finds the node rolled up view', () => {
       // setup
-      const host = config.COUCHDB_URL;
+      const host = config.DB_URL;
       const database = 'twig-unittest';
       const foundResponseData = {
         id: '_design/nodes',
@@ -108,7 +104,7 @@ describe('Node', () => {
       };
 
       restler.get.returns({
-        on: sinon.stub().yields(foundResponseData, foundResponse)
+        on: sandbox.stub().yields(foundResponseData, foundResponse)
       });
 
       // act
@@ -122,7 +118,7 @@ describe('Node', () => {
 
     it('Does not find the node rolled up view', () => {
       // setup
-      const host = config.COUCHDB_URL;
+      const host = config.DB_URL;
       const database = 'twig-unittest';
       const notFoundResponseData = {
         error: 'not_found',
@@ -134,7 +130,7 @@ describe('Node', () => {
       };
 
       restler.get.returns({
-        on: sinon.stub().yields(notFoundResponseData, notFoundResponse)
+        on: sandbox.stub().yields(notFoundResponseData, notFoundResponse)
       });
 
       // act
@@ -148,17 +144,9 @@ describe('Node', () => {
   });
 
   describe('Fetch the Rollup View Data', () => {
-    beforeEach(() => {
-      sinon.stub(restler, 'get');
-    });
-
-    afterEach(() => {
-      restler.get.restore();
-    });
-
     it('Retrieves the data', () => {
       // setup
-      const host = config.COUCHDB_URL;
+      const host = config.DB_URL;
       const database = 'twig-unittest';
       const foundResponseData = {
         rows: [
@@ -189,7 +177,7 @@ describe('Node', () => {
       };
 
       restler.get.returns({
-        on: sinon.stub().yields(foundResponseData, foundResponse)
+        on: sandbox.stub().yields(foundResponseData, foundResponse)
       });
 
       // act
@@ -206,8 +194,8 @@ describe('Node', () => {
   describe('REST API', () => {
     const reply = (response) => response;
     const request = {
-      payload: {
-        twigDb: 'twig-unittest',
+      params: {
+        id: 'twig-unittest'
       }
     };
     const notFoundResponseData = {
@@ -251,32 +239,22 @@ describe('Node', () => {
       statusMessage: ''
     };
 
-    beforeEach(() => {
-      sinon.stub(restler, 'put');
-      sinon.stub(restler, 'get');
-    });
-
-    afterEach(() => {
-      restler.put.restore();
-      restler.get.restore();
-    });
-
     it('Creates view and gets node rolled up view data', () => {
       // setup
-      const nodeRollupViewDoesNotExists = sinon.spy(node, 'nodeRollupViewDoesNotExists');
-      const publishView = sinon.spy(node, 'publishView');
-      const nodeRollupViewData = sinon.spy(node, 'nodeRollupViewData');
+      const nodeRollupViewDoesNotExists = sandbox.spy(node, 'nodeRollupViewDoesNotExists');
+      const publishView = sandbox.spy(node, 'publishView');
+      const nodeRollupViewData = sandbox.spy(node, 'nodeRollupViewData');
 
       restler.get.onCall(0).returns({
-        on: sinon.stub().yields(notFoundResponseData, notFoundResponse)
+        on: sandbox.stub().yields(notFoundResponseData, notFoundResponse)
       });
 
       restler.put.returns({
-        on: sinon.stub().yields(publishViewResponseData, null)
+        on: sandbox.stub().yields(publishViewResponseData, null)
       });
 
       restler.get.onCall(1).returns({
-        on: sinon.stub().yields(foundResponseData, foundResponse)
+        on: sandbox.stub().yields(foundResponseData, foundResponse)
       });
 
       // act
@@ -289,8 +267,142 @@ describe('Node', () => {
             'publishView was not called just once.').to.be.true;
           expect(nodeRollupViewData.calledOnce,
             'nodeRollupViewData was not called just once.').to.be.true;
-          expect(response.statusCode).to.equal(200);
-          expect(response.message).to.equal('SUCCESS');
+          expect(response.rows.length).to.equal(1);
+          expect(response.rows[0].key).to.equal('nodes');
+        });
+    });
+
+    it('Does not create view but still gets node rolled up view data', () => {
+      // setup
+      const nodeRollupViewDoesNotExists = sandbox.spy(node, 'nodeRollupViewDoesNotExists');
+      const publishView = sandbox.spy(node, 'publishView');
+      const nodeRollupViewData = sandbox.spy(node, 'nodeRollupViewData');
+
+      restler.get.onCall(0).returns({
+        on: sandbox.stub().yields(notFoundResponseData, foundResponse)
+      });
+
+      restler.get.onCall(1).returns({
+        on: sandbox.stub().yields(foundResponseData, foundResponse)
+      });
+
+      // act
+      return node.nodeRollupView(request, reply)
+        .then((response) => {
+          // assert
+          expect(nodeRollupViewDoesNotExists.calledOnce,
+            'nodeRolledupViewDoesNotExist was not called just once.').to.be.true;
+          expect(publishView.calledOnce,
+            'publishView was not called just once.').to.be.false;
+          expect(nodeRollupViewData.calledOnce,
+            'nodeRollupViewData was not called just once.').to.be.true;
+          expect(response.rows.length).to.equal(1);
+          expect(response.rows[0].key).to.equal('nodes');
+        });
+    });
+
+    it('Node Rollup View Exists throws error', () => {
+      // setup
+      const errorMessage = '...';
+      const errorResponseMessage = `Error checking if nodes rollup view exists: ${errorMessage}`;
+      const errorResponse = {
+        statusCode: 500,
+        statusMessage: errorMessage
+      };
+      const nodeRollupViewDoesNotExists = sandbox.spy(node, 'nodeRollupViewDoesNotExists');
+      const publishView = sandbox.spy(node, 'publishView');
+      const nodeRollupViewData = sandbox.spy(node, 'nodeRollupViewData');
+
+      restler.get.onCall(0).returns({
+        on: sandbox.stub().yields(null, errorResponse)
+      });
+
+      // act
+      return node.nodeRollupView(request, reply)
+        .then((response) => {
+          // assert
+          expect(nodeRollupViewDoesNotExists.calledOnce,
+            'nodeRolledupViewDoesNotExist was not called just once.').to.be.true;
+          expect(publishView.calledOnce,
+            'publishView was not called just once.').to.be.false;
+          expect(nodeRollupViewData.calledOnce,
+            'nodeRollupViewData was not called just once.').to.be.false;
+          expect(response.statusCode).to.equal(500);
+          expect(response.message).to.equal(errorResponseMessage);
+        });
+    });
+
+    it('Publish View throws error', () => {
+      // setup
+      const errorMessage = '...';
+      const errorResponseMessage = `Error publishing nodes rollup view: ${errorMessage}`;
+      const errorResponse = {
+        statusCode: 500,
+        statusMessage: errorMessage
+      };
+      const nodeRollupViewDoesNotExists = sandbox.spy(node, 'nodeRollupViewDoesNotExists');
+      const publishView = sandbox.spy(node, 'publishView');
+      const nodeRollupViewData = sandbox.spy(node, 'nodeRollupViewData');
+
+      restler.get.onCall(0).returns({
+        on: sandbox.stub().yields(notFoundResponseData, notFoundResponse)
+      });
+
+      restler.put.returns({
+        on: sandbox.stub().yields(null, errorResponse)
+      });
+
+      // act
+      return node.nodeRollupView(request, reply)
+        .then((response) => {
+          // assert
+          expect(nodeRollupViewDoesNotExists.calledOnce,
+            'nodeRolledupViewDoesNotExist was not called just once.').to.be.true;
+          expect(publishView.calledOnce,
+            'publishView was not called just once.').to.be.true;
+          expect(nodeRollupViewData.calledOnce,
+            'nodeRollupViewData was not called just once.').to.be.false;
+          expect(response.statusCode).to.equal(500);
+          expect(response.message).to.equal(errorResponseMessage);
+        });
+    });
+
+    it('Node Rolled Up View Data throws error', () => {
+      // setup
+      const errorMessage = '...';
+      const errorResponseMessage = `Error getting node rollup view data: ${errorMessage}`;
+      const errorResponse = {
+        statusCode: 500,
+        statusMessage: errorMessage
+      };
+      const nodeRollupViewDoesNotExists = sandbox.spy(node, 'nodeRollupViewDoesNotExists');
+      const publishView = sandbox.spy(node, 'publishView');
+      const nodeRollupViewData = sandbox.spy(node, 'nodeRollupViewData');
+
+      restler.get.onCall(0).returns({
+        on: sandbox.stub().yields(notFoundResponseData, notFoundResponse)
+      });
+
+      restler.put.returns({
+        on: sandbox.stub().yields(publishViewResponseData, null)
+      });
+
+      restler.get.onCall(1).returns({
+        on: sandbox.stub().yields(null, errorResponse)
+      });
+
+      // act
+      return node.nodeRollupView(request, reply)
+        .then((response) => {
+          // assert
+          expect(nodeRollupViewDoesNotExists.calledOnce,
+            'nodeRolledupViewDoesNotExist was not called just once.').to.be.true;
+          expect(publishView.calledOnce,
+            'publishView was not called just once.').to.be.true;
+          expect(nodeRollupViewData.calledOnce,
+            'nodeRollupViewData was not called just once.').to.be.true;
+          expect(response.statusCode).to.equal(500);
+          expect(response.message).to.equal(errorResponseMessage);
         });
     });
   });

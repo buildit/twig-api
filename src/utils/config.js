@@ -5,7 +5,6 @@ const ramda = require('ramda');
 const config = {
   _secrets: ['_secrets'],
   LDAP_URL: process.env.TWIG_API_LDAP_URL,
-  COUCHDB_URL: process.env.TWIG_API_COUCHDB_URL || 'http://localhost:5984',
   LOG_CONSOLE: process.env.TWIG_API_LOG_CONSOLE === 'true',
   LOG_FILE: process.env.TWIG_API_LOG_FILE === 'true',
   LOG_LEVEL: process.env.TWIG_API_LOG_LEVEL,

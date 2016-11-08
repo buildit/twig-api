@@ -126,7 +126,7 @@ exports.publishView = (host, database, viewJson) => {
           reject({
             error: {
               statusCode: response.statusCode,
-              message: `Error creating nodes rollup view: ${response.statusMessage}`
+              message: `Error publishing nodes rollup view: ${response.statusMessage}`
             }
           });
         }
@@ -138,7 +138,7 @@ exports.publishView = (host, database, viewJson) => {
         reject({
           error: {
             statusCode: response.statusCode,
-            message: `Error creating nodes rollup view: ${response.statusMessage}`
+            message: `Error publishing nodes rollup view: ${response.statusMessage}`
           }
         });
       }).on('error', (data, response) => {
@@ -147,7 +147,7 @@ exports.publishView = (host, database, viewJson) => {
         reject({
           error: {
             statusCode: response.statusCode,
-            message: `Error creating nodes rollup view: ${response.statusMessage}`
+            message: `Error publishing nodes rollup view: ${response.statusMessage}`
           }
         });
       });
@@ -176,7 +176,7 @@ exports.nodeRollupViewDoesNotExists = (host, database) => {
           reject({
             error: {
               statusCode: response.statusCode,
-              message: `Error creating nodes rollup view: ${response.statusMessage}`
+              message: `Error checking if nodes rollup view exists: ${response.statusMessage}`
             }
           });
         }
@@ -204,17 +204,17 @@ exports.nodeRollupViewData = (host, database) => {
           reject({
             error: {
               statusCode: response.statusCode,
-              message: `Error creating nodes rollup view: ${response.statusMessage}`
+              message: `Error getting node rollup view data: ${response.statusMessage}`
             }
           });
         }
       }).on('error', (data, response) => {
-        logger.debug('nodeRollupViewExists - ERROR');
+        logger.debug('nodeRollupViewData - ERROR');
         logger.error(`FAIL: ${response.statusCode} - MESSAGE ${response.statusMessage}`);
         reject({
           error: {
             statusCode: response.statusCode,
-            message: `Error getting nodes rollup view: ${response.statusMessage}`
+            message: `Error getting node rollup view data: ${response.statusMessage}`
           }
         });
       });
@@ -222,52 +222,37 @@ exports.nodeRollupViewData = (host, database) => {
 };
 
 exports.nodeRollupView = (request, reply) => {
-  const twigDb = request.payload.twigDb;
-  const couchdbHost = config.COUCHDB_URL;
+  const twig = request.params.id;
+  const couchdbHost = config.DB_URL;
 
-  reply({});
-
-  this.nodeRollupViewDoesNotExists(couchdbHost, twigDb)
+  return this.nodeRollupViewDoesNotExists(couchdbHost, twig)
     .then((viewDoesNotExists) => {
       if (viewDoesNotExists) {
         const mapFunc = this.buildMapFunc();
         const reduceFunc = this.buildReduceFunc();
         const viewJson = this.buildViewJson(mapFunc, reduceFunc);
 
-        this.publishView(couchdbHost, twigDb, viewJson)
+        return this.publishView(couchdbHost, twig, viewJson)
           .then(() => {
-            console.log('Created node rolled up view.');
-          })
-          .catch((error) =>
-            reply({
-              statusCode: error.error.statusCode,
-              message: error.error.message
-            })
-          );
+            logger.debug('Created node rolled up view.');
+          });
       }
+
+      return {};
     })
-    .catch((error) =>
-      reply({
+    .then(() => {
+      logger.debug('Fetching view data...');
+      return this.nodeRollupViewData(couchdbHost, twig)
+        .then((data) => {
+          logger.debug(`Found view data: ${JSON.stringify(data)}`);
+          return reply(data);
+        });
+    })
+    .catch((error) => {
+      logger.error(`Error getting node rolled up data: ${JSON.stringify(error)}`);
+      return reply({
         statusCode: error.error.statusCode,
         message: error.error.message
-      })
-    );
-
-  if (reply.statusCode) {
-    return reply;
-  }
-
-  return this.nodeRollupViewData(couchdbHost, twigDb)
-    .then((data) =>
-      reply({
-        statusCode: 200,
-        message: 'SUCCESS',
-        data
-      }))
-    .catch((error) =>
-      reply({
-        statusCode: error.error.statusCode,
-        message: error.error.message
-      })
-    );
+      });
+    });
 };

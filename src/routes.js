@@ -6,10 +6,20 @@ const Node = require('./node');
 
 module.exports = [
   {
-    method: ['GET'], path: '/ping', handler: Ping.ping
+    method: ['GET'],
+    path: '/ping',
+    handler: Ping.ping,
+    config: {
+      auth: false,
+    }
   },
   {
-    method: 'POST', path: '/nodes', handler: Node.nodeRollupView
+    method: ['GET'],
+    path: '/twig/{id}/nodes/rolledup',
+    handler: Node.nodeRollupView,
+    config: {
+      auth: false,
+    }
   },
   {
     method: ['POST'],
