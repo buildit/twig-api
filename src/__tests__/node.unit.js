@@ -327,7 +327,7 @@ describe('Node', () => {
             'publishView was not called just once.').to.be.false;
           expect(nodeRollupViewData.calledOnce,
             'nodeRollupViewData was not called just once.').to.be.false;
-          expect(response.statusCode).to.equal(500);
+          expect(response.output.statusCode).to.equal(500);
           expect(response.message).to.equal(errorResponseMessage);
         });
     });
@@ -362,7 +362,7 @@ describe('Node', () => {
             'publishView was not called just once.').to.be.true;
           expect(nodeRollupViewData.calledOnce,
             'nodeRollupViewData was not called just once.').to.be.false;
-          expect(response.statusCode).to.equal(500);
+          expect(response.output.statusCode).to.equal(500);
           expect(response.message).to.equal(errorResponseMessage);
         });
     });
@@ -401,7 +401,7 @@ describe('Node', () => {
             'publishView was not called just once.').to.be.true;
           expect(nodeRollupViewData.calledOnce,
             'nodeRollupViewData was not called just once.').to.be.true;
-          expect(response.statusCode).to.equal(500);
+          expect(response.output.statusCode).to.equal(500);
           expect(response.message).to.equal(errorResponseMessage);
         });
     });

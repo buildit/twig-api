@@ -1,6 +1,7 @@
 const config = require('./utils/config');
 const logger = require('./utils/log')('SERVER');
 const restler = require('restler');
+const Boom = require('boom');
 
 // We need to disable certain js linting rules because the couchdb functions
 // we are creating for map and reduce do not work with ES6.
@@ -123,33 +124,24 @@ exports.publishView = (host, database, viewJson) => {
       .on('complete', (data, response) => {
         if (response && response.statusCode !== 201) {
           logger.error(`FAIL: ${response.statusCode} MESSAGE ${response.statusMessage}`);
-          reject({
-            error: {
-              statusCode: response.statusCode,
-              message: `Error publishing nodes rollup view: ${response.statusMessage}`
-            }
-          });
+          const error = Boom.create(response.statusCode,
+            `Error publishing nodes rollup view: ${response.statusMessage}`);
+          reject(error);
         }
 
         resolve(data);
       }).on('fail', (data, response) => {
         logger.debug('publishView - FAIL');
         logger.error(`FAIL: ${response.statusCode} - MESSAGE ${response.statusMessage}`);
-        reject({
-          error: {
-            statusCode: response.statusCode,
-            message: `Error publishing nodes rollup view: ${response.statusMessage}`
-          }
-        });
+        const error = Boom.create(response.statusCode,
+          `Error publishing nodes rollup view: ${response.statusMessage}`);
+        reject(error);
       }).on('error', (data, response) => {
         logger.debug('publishView - ERROR');
         logger.error(`FAIL: ${response.statusCode} - MESSAGE ${response.statusMessage}`);
-        reject({
-          error: {
-            statusCode: response.statusCode,
-            message: `Error publishing nodes rollup view: ${response.statusMessage}`
-          }
-        });
+        const error = Boom.create(response.statusCode,
+          `Error publishing nodes rollup view: ${response.statusMessage}`);
+        reject(error);
       });
   });
 };
@@ -173,12 +165,9 @@ exports.nodeRollupViewDoesNotExists = (host, database) => {
         }
         else {
           logger.error(`FAIL: ${response.statusCode} MESSAGE ${response.statusMessage}`);
-          reject({
-            error: {
-              statusCode: response.statusCode,
-              message: `Error checking if nodes rollup view exists: ${response.statusMessage}`
-            }
-          });
+          const error = Boom.create(response.statusCode,
+            `Error checking if nodes rollup view exists: ${response.statusMessage}`);
+          reject(error);
         }
 
         resolve(doesNotExist);
@@ -201,22 +190,16 @@ exports.nodeRollupViewData = (host, database) => {
         }
         else {
           logger.error(`FAIL: ${response.statusCode} MESSAGE ${response.statusMessage}`);
-          reject({
-            error: {
-              statusCode: response.statusCode,
-              message: `Error getting node rollup view data: ${response.statusMessage}`
-            }
-          });
+          const error = Boom.create(response.statusCode,
+            `Error getting node rollup view data: ${response.statusMessage}`);
+          reject(error);
         }
       }).on('error', (data, response) => {
         logger.debug('nodeRollupViewData - ERROR');
         logger.error(`FAIL: ${response.statusCode} - MESSAGE ${response.statusMessage}`);
-        reject({
-          error: {
-            statusCode: response.statusCode,
-            message: `Error getting node rollup view data: ${response.statusMessage}`
-          }
-        });
+        const error = Boom.create(response.statusCode,
+          `Error getting node rollup view data: ${response.statusMessage}`);
+        reject(error);
       });
   });
 };
@@ -250,9 +233,6 @@ exports.nodeRollupView = (request, reply) => {
     })
     .catch((error) => {
       logger.error(`Error getting node rolled up data: ${JSON.stringify(error)}`);
-      return reply({
-        statusCode: error.error.statusCode,
-        message: error.error.message
-      });
+      return reply(Boom.wrap(error, error.status, error.message));
     });
 };
