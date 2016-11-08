@@ -46,7 +46,7 @@ describe('Node', () => {
       // assert
       expect(result).to.exist;
       expect(result.includes('function (doc)')).to.be.false;
-      expect(result.includes('function (key, values)')).to.be.true;
+      expect(result.includes('function (key')).to.be.true;
     });
 
     it('Builds the view json', () => {
