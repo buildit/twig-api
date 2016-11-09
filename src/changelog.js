@@ -1,6 +1,7 @@
 const PouchDb = require('pouchdb');
 const config = require('./utils/config');
 const Boom = require('boom');
+const logger = require('./utils/log')('SERVER');
 
 module.exports.get = (request, reply) => {
   const db = new PouchDb(`${config.DB_URL}/${request.params.id}`, { skip_setup: true });
@@ -13,7 +14,10 @@ module.exports.get = (request, reply) => {
         }
         return reply({ changelog: [] });
       }))
-    .catch((error) => reply(Boom.wrap(error, error.status, error.message)));
+    .catch((error) => {
+      logger.error(JSON.stringify(error));
+      return reply(Boom.wrap(error, error.status, error.message));
+    });
 };
 
 module.exports.add = (request, reply) => {
@@ -36,5 +40,8 @@ module.exports.add = (request, reply) => {
       return db.put(doc);
     })
     .then(() => reply({}).code(204))
-    .catch((error) => reply(Boom.wrap(error, error.status, error.message)));
+    .catch((error) => {
+      logger.error(JSON.stringify(error));
+      return reply(Boom.wrap(error, error.status, error.message));
+    });
 };

@@ -3,10 +3,24 @@ const Auth = require('./auth');
 const Ping = require('./ping');
 const Changelog = require('./changelog');
 const navSettings = require('./navsettings');
+const Node = require('./node');
 
 module.exports = [
   {
-    method: ['GET'], path: '/ping', handler: Ping.ping
+    method: ['GET'],
+    path: '/ping',
+    handler: Ping.ping,
+    config: {
+      auth: false,
+    }
+  },
+  {
+    method: ['GET'],
+    path: '/twig/{id}/nodes/rolledup',
+    handler: Node.nodeRollupView,
+    config: {
+      auth: false,
+    }
   },
   {
     method: ['POST'],

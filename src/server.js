@@ -20,7 +20,6 @@ server.connection({
   }
 });
 
-
 server.register(cookieAuth, (err) => {
   if (err) {
     throw err;

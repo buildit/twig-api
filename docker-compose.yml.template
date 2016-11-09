@@ -11,5 +11,3 @@ services:
       - TWIG_API_LOG_FILE=true
       - TWIG_API_LOG_LEVEL=info
       - TWIG_API_DB_URL=http://couchdb.riglet:5984
-
-

@@ -47,6 +47,9 @@ Paul Karsten
 David Moss
 Andy Ochsner
 Andrew Urmston
+Hap Pearman
+Ben Hernandez
+Lizzie Stokes
 
 ### License
 ---
