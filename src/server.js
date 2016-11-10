@@ -2,6 +2,9 @@ const Hapi = require('hapi');
 const cookieAuth = require('hapi-auth-cookie');
 const logger = require('./utils/log')('SERVER');
 const routes = require('./routes');
+const cls = require('continuation-local-storage');
+
+const ns = cls.createNamespace('hapi-request');
 
 const server = new Hapi.Server();
 
@@ -19,6 +22,16 @@ server.connection({
     }
   }
 });
+
+server.ext('onRequest', (req, reply) => {
+  ns.bindEmitter(req.raw.req);
+  ns.bindEmitter(req.raw.res);
+  ns.run(() => {
+    ns.set('host', req.headers.host);
+    reply.continue();
+  });
+});
+
 
 server.register(cookieAuth, (err) => {
   if (err) {
