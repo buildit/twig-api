@@ -6,6 +6,7 @@ node {
       stage("Set Up") {
         sh "curl -L https://dl.bintray.com/buildit/maven/jenkins-pipeline-libraries-${env.PIPELINE_LIBS_VERSION}.zip -o lib.zip && echo 'A' | unzip -o lib.zip"
 
+        ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
         ecr = load "lib/ecr.groovy"
         git = load "lib/git.groovy"
         npm = load "lib/npm.groovy"
@@ -72,7 +73,8 @@ node {
 
       stage("Deploy To AWS") {
         def tmpFile = UUID.randomUUID().toString() + ".tmp"
-        def ymlData = template.transform(readFile("docker-compose.yml.template"), [tag :tag, registryBase :registryBase])
+        def ymlData = template.transform(readFile("docker-compose.yml.template"),
+          tag: tag, registryBase: registryBase, ad_ip_address: ad_ip_address)
         writeFile(file: tmpFile, text: ymlData)
 
         sh "convox login ${env.CONVOX_RACKNAME} --password ${env.CONVOX_PASSWORD}"
