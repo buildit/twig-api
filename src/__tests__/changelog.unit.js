@@ -3,6 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const Changelog = require('../changelog');
 const PouchDb = require('pouchdb');
+const cls = require('continuation-local-storage');
 
 describe('/twiglets/{id}/changelog', () => {
   describe('GET', () => {
@@ -20,9 +21,11 @@ describe('/twiglets/{id}/changelog', () => {
         }
       }
     };
-
     beforeEach(() => {
       sandbox = sinon.sandbox.create();
+      sandbox.stub(cls, 'getNamespace').returns({
+        get: () => 'foo'
+      });
     });
 
     afterEach(() => {

@@ -16,7 +16,7 @@ module.exports.get = (request, reply) => {
       }))
     .catch((error) => {
       logger.error(JSON.stringify(error));
-      return reply(Boom.wrap(error, error.status, error.message));
+      return reply(Boom.create(error.status, error.message, error));
     });
 };
 
@@ -42,6 +42,6 @@ module.exports.add = (request, reply) => {
     .then(() => reply({}).code(204))
     .catch((error) => {
       logger.error(JSON.stringify(error));
-      return reply(Boom.wrap(error, error.status, error.message));
+      return reply(Boom.create(error.status, error.message, error));
     });
 };

@@ -233,6 +233,6 @@ exports.nodeRollupView = (request, reply) => {
     })
     .catch((error) => {
       logger.error(`Error getting node rolled up data: ${JSON.stringify(error)}`);
-      return reply(Boom.wrap(error, error.status, error.message));
+      return reply(Boom.create(error.status, error.message, error));
     });
 };
