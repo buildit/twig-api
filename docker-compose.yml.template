@@ -6,7 +6,7 @@ services:
     ports:
       - 80:3000
     environment:
-      - TWIG_API_LDAP_URL=ldap://10.10.243.55
+      - TWIG_API_LDAP_URL=ldap://${ad_ip_address}
       - TWIG_API_LOG_CONSOLE=true
       - TWIG_API_LOG_FILE=true
       - TWIG_API_LOG_LEVEL=info
