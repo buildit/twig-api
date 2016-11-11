@@ -1,6 +1,5 @@
 const PouchDb = require('pouchdb');
 const config = require('./utils/config');
-const Boom = require('boom');
 
 module.exports.put = (request, reply) => {
   const db = new PouchDb(`${config.DB_URL}/${request.params.id}`, { skip_setup: true });
@@ -24,5 +23,9 @@ module.exports.put = (request, reply) => {
     return undefined;
   })
   .then(() => reply({}).code(202))
-  .catch((error) => reply(Boom.wrap(error, error.status, error.message)));
+  .catch(error => {
+    if (error.error !== 'conflict') {
+      console.warn(error);
+    }
+  });
 };
