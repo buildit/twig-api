@@ -3,26 +3,23 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const Auth = require('../auth');
 const ldap = require('ldapjs');
+const server = require('./test-server');
+
+server.route(Auth.routes);
 
 describe('/login', () => {
   let sandbox = sinon.sandbox.create();
-  const reply = (response) => response;
-  let userCookie;
   const req = {
+    method: 'POST',
+    url: '/login',
     payload: {
       email: 'foo@bar.com',
       password: 'foobarbaz',
     },
-    cookieAuth: {
-      set: (thing) => {
-        userCookie = thing;
-      }
-    }
   };
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create();
-    userCookie = undefined;
   });
 
   afterEach(() => {
@@ -37,15 +34,13 @@ describe('/login', () => {
     };
     sandbox.stub(ldap, 'createClient').returns(ldapStub);
     // act
-    return Auth.login(req, reply)
-      .then((response) => {
+    return server.inject(req)
+        .then((response) => {
         // assert
-        expect(userCookie).to.exist;
-        expect(response).to.exist;
-        expect(userCookie.user.id).to.equal('foo@bar.com');
-        expect(userCookie.user.name).to.equal('foo@bar.com');
-        expect(userCookie).to.deep.equal(response);
-      });
+          expect(response.headers['set-cookie']).to.exist;
+          expect(response.result.user.name).to.eq('foo@bar.com');
+          expect(response.result.user.id).to.eq('foo@bar.com');
+        });
   });
 
   it('logs in - fail', () => {
@@ -57,11 +52,11 @@ describe('/login', () => {
     sandbox.stub(ldap, 'createClient').returns(ldapStub);
 
     // act
-    return Auth.login(req, reply)
-      .then((response) => {
+    return server.inject(req)
+        .then((response) => {
         // assert
-        expect(userCookie).to.not.exist;
-        expect(response.output.statusCode).to.equal(401);
-      });
+          expect(response.headers['set-cookie']).to.not.exist;
+          expect(response.statusCode).to.equal(401);
+        });
   });
 });

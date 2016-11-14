@@ -19,6 +19,9 @@ const config = {
       .replace('twig.staging', 'couchdb').replace('twig', 'couchdb')
       .split(':', 1)[0]}:5984`;
   },
+  set DB_URL (value) {
+    this._secrets._db_url = value;
+  }
 };
 
 function clearEnvVars () {

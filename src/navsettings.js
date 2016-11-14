@@ -1,7 +1,8 @@
 const PouchDb = require('pouchdb');
 const config = require('./utils/config');
+const Joi = require('joi');
 
-module.exports.put = (request, reply) => {
+const put = (request, reply) => {
   const db = new PouchDb(`${config.DB_URL}/${request.params.id}`, { skip_setup: true });
   db.get('views')
   .then(doc => {
@@ -29,3 +30,18 @@ module.exports.put = (request, reply) => {
     }
   });
 };
+
+exports.routes = [{
+  method: ['PUT'],
+  path: '/twiglets/{id}/navsettings',
+  handler: put,
+  config: {
+    validate: {
+      payload: {
+        _viewId: Joi.string().required().trim(),
+        key: Joi.string().required().trim(),
+        value: Joi.any().required(),
+      }
+    }
+  }
+}];
