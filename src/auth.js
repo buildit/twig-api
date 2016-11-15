@@ -2,6 +2,7 @@ const config = require('./utils/config');
 const ldap = require('ldapjs');
 const Boom = require('boom');
 const logger = require('./utils/log')('SERVER');
+const Joi = require('joi');
 
 const validate = (email, password) => {
   const client = ldap.createClient({
@@ -25,7 +26,7 @@ const validate = (email, password) => {
     }));
 };
 
-module.exports.login = (request, reply) =>
+const login = (request, reply) =>
   validate(request.payload.email, request.payload.password)
     .then((user) => {
       // put user in cache w/ a session id as key..put session id in cookie
@@ -45,7 +46,33 @@ module.exports.login = (request, reply) =>
     })
     .catch(() => reply(Boom.unauthorized('Invalid email/password')));
 
-module.exports.logout = (request, reply) => {
+const logout = (request, reply) => {
   request.cookieAuth.clear();
   return reply({}).code(204);
 };
+
+exports.routes = [{
+  method: ['POST'],
+  path: '/login',
+  handler: login,
+  config: {
+    auth: {
+      mode: 'try',
+      strategy: 'session'
+    },
+    validate: {
+      payload: {
+        email: Joi.string().email().required().trim(),
+        password: Joi.string().required().trim()
+      }
+    },
+  }
+},
+{
+  method: 'POST',
+  path: '/logout',
+  handler: logout,
+  config: {
+    auth: false,
+  }
+}];

@@ -3,6 +3,9 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const node = require('../node');
 const restler = require('restler');
+const server = require('./test-server');
+
+server.route(node.routes);
 
 /* eslint-disable no-unused-expressions */
 describe('Node', () => {
@@ -192,11 +195,9 @@ describe('Node', () => {
   });
 
   describe('REST API', () => {
-    const reply = (response) => response;
-    const request = {
-      params: {
-        id: 'twig-unittest'
-      }
+    const req = {
+      method: 'GET',
+      url: '/twiglets/twig-unittest/nodes/rolledup'
     };
     const notFoundResponseData = {
       error: 'not_found',
@@ -258,7 +259,7 @@ describe('Node', () => {
       });
 
       // act
-      return node.nodeRollupView(request, reply)
+      return server.inject(req)
         .then((response) => {
           // assert
           expect(nodeRollupViewDoesNotExists.calledOnce,
@@ -267,8 +268,11 @@ describe('Node', () => {
             'publishView was not called just once.').to.be.true;
           expect(nodeRollupViewData.calledOnce,
             'nodeRollupViewData was not called just once.').to.be.true;
-          expect(response.rows.length).to.equal(1);
-          expect(response.rows[0].key).to.equal('nodes');
+          expect(response.result.rows.length).to.equal(1);
+          expect(response.result.rows[0].key).to.equal('nodes');
+          expect(response.statusCode).to.eq(200);
+          expect(response.result.rows.length).to.equal(1);
+          expect(response.result.rows[0].key).to.equal('nodes');
         });
     });
 
@@ -287,7 +291,7 @@ describe('Node', () => {
       });
 
       // act
-      return node.nodeRollupView(request, reply)
+      return server.inject(req)
         .then((response) => {
           // assert
           expect(nodeRollupViewDoesNotExists.calledOnce,
@@ -296,15 +300,14 @@ describe('Node', () => {
             'publishView was not called just once.').to.be.false;
           expect(nodeRollupViewData.calledOnce,
             'nodeRollupViewData was not called just once.').to.be.true;
-          expect(response.rows.length).to.equal(1);
-          expect(response.rows[0].key).to.equal('nodes');
+          expect(response.result.rows.length).to.equal(1);
+          expect(response.result.rows[0].key).to.equal('nodes');
         });
     });
 
     it('Node Rollup View Exists throws error', () => {
       // setup
       const errorMessage = '...';
-      const errorResponseMessage = `Error checking if nodes rollup view exists: ${errorMessage}`;
       const errorResponse = {
         statusCode: 500,
         statusMessage: errorMessage
@@ -318,7 +321,7 @@ describe('Node', () => {
       });
 
       // act
-      return node.nodeRollupView(request, reply)
+      return server.inject(req)
         .then((response) => {
           // assert
           expect(nodeRollupViewDoesNotExists.calledOnce,
@@ -327,15 +330,14 @@ describe('Node', () => {
             'publishView was not called just once.').to.be.false;
           expect(nodeRollupViewData.calledOnce,
             'nodeRollupViewData was not called just once.').to.be.false;
-          expect(response.output.statusCode).to.equal(500);
-          expect(response.message).to.equal(errorResponseMessage);
+          expect(response.statusCode).to.equal(500);
+          expect(response.result.statusCode).to.equal(500);
         });
     });
 
     it('Publish View throws error', () => {
       // setup
       const errorMessage = '...';
-      const errorResponseMessage = `Error publishing nodes rollup view: ${errorMessage}`;
       const errorResponse = {
         statusCode: 500,
         statusMessage: errorMessage
@@ -353,7 +355,7 @@ describe('Node', () => {
       });
 
       // act
-      return node.nodeRollupView(request, reply)
+      return server.inject(req)
         .then((response) => {
           // assert
           expect(nodeRollupViewDoesNotExists.calledOnce,
@@ -362,15 +364,14 @@ describe('Node', () => {
             'publishView was not called just once.').to.be.true;
           expect(nodeRollupViewData.calledOnce,
             'nodeRollupViewData was not called just once.').to.be.false;
-          expect(response.output.statusCode).to.equal(500);
-          expect(response.message).to.equal(errorResponseMessage);
+          expect(response.statusCode).to.equal(500);
+          expect(response.result.statusCode).to.equal(500);
         });
     });
 
     it('Node Rolled Up View Data throws error', () => {
       // setup
       const errorMessage = '...';
-      const errorResponseMessage = `Error getting node rollup view data: ${errorMessage}`;
       const errorResponse = {
         statusCode: 500,
         statusMessage: errorMessage
@@ -392,7 +393,7 @@ describe('Node', () => {
       });
 
       // act
-      return node.nodeRollupView(request, reply)
+      return server.inject(req)
         .then((response) => {
           // assert
           expect(nodeRollupViewDoesNotExists.calledOnce,
@@ -401,8 +402,8 @@ describe('Node', () => {
             'publishView was not called just once.').to.be.true;
           expect(nodeRollupViewData.calledOnce,
             'nodeRollupViewData was not called just once.').to.be.true;
-          expect(response.output.statusCode).to.equal(500);
-          expect(response.message).to.equal(errorResponseMessage);
+          expect(response.statusCode).to.equal(500);
+          expect(response.result.statusCode).to.equal(500);
         });
     });
   });

@@ -2,8 +2,9 @@ const PouchDb = require('pouchdb');
 const config = require('./utils/config');
 const Boom = require('boom');
 const logger = require('./utils/log')('SERVER');
+const Joi = require('joi');
 
-module.exports.get = (request, reply) => {
+const get = (request, reply) => {
   const db = new PouchDb(`${config.DB_URL}/${request.params.id}`, { skip_setup: true });
   return db.info()
     .then(() => db.get('changelog')
@@ -16,11 +17,11 @@ module.exports.get = (request, reply) => {
       }))
     .catch((error) => {
       logger.error(JSON.stringify(error));
-      return reply(Boom.wrap(error, error.status, error.message));
+      return reply(Boom.create(error.status || 500, error.message, error));
     });
 };
 
-module.exports.add = (request, reply) => {
+const add = (request, reply) => {
   const db = new PouchDb(`${config.DB_URL}/${request.params.id}`, { skip_setup: true });
   return db.info()
     .then(() => db.get('changelog')
@@ -42,6 +43,28 @@ module.exports.add = (request, reply) => {
     .then(() => reply({}).code(204))
     .catch((error) => {
       logger.error(JSON.stringify(error));
-      return reply(Boom.wrap(error, error.status, error.message));
+      return reply(Boom.create(error.status || 500, error.message, error));
     });
 };
+
+exports.routes = [{
+  method: ['POST'],
+  path: '/twiglets/{id}/changelog',
+  handler: add,
+  config: {
+    validate: {
+      payload: {
+        commitMessage: Joi.string().required().trim(),
+      }
+    }
+  }
+},
+{
+  method: ['GET'],
+  path: '/twiglets/{id}/changelog',
+  handler: get,
+  config: {
+    auth: false,
+  }
+},
+];

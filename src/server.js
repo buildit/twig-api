@@ -1,7 +1,14 @@
 const Hapi = require('hapi');
 const cookieAuth = require('hapi-auth-cookie');
 const logger = require('./utils/log')('SERVER');
-const routes = require('./routes');
+const Ping = require('./ping');
+const Changelog = require('./changelog');
+const Auth = require('./auth');
+const Node = require('./node');
+const NavSettings = require('./navsettings');
+const cls = require('continuation-local-storage');
+
+const ns = cls.createNamespace('hapi-request');
 
 const server = new Hapi.Server();
 
@@ -20,6 +27,15 @@ server.connection({
   }
 });
 
+server.ext('onRequest', (req, reply) => {
+  ns.bindEmitter(req.raw.req);
+  ns.bindEmitter(req.raw.res);
+  ns.run(() => {
+    ns.set('host', req.headers.host);
+    reply.continue();
+  });
+});
+
 server.register(cookieAuth, (err) => {
   if (err) {
     throw err;
@@ -31,7 +47,11 @@ server.register(cookieAuth, (err) => {
   });
 });
 
-server.route(routes);
+server.route(Ping.routes);
+server.route(Changelog.routes);
+server.route(Auth.routes);
+server.route(Node.routes);
+server.route(NavSettings.routes);
 
 server.start(err => {
   if (err) {
