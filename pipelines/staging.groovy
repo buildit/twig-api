@@ -14,18 +14,24 @@ node {
         sendNotifications = !env.DEV_MODE
         ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
 
-        def loadLib = load 'pipelines/libloader.groovy'
-        if (!LOADED) {
+        if (LOADED) {
+          ecrInst = new ecr()
+          gitInst = new git()
+          npmInst = new npm()
+          shellInst = new shell()
+          slackInst = new slack()
+          convoxInst = new convox()
+          templateInst = new template()
+        } else {
           sh "curl -L https://dl.bintray.com/buildit/maven/jenkins-pipeline-libraries-${env.PIPELINE_LIBS_VERSION}.zip -o lib.zip && echo 'A' | unzip -o lib.zip"
+          ecrInst = load "lib/ecr.groovy"
+          gitInst = load "lib/git.groovy"
+          npmInst = load "lib/npm.groovy"
+          shellInst = load "lib/shell.groovy"
+          slackInst = load "lib/slack.groovy"
+          convoxInst = load "lib/convox.groovy"
+          templateInst = load "lib/template.groovy"
         }
-        ecrInst = loadLib "ecr"
-        gitInst = loadLib "git"
-        npmInst = loadLib "npm"
-        shellInst = loadLib "shell"
-        slackInst = loadLib "slack"
-        convoxInst = loadLib "convox"
-        templateInst = loadLib "template"
-
         registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         registry = "https://${registryBase}"
         appName = "twig-api"

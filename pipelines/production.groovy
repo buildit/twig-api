@@ -15,15 +15,20 @@ node {
       // clean the workspace before checking out
       sh "git clean -ffdx"
 
-      def loadLib = load 'pipelines/libloader.groovy'
-      if (!LOADED) {
+      if (LOADED) {
+        uiInst = new ui()
+        ecrInst = new ecr()
+        slackInst = new slack()
+        templateInst = new template()
+        convoxInst = new convox()
+      } else {
         sh "curl -L https://dl.bintray.com/buildit/maven/jenkins-pipeline-libraries-${env.PIPELINE_LIBS_VERSION}.zip -o lib.zip && echo 'A' | unzip -o lib.zip"
+        uiInst = load "lib/ui.groovy"
+        ecrInst = load "lib/ecr.groovy"
+        slackInst = load "lib/slack.groovy"
+        templateInst = load "lib/template.groovy"
+        convoxInst = load "lib/convox.groovy"
       }
-      uiInst = loadLib "lib/ui.groovy"
-      ecrInst = loadLib "lib/ecr.groovy"
-      slackInst = loadLib "lib/slack.groovy"
-      templateInst = loadLib "lib/template.groovy"
-      convoxInst = loadLib "lib/convox.groovy"
 
       appName = "twig-api"
       registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
