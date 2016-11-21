@@ -5,3 +5,5 @@ def call(name) {
     load "lib/${name}.groovy"
   }
 }
+
+return this
