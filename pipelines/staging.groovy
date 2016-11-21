@@ -1,5 +1,5 @@
 @Library('buildit')
-def _
+def LOADED = env.USE_GLOBAL_LIB
 
 node {
   withEnv(["PATH+NODE=${tool name: 'latest', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'}/bin"]) {
@@ -11,7 +11,7 @@ node {
         ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
 
         def loadLib = load 'libloader.groovy'
-        if (!env.USE_GLOBAL_LIB) {
+        if (!LOADED) {
           sh "curl -L https://dl.bintray.com/buildit/maven/jenkins-pipeline-libraries-${env.PIPELINE_LIBS_VERSION}.zip -o lib.zip && echo 'A' | unzip -o lib.zip"
         }
         ecrInst = loadLib "ecr"
