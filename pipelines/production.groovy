@@ -14,7 +14,7 @@ node {
       // clean the workspace before checking out
       sh "git clean -ffdx"
 
-      if(env.USE_GLOBAL_LIB) {
+      if(LOADED) {
         uiInst = new ui()
         ecrInst = new ecr()
         slackInst = new slack()

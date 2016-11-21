@@ -1,5 +1,7 @@
-@Library('buildit@master')
-def VERSION='master'
+if(env.USE_GLOBAL_LIB) {
+  @Library('buildit')
+  def LOADED = true
+}
 
 node {
   withEnv(["PATH+NODE=${tool name: 'latest', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'}/bin"]) {
@@ -9,13 +11,25 @@ node {
       stage("Set Up") {
 
         ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
-        ecrInst = new ecr()
-        gitInst = new git()
-        npmInst = new npm()
-        shellInst = new shell()
-        slackInst = new slack()
-        convoxInst = new convox()
-        templateInst = new template()
+
+        if(LOADED) {
+          ecrInst = new ecr()
+          gitInst = new git()
+          npmInst = new npm()
+          shellInst = new shell()
+          slackInst = new slack()
+          convoxInst = new convox()
+          templateInst = new template()
+        } else {
+          sh "curl -L https://dl.bintray.com/buildit/maven/jenkins-pipeline-libraries-${env.PIPELINE_LIBS_VERSION}.zip -o lib.zip && echo 'A' | unzip -o lib.zip"
+          ecrInst = load "lib/ecr.groovy"
+          gitInst = load "lib/git.groovy"
+          npmInst = load "lib/npm.groovy"
+          shellInst = load "lib/shell.groovy"
+          slackInst = load "lib/slack.groovy"
+          convoxInst = load "lib/convox.groovy"
+          templateInst = load "lib/template.groovy"
+        }
 
         registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         registry = "https://${registryBase}"
