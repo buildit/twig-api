@@ -1,6 +1,6 @@
 def call(name) {
   if(env.USE_GLOBAL_LIB) {
-    Class.forName(name).newInstance()
+    Eval.me("new ${name}()")
   } else {
     load "lib/${name}.groovy"
   }
