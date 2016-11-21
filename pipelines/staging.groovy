@@ -7,7 +7,7 @@ node {
 
     try {
       stage("Set Up") {
-
+        sendNotifications = !env.DEV_MODE
         ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
 
         def loadLib = load 'libloader.groovy'
@@ -28,8 +28,6 @@ node {
         appUrl = "http://twig-api.staging.buildit.tools"
         slackChannel = "twig"
         gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
-
-        sendNotifications = !env.DEV_MODE
       }
 
       stage("Checkout") {

@@ -9,6 +9,8 @@ node {
   try {
 
     stage("Set Up") {
+      sendNotifications = !env.DEV_MODE
+
       checkout scm
       // clean the workspace before checking out
       sh "git clean -ffdx"
@@ -36,7 +38,6 @@ node {
       gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
       tmpFile = UUID.randomUUID().toString() + ".tmp"
 
-      sendNotifications = !env.DEV_MODE
 
       // select the tag
       tag = uiInst.selectTag(ecrInst.imageTags(appName, env.AWS_REGION))
