@@ -1,4 +1,5 @@
-@Library('buildit') _
+@Library('buildit')
+def _
 
 node {
   withEnv(["PATH+NODE=${tool name: 'latest', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'}/bin"]) {
