@@ -1,4 +1,4 @@
-@Library('buildit')
+@Library('buildit') _
 def loadLib = load 'libloader.groovy'
 
 node {
