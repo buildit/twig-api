@@ -7,6 +7,10 @@ node {
 
     try {
       stage("Set Up") {
+        checkout scm
+        // clean the workspace
+        sh "git clean -ffdx"
+
         sendNotifications = !env.DEV_MODE
         ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
 
@@ -31,10 +35,6 @@ node {
       }
 
       stage("Checkout") {
-        checkout scm
-        // clean the workspace
-        sh "git clean -ffdx"
-
         // global for exception handling
         shortCommitHash = gitInst.getShortCommit()
         commitMessage = gitInst.getCommitMessage()
