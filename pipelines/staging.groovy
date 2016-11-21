@@ -9,7 +9,7 @@ node {
       stage("Set Up") {
 
         ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
-        ecr = new ecr()
+        ecrInst = new ecr()
         git = new git()
         npm = new npm()
         shell = new shell()
@@ -66,7 +66,7 @@ node {
       stage("Docker Image Build") {
         tag = "${version}-${shortCommitHash}-${env.BUILD_NUMBER}"
         image = docker.build("${appName}:${tag}", '.')
-        ecr.authenticate(env.AWS_REGION)
+        ecrInst.authenticate(env.AWS_REGION)
       }
 
       stage("Docker Push") {
