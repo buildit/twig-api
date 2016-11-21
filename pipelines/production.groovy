@@ -1,6 +1,4 @@
 // Production release pipeline
-@Library('buildit@master')
-def VERSION='master'
 
 node {
 
@@ -13,11 +11,15 @@ node {
       // clean the workspace before checking out
       sh "git clean -ffdx"
 
-      uiInst = new ui()
-      ecrInst = new ecr()
-      slackInst = new slack()
-      templateInst = new template()
-      convox = new convox()
+      if(true) {
+        @Library('buildit@master')
+        def VERSION = 'master'
+        uiInst = new ui()
+        ecrInst = new ecr()
+        slackInst = new slack()
+        templateInst = new template()
+        convox = new convox()
+      }
 
       appName = "twig-api"
       registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
