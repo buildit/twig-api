@@ -1,4 +1,5 @@
 @Library('buildit@master')
+def VERSION='master'
 
 node {
   withEnv(["PATH+NODE=${tool name: 'latest', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'}/bin"]) {
