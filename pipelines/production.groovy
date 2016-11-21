@@ -37,7 +37,7 @@ node {
       sendNotifications = !env.DEV_MODE
 
       // select the tag
-      tag = ui.selectTag(ecrInst.imageTags(appName, env.AWS_REGION))
+      tag = uiInst.selectTag(ecrInst.imageTags(appName, env.AWS_REGION))
     }
 
     stage("Write docker-compose") {
