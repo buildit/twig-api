@@ -1,19 +1,20 @@
+@Library('buildit@master')
+
 node {
   withEnv(["PATH+NODE=${tool name: 'latest', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'}/bin"]) {
     currentBuild.result = "SUCCESS"
 
     try {
       stage("Set Up") {
-        sh "curl -L https://dl.bintray.com/buildit/maven/jenkins-pipeline-libraries-${env.PIPELINE_LIBS_VERSION}.zip -o lib.zip && echo 'A' | unzip -o lib.zip"
 
         ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
-        ecr = load "lib/ecr.groovy"
-        git = load "lib/git.groovy"
-        npm = load "lib/npm.groovy"
-        shell = load "lib/shell.groovy"
-        slack = load "lib/slack.groovy"
-        convox = load "lib/convox.groovy"
-        template = load "lib/template.groovy"
+        ecr = new ecr()
+        git = new git()
+        npm = new npm()
+        shell = new shell()
+        slack = new slack()
+        convox = new convox()
+        template = new template()
 
         registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         registry = "https://${registryBase}"
