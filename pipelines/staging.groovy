@@ -10,7 +10,7 @@ node {
         sendNotifications = !env.DEV_MODE
         ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
 
-        def loadLib = load 'libloader.groovy'
+        def loadLib = load 'pipelines/libloader.groovy'
         if (!LOADED) {
           sh "curl -L https://dl.bintray.com/buildit/maven/jenkins-pipeline-libraries-${env.PIPELINE_LIBS_VERSION}.zip -o lib.zip && echo 'A' | unzip -o lib.zip"
         }
