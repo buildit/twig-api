@@ -10,12 +10,12 @@ node {
 
         ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
         ecrInst = new ecr()
-        git = new git()
-        npm = new npm()
-        shell = new shell()
-        slack = new slack()
-        convox = new convox()
-        template = new template()
+        gitInst = new git()
+        npmInst = new npm()
+        shellInst = new shell()
+        slackInst = new slack()
+        convoxInst = new convox()
+        templateInst = new template()
 
         registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         registry = "https://${registryBase}"
@@ -33,9 +33,9 @@ node {
         sh "git clean -ffdx"
 
         // global for exception handling
-        shortCommitHash = git.getShortCommit()
-        commitMessage = git.getCommitMessage()
-        version = npm.getVersion()
+        shortCommitHash = gitInst.getShortCommit()
+        commitMessage = gitInst.getCommitMessage()
+        version = npmInst.getVersion()
       }
 
       stage("Install") {
@@ -77,15 +77,15 @@ node {
 
       stage("Deploy To AWS") {
         def tmpFile = UUID.randomUUID().toString() + ".tmp"
-        def ymlData = template.transform(readFile("docker-compose.yml.template"),
+        def ymlData = templateInst.transform(readFile("docker-compose.yml.template"),
           [tag: tag, registryBase: registryBase, ad_ip_address: ad_ip_address])
         writeFile(file: tmpFile, text: ymlData)
 
         sh "convox login ${env.CONVOX_RACKNAME} --password ${env.CONVOX_PASSWORD}"
         sh "convox deploy --app ${appName}-staging --description '${tag}' --file ${tmpFile} --wait"
         // wait until the app is deployed
-        convox.waitUntilDeployed("${appName}-staging")
-        convox.ensureSecurityGroupSet("${appName}-staging", env.CONVOX_SECURITYGROUP)
+        convoxInst.waitUntilDeployed("${appName}-staging")
+        convoxInst.ensureSecurityGroupSet("${appName}-staging", env.CONVOX_SECURITYGROUP)
       }
 
       stage("Run Functional Tests") {
@@ -96,12 +96,12 @@ node {
         docker.withRegistry(registry) {
           image.push("latest")
         }
-        if(sendNotifications) slack.notify("Deployed to Staging", "Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' has been deployed to <${appUrl}|${appUrl}>\n\n${commitMessage}", "good", "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png", slackChannel)
+        if(sendNotifications) slackInst.notify("Deployed to Staging", "Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' has been deployed to <${appUrl}|${appUrl}>\n\n${commitMessage}", "good", "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png", slackChannel)
       }
     }
     catch (err) {
       currentBuild.result = "FAILURE"
-      if(sendNotifications) slack.notify("Error while deploying to Staging", "Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed to deploy to <${appUrl}|${appUrl}>.", "danger", "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png", slackChannel)
+      if(sendNotifications) slackInst.notify("Error while deploying to Staging", "Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed to deploy to <${appUrl}|${appUrl}>.", "danger", "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png", slackChannel)
       throw err
     }
   }
