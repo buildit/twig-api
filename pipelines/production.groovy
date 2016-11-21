@@ -1,7 +1,6 @@
-if(env.USE_GLOBAL_LIB) {
-  @Library('buildit')
-  def LOADED = true
-}
+@Library('buildit')
+def LOADED = env.USE_GLOBAL_LIB
+
 // Production release pipeline
 node {
 
