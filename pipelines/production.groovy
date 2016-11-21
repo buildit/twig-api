@@ -1,5 +1,6 @@
 // Production release pipeline
 
+def VERSION = 'master'
 node {
 
   currentBuild.result = "SUCCESS"
@@ -11,14 +12,21 @@ node {
       // clean the workspace before checking out
       sh "git clean -ffdx"
 
-      if(true) {
-        @Library('buildit@master')
-        def VERSION = 'master'
+      if(env.USE_GLOBAL_LIB) {
+        @Library("buildit@$VERSION")
         uiInst = new ui()
         ecrInst = new ecr()
         slackInst = new slack()
         templateInst = new template()
-        convox = new convox()
+        convoxInst = new convox()
+      } else {
+        sh "curl -L https://dl.bintray.com/buildit/maven/jenkins-pipeline-libraries-${env.PIPELINE_LIBS_VERSION}.zip -o lib.zip && echo 'A' | unzip lib.zip"
+
+        uiInst = load "lib/ui.groovy"
+        ecrInst = load "lib/ecr.groovy"
+        slackInst = load "lib/slack.groovy"
+        templateInst = load "lib/template.groovy"
+        convoxInst = load "lib/convox.groovy"
       }
 
       appName = "twig-api"
@@ -46,7 +54,7 @@ node {
       sh "rm ${tmpFile}"
       // wait until the app is deployed
       convoxInst.waitUntilDeployed("${appName}")
-      convox.ensureSecurityGroupSet("${appName}", env.CONVOX_SECURITYGROUP)
+      convoxInst.ensureSecurityGroupSet("${appName}", env.CONVOX_SECURITYGROUP)
       if(sendNotifications) slackInst.notify("Deployed to Production", "Tag '<${gitUrl}/commits/tag/${tag}|${tag}>' has been deployed to <${appUrl}|${appUrl}>", "good", "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png", slackChannel)
     }
   }
