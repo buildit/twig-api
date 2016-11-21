@@ -1,6 +1,4 @@
 // Production release pipeline
-
-def VERSION = 'master'
 node {
 
   currentBuild.result = "SUCCESS"
@@ -13,7 +11,7 @@ node {
       sh "git clean -ffdx"
 
       if(env.USE_GLOBAL_LIB) {
-        @Library("buildit@$VERSION")
+        @Library('buildit')
         uiInst = new ui()
         ecrInst = new ecr()
         slackInst = new slack()
