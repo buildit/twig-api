@@ -10,6 +10,7 @@ node {
 
     stage("Set Up") {
       sendNotifications = !env.DEV_MODE
+      ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
 
       checkout scm
       // clean the workspace before checking out
@@ -42,7 +43,8 @@ node {
     }
 
     stage("Write docker-compose") {
-      def ymlData = templateInst.transform(readFile("docker-compose.yml.template"), [tag: tag, registryBase: registryBase])
+      def ymlData = templateInst.transform(readFile("docker-compose.yml.template")
+        , [tag: tag, registryBase: registryBase, ad_ip_address: ad_ip_address])
 
       writeFile(file: tmpFile, text: ymlData)
     }
