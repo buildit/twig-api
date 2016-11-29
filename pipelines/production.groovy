@@ -1,5 +1,5 @@
 @Library('buildit')
-def LOADED = env.USE_GLOBAL_LIB
+def LOADED = true
 
 // Production release pipeline
 node {
@@ -16,7 +16,7 @@ node {
       // clean the workspace before checking out
       sh "git clean -ffdx"
 
-      if (LOADED) {
+      if (env.USE_GLOBAL_LIB) {
         uiInst = new ui()
         ecrInst = new ecr()
         slackInst = new slack()
