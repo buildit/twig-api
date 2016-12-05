@@ -19,8 +19,8 @@ server.connection({
       origin: [
         'http://localhost:*',
         'https://localhost:*',
-        'http://twig.*',
-        'https://twig.*',
+        'http://*.riglet',
+        'https://*.riglet',
       ],
       credentials: true,
     }
