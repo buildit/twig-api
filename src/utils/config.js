@@ -21,6 +21,23 @@ const config = {
   },
   set DB_URL (value) {
     this._secrets._db_url = value;
+  },
+  get TENANT_STRING () {
+    const hostname = cls.getNamespace('hapi-request').get('host');
+    if (hostname.includes('localhost')) {
+      return null;
+    }
+    const subDomain = hostname.split('.', 2);
+    if (subDomain.length < 2) {
+      return null;
+    }
+
+    return subDomain[1] === 'riglet' ? null : subDomain[1];
+  },
+  getTenantDatabaseString (dbName) {
+    return this.TENANT_STRING
+      ? `${this.DB_URL}/${this.TENANT_STRING}_${dbName}`
+      : `${this.DB_URL}/${dbName}`;
   }
 };
 

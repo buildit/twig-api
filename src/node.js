@@ -112,8 +112,8 @@ exports.buildViewJson = (mapFunc, reduceFunc) => {
   return viewJson;
 };
 
-exports.publishView = (host, database, viewJson) => {
-  const nodesURL = `${host}/${database}/_design/nodes/`;
+exports.publishView = (database, viewJson) => {
+  const nodesURL = `${config.getTenantDatabaseString(database)}/_design/nodes/`;
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/json'
@@ -146,9 +146,9 @@ exports.publishView = (host, database, viewJson) => {
   });
 };
 
-exports.nodeRollupViewDoesNotExists = (host, database) => {
+exports.nodeRollupViewDoesNotExists = (database) => {
   let doesNotExist = true;
-  const nodesURL = `${host}/${database}/_design/nodes/`;
+  const nodesURL = `${config.getTenantDatabaseString(database)}/_design/nodes/`;
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/json'
@@ -175,8 +175,9 @@ exports.nodeRollupViewDoesNotExists = (host, database) => {
   });
 };
 
-exports.nodeRollupViewData = (host, database) => {
-  const nodesURL = `${host}/${database}/_design/nodes/_view/node_rollup?group=true`;
+exports.nodeRollupViewData = (database) => {
+  const nodesURL =
+    `${config.getTenantDatabaseString(database)}/_design/nodes/_view/node_rollup?group=true`;
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/json'
@@ -206,16 +207,15 @@ exports.nodeRollupViewData = (host, database) => {
 
 exports.nodeRollupView = (request, reply) => {
   const twig = request.params.id;
-  const couchdbHost = config.DB_URL;
 
-  return this.nodeRollupViewDoesNotExists(couchdbHost, twig)
+  return this.nodeRollupViewDoesNotExists(twig)
     .then((viewDoesNotExists) => {
       if (viewDoesNotExists) {
         const mapFunc = this.buildMapFunc();
         const reduceFunc = this.buildReduceFunc();
         const viewJson = this.buildViewJson(mapFunc, reduceFunc);
 
-        return this.publishView(couchdbHost, twig, viewJson)
+        return this.publishView(twig, viewJson)
           .then(() => {
             logger.debug('Created node rolled up view.');
           });
@@ -225,7 +225,7 @@ exports.nodeRollupView = (request, reply) => {
     })
     .then(() => {
       logger.debug('Fetching view data...');
-      return this.nodeRollupViewData(couchdbHost, twig)
+      return this.nodeRollupViewData(twig)
         .then((data) => {
           logger.debug(`Found view data: ${JSON.stringify(data)}`);
           return reply(data);

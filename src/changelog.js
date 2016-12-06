@@ -1,11 +1,11 @@
 const PouchDb = require('pouchdb');
-const config = require('./utils/config');
 const Boom = require('boom');
-const logger = require('./utils/log')('SERVER');
 const Joi = require('joi');
+const config = require('./utils/config');
+const logger = require('./utils/log')('SERVER');
 
 const get = (request, reply) => {
-  const db = new PouchDb(`${config.DB_URL}/${request.params.id}`, { skip_setup: true });
+  const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
   return db.info()
     .then(() => db.get('changelog')
       .then((doc) => reply({ changelog: doc.data }))
@@ -22,7 +22,7 @@ const get = (request, reply) => {
 };
 
 const add = (request, reply) => {
-  const db = new PouchDb(`${config.DB_URL}/${request.params.id}`, { skip_setup: true });
+  const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
   return db.info()
     .then(() => db.get('changelog')
       .catch((error) => {
