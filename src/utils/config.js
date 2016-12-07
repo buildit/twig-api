@@ -6,6 +6,7 @@ const cls = require('continuation-local-storage');
 const config = {
   _secrets: {
     _db_url: process.env.TWIG_API_DB_URL,
+    _tenant: process.env.TWIG_API_TENANT,
   },
   LDAP_URL: process.env.TWIG_API_LDAP_URL,
   LOG_CONSOLE: process.env.TWIG_API_LOG_CONSOLE === 'true',
@@ -22,21 +23,27 @@ const config = {
   set DB_URL (value) {
     this._secrets._db_url = value;
   },
-  get TENANT_STRING () {
+  get TENANT () {
+    if (this._secrets._tenant || this._secrets._tenant === '') {
+      return this._secrets._tenant;
+    }
     const hostname = cls.getNamespace('hapi-request').get('host');
-    if (hostname.includes('localhost')) {
-      return null;
+    if (hostname === 'localhost') {
+      return '';
     }
     const subDomain = hostname.split('.', 2);
     if (subDomain.length < 2) {
-      return null;
+      return '';
     }
 
-    return subDomain[1] === 'riglet' ? null : subDomain[1];
+    return subDomain[1] === 'riglet' ? '' : subDomain[1];
+  },
+  set TENANT (value) {
+    this._secrets._tenant = value;
   },
   getTenantDatabaseString (dbName) {
-    return this.TENANT_STRING
-      ? `${this.DB_URL}/${this.TENANT_STRING}_${dbName}`
+    return this.TENANT
+      ? `${this.DB_URL}/${this.TENANT}_${dbName}`
       : `${this.DB_URL}/${dbName}`;
   }
 };
