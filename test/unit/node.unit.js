@@ -1,7 +1,7 @@
-const config = require('../utils/config');
+const config = require('../../src/utils/config');
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const node = require('../node');
+const node = require('../../src/node');
 const restler = require('restler');
 const server = require('./test-server');
 
