@@ -15,7 +15,6 @@ describe('Node', () => {
     sandbox = sinon.sandbox.create();
     sandbox.stub(restler, 'get');
     sandbox.stub(restler, 'put');
-    config.TENANT = '';
   });
 
   afterEach(() => {

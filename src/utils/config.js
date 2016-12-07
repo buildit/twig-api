@@ -16,9 +16,13 @@ const config = {
     if (this._secrets._db_url) {
       return this._secrets._db_url;
     }
-    return `http://${cls.getNamespace('hapi-request').get('host')
-      .replace('twig.staging', 'couchdb').replace('twig', 'couchdb')
-      .split(':', 1)[0]}:5984`;
+    const hostname = cls.getNamespace('hapi-request').get('host');
+    const splitHostname = hostname.split('twig', 2);
+    if (splitHostname[0].startsWith('localhost')) {
+      return 'http://localhost:5984';
+    }
+    const twigDomain = splitHostname.length < 2 ? '' : splitHostname[1];
+    return `http://couchdb${twigDomain.split(':', 1)[0]}:5984`;
   },
   set DB_URL (value) {
     this._secrets._db_url = value;
@@ -31,12 +35,11 @@ const config = {
     if (hostname === 'localhost') {
       return '';
     }
-    const subDomain = hostname.split('.', 2);
-    if (subDomain.length < 2) {
+    if (hostname.startsWith('twig') || !hostname.includes('.twig')) {
       return '';
     }
 
-    return subDomain[1] === 'riglet' ? '' : subDomain[1];
+    return hostname.split('.twig', 1)[0];
   },
   set TENANT (value) {
     this._secrets._tenant = value;
