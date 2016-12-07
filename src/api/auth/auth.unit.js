@@ -1,9 +1,9 @@
 /* eslint no-unused-expressions: 0 */
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const Auth = require('../../src/auth');
 const ldap = require('ldapjs');
-const server = require('./test-server');
+const Auth = require('./auth');
+const server = require('../../../test/unit/test-server');
 
 server.route(Auth.routes);
 

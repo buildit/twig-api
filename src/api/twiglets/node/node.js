@@ -1,7 +1,7 @@
-const config = require('./utils/config');
-const logger = require('./utils/log')('SERVER');
 const restler = require('restler');
 const Boom = require('boom');
+const config = require('../../../config');
+const logger = require('../../../log')('SERVER');
 
 // We need to disable certain js linting rules because the couchdb functions
 // we are creating for map and reduce do not work with ES6.

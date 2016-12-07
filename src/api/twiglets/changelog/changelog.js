@@ -1,8 +1,8 @@
 const PouchDb = require('pouchdb');
 const Boom = require('boom');
 const Joi = require('joi');
-const config = require('./utils/config');
-const logger = require('./utils/log')('SERVER');
+const config = require('../../../config');
+const logger = require('../../../log')('SERVER');
 
 const get = (request, reply) => {
   const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });

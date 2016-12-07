@@ -1,6 +1,6 @@
 const PouchDb = require('pouchdb');
-const config = require('./utils/config');
 const Joi = require('joi');
+const config = require('../../../config');
 
 const put = (request, reply) => {
   const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });

@@ -1,12 +1,12 @@
 const Hapi = require('hapi');
 const cookieAuth = require('hapi-auth-cookie');
-const logger = require('./utils/log')('SERVER');
-const Ping = require('./ping');
-const Changelog = require('./changelog');
-const Auth = require('./auth');
-const Node = require('./node');
-const NavSettings = require('./navsettings');
 const cls = require('continuation-local-storage');
+const logger = require('./log')('SERVER');
+const Ping = require('./api/ping');
+const Changelog = require('./api/twiglets/changelog');
+const Auth = require('./api/auth');
+const Node = require('./api/twiglets/node');
+const NavSettings = require('./api/twiglets/navsettings');
 
 const ns = cls.createNamespace('hapi-request');
 

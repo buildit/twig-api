@@ -1,6 +1,6 @@
-const config = require('./utils/config');
 const ramda = require('ramda');
-const version = require('../package').version;
+const config = require('../../config');
+const version = require('../../../package').version;
 
 const ping = (request, reply) =>
   reply({

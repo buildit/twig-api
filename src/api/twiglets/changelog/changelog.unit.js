@@ -1,9 +1,9 @@
 /* eslint no-unused-expressions: 0 */
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const Changelog = require('../../src/changelog');
 const PouchDb = require('pouchdb');
-const server = require('./test-server');
+const Changelog = require('./changelog');
+const server = require('../../../../test/unit/test-server');
 
 server.route(Changelog.routes);
 

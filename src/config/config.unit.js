@@ -1,7 +1,7 @@
 /* eslint no-unused-expressions: 0 */
 const expect = require('chai').expect;
 const cls = require('continuation-local-storage');
-const config = require('../../../src/utils/config');
+const config = require('../config');
 
 describe('config', () => {
   describe('db_url', () => {
