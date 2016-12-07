@@ -1,7 +1,7 @@
-const config = require('../utils/config');
+const config = require('../../src/utils/config');
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const node = require('../node');
+const node = require('../../src/node');
 const restler = require('restler');
 const server = require('./test-server');
 
@@ -69,7 +69,6 @@ describe('Node', () => {
 
     it('Publishes the nodes rollup view', () => {
       // setup
-      const host = config.DB_URL;
       const database = 'twig-unittest';
       const viewJson = '';
 
@@ -78,7 +77,7 @@ describe('Node', () => {
       });
 
       // act
-      return node.publishView(host, database, viewJson)
+      return node.publishView(database, viewJson)
         .then((response) => {
           // assert
           expect(response).to.exist;
@@ -89,7 +88,6 @@ describe('Node', () => {
   describe('Looksup the Rollup View', () => {
     it('Finds the node rolled up view', () => {
       // setup
-      const host = config.DB_URL;
       const database = 'twig-unittest';
       const foundResponseData = {
         id: '_design/nodes',
@@ -111,7 +109,7 @@ describe('Node', () => {
       });
 
       // act
-      return node.nodeRollupViewDoesNotExists(host, database)
+      return node.nodeRollupViewDoesNotExists(database)
         .then((response) => {
           // assert
           expect(response).to.exist;
@@ -121,7 +119,6 @@ describe('Node', () => {
 
     it('Does not find the node rolled up view', () => {
       // setup
-      const host = config.DB_URL;
       const database = 'twig-unittest';
       const notFoundResponseData = {
         error: 'not_found',
@@ -137,7 +134,7 @@ describe('Node', () => {
       });
 
       // act
-      return node.nodeRollupViewDoesNotExists(host, database)
+      return node.nodeRollupViewDoesNotExists(database)
         .then((response) => {
           // assert
           expect(response).to.exist;
@@ -149,7 +146,6 @@ describe('Node', () => {
   describe('Fetch the Rollup View Data', () => {
     it('Retrieves the data', () => {
       // setup
-      const host = config.DB_URL;
       const database = 'twig-unittest';
       const foundResponseData = {
         rows: [
@@ -184,7 +180,7 @@ describe('Node', () => {
       });
 
       // act
-      return node.nodeRollupViewData(host, database)
+      return node.nodeRollupViewData(database)
         .then((response) => {
           // assert
           expect(response).to.exist;

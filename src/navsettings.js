@@ -3,7 +3,7 @@ const config = require('./utils/config');
 const Joi = require('joi');
 
 const put = (request, reply) => {
-  const db = new PouchDb(`${config.DB_URL}/${request.params.id}`, { skip_setup: true });
+  const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
   db.get('views')
   .then(doc => {
     const id = request.payload._viewId;

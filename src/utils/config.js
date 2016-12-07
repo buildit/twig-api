@@ -6,6 +6,7 @@ const cls = require('continuation-local-storage');
 const config = {
   _secrets: {
     _db_url: process.env.TWIG_API_DB_URL,
+    _tenant: process.env.TWIG_API_TENANT,
   },
   LDAP_URL: process.env.TWIG_API_LDAP_URL,
   LOG_CONSOLE: process.env.TWIG_API_LOG_CONSOLE === 'true',
@@ -15,12 +16,38 @@ const config = {
     if (this._secrets._db_url) {
       return this._secrets._db_url;
     }
-    return `http://${cls.getNamespace('hapi-request').get('host')
-      .replace('twig.staging', 'couchdb').replace('twig', 'couchdb')
-      .split(':', 1)[0]}:5984`;
+    const hostname = cls.getNamespace('hapi-request').get('host');
+    const splitHostname = hostname.split('twig', 2);
+    if (splitHostname[0].startsWith('localhost')) {
+      return 'http://localhost:5984';
+    }
+    const twigDomain = splitHostname.length < 2 ? '' : splitHostname[1];
+    return `http://couchdb${twigDomain.split(':', 1)[0]}:5984`;
   },
   set DB_URL (value) {
     this._secrets._db_url = value;
+  },
+  get TENANT () {
+    if (this._secrets._tenant || this._secrets._tenant === '') {
+      return this._secrets._tenant;
+    }
+    const hostname = cls.getNamespace('hapi-request').get('host');
+    if (hostname === 'localhost') {
+      return '';
+    }
+    if (hostname.startsWith('twig') || !hostname.includes('.twig')) {
+      return '';
+    }
+
+    return hostname.split('.twig', 1)[0];
+  },
+  set TENANT (value) {
+    this._secrets._tenant = value;
+  },
+  getTenantDatabaseString (dbName) {
+    return this.TENANT
+      ? `${this.DB_URL}/${this.TENANT}_${dbName}`
+      : `${this.DB_URL}/${dbName}`;
   }
 };
 

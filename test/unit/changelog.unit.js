@@ -1,9 +1,8 @@
 /* eslint no-unused-expressions: 0 */
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const Changelog = require('../changelog');
+const Changelog = require('../../src/changelog');
 const PouchDb = require('pouchdb');
-const config = require('../utils/config');
 const server = require('./test-server');
 
 server.route(Changelog.routes);
@@ -12,7 +11,6 @@ describe('/twiglets/{id}/changelog', () => {
   let sandbox = sinon.sandbox.create();
   beforeEach(() => {
     sandbox = sinon.sandbox.create();
-    config.DB_URL = 'foo'; // pouchdb won't stub if db_url is remote
   });
 
   afterEach(() => {
