@@ -33,7 +33,7 @@ node {
 
       appName = "twig-api"
       registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
-      appUrl = "http://twig-api.buildit.tools"
+      appUrl = "http://twig-api.riglet"
       slackChannel = "twig"
       gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
       tmpFile = UUID.randomUUID().toString() + ".tmp"
