@@ -15,3 +15,5 @@ npm-shrinkwrap.json
 config.toml
 .env
 logs/*.log.*
+
+.nyc_output
