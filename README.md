@@ -7,8 +7,6 @@ This repo contains the API for the Twig Project.
 
 The API will enable CRUD operations on the DB.
 
-WIP. See develop branch for more.
-
 ### Getting Started
 ---
 
@@ -16,6 +14,12 @@ WIP. See develop branch for more.
 npm i
 cp .env.example .env
 npm start
+```
+
+To run tests (unit & e2e respectively)
+```
+npm test
+npm run test:e2e
 ```
 
 ### Releasing
@@ -26,7 +30,9 @@ This will update package.json, commit the version update, git tag and push to ma
 
 ### Where is it deployed?
 ---
-Nowhere yet.
+In the Buildit Riglet:
+http://staging.twig-api.riglet
+http://twig-api.riglet
 
 ### Coding Standards
 ---
