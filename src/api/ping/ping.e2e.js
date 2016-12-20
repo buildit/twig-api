@@ -7,6 +7,7 @@ const anonAgent = require('../../../test/e2e').anonAgent;
 
 const expect = chai.expect;
 chai.use(chaiHttp);
+
 describe('/Ping', () => {
   describe('GET', () => {
     let res;
