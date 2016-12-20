@@ -4,7 +4,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const url = require('../../../test/e2e').url;
 
-const { expect, assert } = chai;
+const { expect } = chai;
 chai.use(chaiHttp);
 
 // These tests suck because https://github.com/chaijs/chai-http/issues/75 needs to be implemented
