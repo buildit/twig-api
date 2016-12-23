@@ -23,7 +23,7 @@ describe('/twiglets', () => {
   describe('POST', () => {
     describe('Successful', () => {
       const twiglet = {
-        _id: 'twig-c44e6001-1abd-483f-a8ab-bf807da7e455',
+        _id: 'test-c44e6001-1abd-483f-a8ab-bf807da7e455',
       };
       let res;
 
@@ -53,7 +53,7 @@ describe('/twiglets/{id}', () => {
   describe('GET', () => {
     describe('Successful', () => {
       const twiglet = {
-        _id: 'twig-0b88190e-930e-4272-b428-bfaab00dc580',
+        _id: 'test-0b88190e-930e-4272-b428-bfaab00dc580',
       };
       let res;
 
@@ -77,7 +77,7 @@ describe('/twiglets/{id}', () => {
   describe('DELETE', () => {
     describe('Successful', () => {
       const twiglet = {
-        _id: 'twig-c44e6001-1abd-483f-a8ab-bf807da7e455',
+        _id: 'test-c44e6001-1abd-483f-a8ab-bf807da7e455',
       };
       let res;
 

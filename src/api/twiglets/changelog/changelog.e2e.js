@@ -11,7 +11,7 @@ chai.use(chaiHttp);
 describe('/twiglets/{id}/changelog', () => {
   describe('POST', () => {
     it('Unauthenticated agent -> 401', (done) => {
-      anonAgent.post('/twiglets/twig-b4f84c0f-81a3-4dde-b4d1-3e04b9f1949c/changelog')
+      anonAgent.post('/twiglets/test-b4f84c0f-81a3-4dde-b4d1-3e04b9f1949c/changelog')
         .send({
           commitMessage: 'foobarbaz'
         })
@@ -22,7 +22,7 @@ describe('/twiglets/{id}/changelog', () => {
     });
 
     it('Twiglet does not exist -> 404', (done) => {
-      authAgent.post('/twiglets/twig-41189dde-7189-494e-98ec-e3a766090270/changelog')
+      authAgent.post('/twiglets/test-41189dde-7189-494e-98ec-e3a766090270/changelog')
         .send({
           commitMessage: 'foobarbaz'
         })
@@ -34,7 +34,7 @@ describe('/twiglets/{id}/changelog', () => {
 
     describe('Success', () => {
       const twiglet = {
-        _id: 'twig-01b0c01d-65f0-4285-b039-ba07901bc35b'
+        _id: 'test-01b0c01d-65f0-4285-b039-ba07901bc35b'
       };
 
       beforeEach('Create new twiglet', () => createTwiglet(twiglet));
