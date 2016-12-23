@@ -7,6 +7,7 @@ const Changelog = require('./api/twiglets/changelog');
 const Auth = require('./api/auth');
 const Node = require('./api/twiglets/node');
 const NavSettings = require('./api/twiglets/navsettings');
+const Twiglets = require('./api/twiglets');
 
 const ns = cls.createNamespace('hapi-request');
 
@@ -26,6 +27,10 @@ server.connection({
     }
   }
 });
+
+server.decorate('request', 'buildUrl', (request) =>
+  (path) => `${request.headers['x-forwarded-proto'] || request.connection.info.protocol}://` +
+    `${request.headers['x-forwarded-host'] || request.info.host}${path}`, { apply: true });
 
 server.ext('onRequest', (req, reply) => {
   ns.bindEmitter(req.raw.req);
@@ -48,6 +53,7 @@ server.register(cookieAuth, (err) => {
 });
 
 server.route(Ping.routes);
+server.route(Twiglets.routes);
 server.route(Changelog.routes);
 server.route(Auth.routes);
 server.route(Node.routes);

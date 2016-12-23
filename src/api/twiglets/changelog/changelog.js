@@ -2,7 +2,7 @@ const PouchDb = require('pouchdb');
 const Boom = require('boom');
 const Joi = require('joi');
 const config = require('../../../config');
-const logger = require('../../../log')('SERVER');
+const logger = require('../../../log')('CHANGELOG');
 
 const get = (request, reply) => {
   const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
@@ -47,24 +47,25 @@ const add = (request, reply) => {
     });
 };
 
-exports.routes = [{
-  method: ['POST'],
-  path: '/twiglets/{id}/changelog',
-  handler: add,
-  config: {
-    validate: {
-      payload: {
-        commitMessage: Joi.string().required().trim(),
+exports.routes = [
+  {
+    method: ['POST'],
+    path: '/twiglets/{id}/changelog',
+    handler: add,
+    config: {
+      validate: {
+        payload: {
+          commitMessage: Joi.string().required().trim(),
+        }
       }
     }
-  }
-},
-{
-  method: ['GET'],
-  path: '/twiglets/{id}/changelog',
-  handler: get,
-  config: {
-    auth: false,
-  }
-},
+  },
+  {
+    method: ['GET'],
+    path: '/twiglets/{id}/changelog',
+    handler: get,
+    config: {
+      auth: { mode: 'optional' },
+    }
+  },
 ];

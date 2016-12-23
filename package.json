@@ -5,7 +5,7 @@
   "scripts": {
     "lint": "eslint src",
     "security": "nsp check",
-    "start": "nodemon -r dotenv-safe/config --watch src --ignore '*.unit.js' --ignore '*.e2e.js' src/server.js",
+    "start": "nodemon -r dotenv-safe/config --inspect --watch src --ignore '*.unit.js' --ignore '*.e2e.js' src/server.js",
     "test": "mocha --watch --require co-mocha --recursive test/unit **/*.unit.js",
     "test:ci": "nyc --reporter=html --reporter=cobertura --report-dir=reports mocha --require co-mocha --recursive --reporter mocha-jenkins-reporter -O junit_report_path=./reports/test-results.xml,junit_report_stack=1 test/unit **/*.unit.js",
     "test:e2e": "mocha --watch --require co-mocha --recursive test/e2e **/*.e2e.js",

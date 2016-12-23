@@ -8,11 +8,12 @@ const anonAgent = require('../../../test/e2e').anonAgent;
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-describe('/Ping', () => {
+describe('/ping', () => {
   describe('GET', () => {
     let res;
 
     before(function* () {
+      // act
       res = yield anonAgent.get('/ping');
     });
 

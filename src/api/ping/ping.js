@@ -13,7 +13,7 @@ exports.routes = {
   path: '/ping',
   handler: ping,
   config: {
-    auth: false,
+    auth: { mode: 'try' },
   }
 };
 

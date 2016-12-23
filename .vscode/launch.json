@@ -12,6 +12,13 @@
             "cwd": "${workspaceRoot}",
             "stopOnEntry": false,
             "args": ["--recursive", "src/**/__tests__/*.unit.js", "--no-timeouts"]
+        },
+        {
+            "name": "Debug NodeJS",
+            "type": "node2",
+            "request": "attach",
+            "port": 9229,
+            "restart": true
         }
     ]
 }
