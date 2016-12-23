@@ -2,7 +2,7 @@ const ldap = require('ldapjs');
 const Boom = require('boom');
 const Joi = require('joi');
 const config = require('../../config');
-const logger = require('../../log')('SERVER');
+const logger = require('../../log')('AUTH');
 
 const validate = (email, password) => {
   const client = ldap.createClient({

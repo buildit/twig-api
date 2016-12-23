@@ -35,7 +35,7 @@ node {
         registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         registry = "https://${registryBase}"
         appName = "twig-api"
-        appUrl = "http://twig-api.staging.buildit.tools"
+        appUrl = "http://twig-api.staging.riglet"
         slackChannel = "twig"
         gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
       }
@@ -58,7 +58,7 @@ node {
         finally {
           junit 'reports/test-results.xml'
         }
-        publishHTML(target: [reportDir: 'reports/lcov-report', reportFiles: 'index.html', reportName: 'Coverage Results'])
+        publishHTML(target: [reportDir: 'reports', reportFiles: 'index.html', reportName: 'Coverage Results'])
       }
 
       stage("Analysis") {
@@ -98,7 +98,13 @@ node {
       }
 
       stage("Run Functional Tests") {
-
+        // run Selenium tests
+        try {
+          sh "URL=${appUrl} npm run test:e2e:ci"
+        }
+        finally {
+          junit 'reports/e2e-test-results.xml'
+        }
       }
 
       stage("Promote Build to latest") {
