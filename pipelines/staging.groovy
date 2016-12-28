@@ -98,7 +98,7 @@ node {
       }
 
       stage("Run Functional Tests") {
-        // run Selenium tests
+        // run integration tests
         try {
           sh "URL=${appUrl} npm run test:e2e:ci"
         }

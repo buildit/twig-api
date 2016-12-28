@@ -9,7 +9,7 @@
     "test": "mocha --watch --require co-mocha --recursive test/unit **/*.unit.js",
     "test:ci": "nyc --reporter=html --reporter=cobertura --report-dir=reports mocha --require co-mocha --recursive --reporter mocha-jenkins-reporter -O junit_report_path=./reports/test-results.xml,junit_report_stack=1 test/unit **/*.unit.js",
     "test:e2e": "mocha --watch --require co-mocha --recursive test/e2e **/*.e2e.js",
-    "test:e2e:ci": "mocha --require co-mocha --recursive --reporter mocha-jenkins-reporter -O junit_report_path=./reports/e2e-test-results.xml,junit_report_name=\"Acceptance Tests\",junit_report_stack=1 test/e2e **/*.e2e.js",
+    "test:e2e:ci": "mocha --require co-mocha --recursive test/e2e **/*.e2e.js",
     "validate": "npm ls",
     "version": "git add package.json",
     "postversion": "git push && git push origin HEAD:master && git push --tags"
