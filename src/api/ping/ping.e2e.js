@@ -1,3 +1,4 @@
+'use strict';
 /* eslint func-names: 0 */
 /* eslint no-unused-expressions: 0 */
 const chai = require('chai');

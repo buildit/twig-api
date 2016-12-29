@@ -1,3 +1,4 @@
+'use strict';
 /* eslint func-names: 0 */
 const chai = require('chai');
 const chaiHttp = require('chai-http');

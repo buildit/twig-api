@@ -3,7 +3,7 @@
   "version": "1.5.0",
   "description": "The API that powers Twig",
   "scripts": {
-    "lint": "eslint src",
+    "lint": "eslint src test",
     "security": "nsp check",
     "start": "nodemon -r dotenv-safe/config --inspect --watch src --ignore '*.unit.js' --ignore '*.e2e.js' src/server.js",
     "test": "mocha --watch --require co-mocha --recursive test/unit **/*.unit.js",
@@ -14,13 +14,13 @@
     "version": "git add package.json",
     "postversion": "git push && git push origin HEAD:master && git push --tags"
   },
-  "author": "Shahzain Badruddin",
+  "author": "Buildit",
   "repository": {
     "type": "git",
     "url": "git@bitbucket.org:digitalrigbitbucketteam/twig-api.git"
   },
   "bugs": "https://digitalrig.atlassian.net/projects/NETWRKDIAG",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",

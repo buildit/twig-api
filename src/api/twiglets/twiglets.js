@@ -1,3 +1,4 @@
+'use strict';
 const Boom = require('boom');
 const Joi = require('joi');
 const PouchDB = require('pouchdb');

@@ -1,3 +1,4 @@
+'use strict';
 const winston = require('winston');
 const WinstonDailyRotateFile = require('winston-daily-rotate-file');
 const { join } = require('path');

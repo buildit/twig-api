@@ -1,3 +1,4 @@
+'use strict';
 const restler = require('restler');
 const Boom = require('boom');
 const config = require('../../../config');

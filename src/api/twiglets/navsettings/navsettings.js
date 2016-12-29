@@ -1,3 +1,4 @@
+'use strict';
 const PouchDb = require('pouchdb');
 const Joi = require('joi');
 const config = require('../../../config');

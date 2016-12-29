@@ -1,4 +1,5 @@
 /* eslint no-unused-expressions: 0 */
+'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const ldap = require('ldapjs');

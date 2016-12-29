@@ -1,3 +1,4 @@
+'use strict';
 const ramda = require('ramda');
 const config = require('../../config');
 const version = require('../../../package').version;

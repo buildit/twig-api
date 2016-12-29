@@ -1,3 +1,4 @@
+'use strict';
 const Hapi = require('hapi');
 const cookieAuth = require('hapi-auth-cookie');
 const cls = require('continuation-local-storage');
