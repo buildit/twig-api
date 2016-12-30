@@ -9,7 +9,7 @@ const ping = (request, reply) =>
     config: ramda.omit('_secrets')(config)
   });
 
-exports.routes = {
+module.exports.routes = {
   method: ['GET'],
   path: '/ping',
   handler: ping,

@@ -48,7 +48,7 @@ const add = (request, reply) => {
     });
 };
 
-exports.routes = [
+module.exports.routes = [
   {
     method: ['POST'],
     path: '/twiglets/{id}/changelog',

@@ -52,7 +52,7 @@ const logout = (request, reply) => {
   return reply({}).code(204);
 };
 
-exports.routes = [{
+module.exports.routes = [{
   method: ['POST'],
   path: '/login',
   handler: login,

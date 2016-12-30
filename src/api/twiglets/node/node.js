@@ -11,7 +11,7 @@ const logger = require('../../../log')('NODE');
 /* eslint-disable vars-on-top */
 /* eslint-disable no-undef */
 /* eslint-disable quote-props */
-exports.buildMapFunc = () => {
+module.exports.buildMapFunc = () => {
   const mapFunc = function (doc) {
     var value;
     const values = [];
@@ -42,7 +42,7 @@ exports.buildMapFunc = () => {
   return mapFuncStr;
 };
 
-exports.buildReduceFunc = () => {
+module.exports.buildReduceFunc = () => {
   const reduceFunc = function (key, values) {
     const result = [];
     const valuesEmitted = values[0];
@@ -100,7 +100,7 @@ exports.buildReduceFunc = () => {
 /* eslint-enable no-undef */
 /* eslint-enable quote-props */
 
-exports.buildViewJson = (mapFunc, reduceFunc) => {
+module.exports.buildViewJson = (mapFunc, reduceFunc) => {
   const viewJson = {
     views: {
       node_rollup: {
@@ -113,7 +113,7 @@ exports.buildViewJson = (mapFunc, reduceFunc) => {
   return viewJson;
 };
 
-exports.publishView = (database, viewJson) => {
+module.exports.publishView = (database, viewJson) => {
   const nodesURL = `${config.getTenantDatabaseString(database)}/_design/nodes/`;
   const headers = {
     Accept: 'application/json',
@@ -147,7 +147,7 @@ exports.publishView = (database, viewJson) => {
   });
 };
 
-exports.nodeRollupViewDoesNotExists = (database) => {
+module.exports.nodeRollupViewDoesNotExists = (database) => {
   let doesNotExist = true;
   const nodesURL = `${config.getTenantDatabaseString(database)}/_design/nodes/`;
   const headers = {
@@ -176,7 +176,7 @@ exports.nodeRollupViewDoesNotExists = (database) => {
   });
 };
 
-exports.nodeRollupViewData = (database) => {
+module.exports.nodeRollupViewData = (database) => {
   const nodesURL =
     `${config.getTenantDatabaseString(database)}/_design/nodes/_view/node_rollup?group=true`;
   const headers = {
@@ -206,7 +206,7 @@ exports.nodeRollupViewData = (database) => {
   });
 };
 
-exports.nodeRollupView = (request, reply) => {
+module.exports.nodeRollupView = (request, reply) => {
   const twig = request.params.id;
 
   return this.nodeRollupViewDoesNotExists(twig)
@@ -238,7 +238,7 @@ exports.nodeRollupView = (request, reply) => {
     });
 };
 
-exports.routes = {
+module.exports.routes = {
   method: ['GET'],
   path: '/twiglets/{id}/nodes/rolledup',
   handler: this.nodeRollupView,

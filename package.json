@@ -19,6 +19,9 @@
     "type": "git",
     "url": "git@bitbucket.org:digitalrigbitbucketteam/twig-api.git"
   },
+  "engines": {
+    "node": ">=6.3.0"
+  },
   "bugs": "https://digitalrig.atlassian.net/projects/NETWRKDIAG",
   "license": "Apache-2.0",
   "devDependencies": {
@@ -29,6 +32,7 @@
     "eslint": "^3.3.1",
     "eslint-config-airbnb-base": "^5.0.2",
     "eslint-plugin-import": "^1.13.0",
+    "eslint-plugin-node": "^3.0.5",
     "mocha": "^3.0.2",
     "mocha-jenkins-reporter": "^0.2.6",
     "nodemon": "^1.10.0",

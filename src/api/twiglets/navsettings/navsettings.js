@@ -32,7 +32,7 @@ const put = (request, reply) => {
   });
 };
 
-exports.routes = [{
+module.exports.routes = [{
   method: ['PUT'],
   path: '/twiglets/{id}/navsettings',
   handler: put,
