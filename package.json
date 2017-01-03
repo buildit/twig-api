@@ -15,6 +15,7 @@
     "postversion": "git push && git push origin HEAD:master && git push --tags"
   },
   "author": "Buildit",
+  "main": "src/server.js",
   "repository": {
     "type": "git",
     "url": "git@bitbucket.org:digitalrigbitbucketteam/twig-api.git"
