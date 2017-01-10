@@ -5,16 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Mocha tests",
+            "name": "Debug unit tests",
             "type": "node2",
             "request": "launch",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}",
             "stopOnEntry": false,
-            "args": ["--recursive", "src/**/__tests__/*.unit.js", "--no-timeouts"]
+            "args": ["--require", "co-mocha","--recursive", "test/unit", "**/*.unit.js", "--no-timeouts"]
         },
         {
-            "name": "Debug NodeJS",
+            "name": "Debug e2e tests",
+            "type": "node2",
+            "request": "launch",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}",
+            "stopOnEntry": false,
+            "args": ["--require", "co-mocha","--recursive", "test/e2e", "**/*.e2e.js", "--no-timeouts"]
+        },
+        {
+            "name": "Attach to NodeJS",
             "type": "node2",
             "request": "attach",
             "port": 9229,

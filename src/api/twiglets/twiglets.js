@@ -21,9 +21,10 @@ const createTwiglet = (request, reply) => {
         const createdDb = new PouchDB(dbString);
         return createdDb.info()
           .then(() => twigletLookupDb.put(request.payload))
-          .then(() => {
+          .then(() => twigletLookupDb.get(request.payload._id))
+          .then((doc) => {
             const url = request.buildUrl(`/twiglets/${request.payload._id}`);
-            return reply({ url }).created(url);
+            return reply(Object.assign({}, doc, { url })).created(url);
           });
       }
       logger.error(JSON.stringify(error));
@@ -37,7 +38,11 @@ const getTwiglet = (request, reply) => {
   return db.info()
     .then(() => reply({
       _id: request.params.id
-    }));
+    }))
+    .catch((error) => {
+      logger.error(JSON.stringify(error));
+      return reply(Boom.create(error.status || 500, error.message, error));
+    });
 };
 
 const getTwiglets = (request, reply) => {
@@ -47,7 +52,7 @@ const getTwiglets = (request, reply) => {
     .then((doc) => {
       const twiglets = doc.rows.map((twiglet) => Object.assign({},
         twiglet.doc,
-        { url: request.buildUrl(`/${twiglet.doc._id}`) }));
+        { url: request.buildUrl(`/twiglets/${twiglet.doc._id}`) }));
       return reply(twiglets);
     })
     .catch((error) => {

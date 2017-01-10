@@ -46,7 +46,11 @@ describe('/twiglets', () => {
       });
 
       it('has an entity response', () => {
-        expect(res.body).to.deep.equal({ url: `${url}/twiglets/${twiglet._id}` });
+        expect(res.body).to.contain.all.keys({
+          _id: twiglet._id,
+          url: `${url}/twiglets/${twiglet._id}`
+        });
+        expect(res.body).to.contain.all.keys(['_rev']);
       });
 
       after(() => deleteTwiglet(twiglet));
@@ -59,9 +63,11 @@ describe('/twiglets', () => {
         _id: 'test-6d311051-b585-4b39-b03c-6c2687778ded',
       };
       let res;
+      let createdTwiglet;
 
       before(function* () {
-        yield createTwiglet(twiglet);
+        res = yield createTwiglet(twiglet);
+        createdTwiglet = res.body;
         res = yield getTwiglets();
       });
 
@@ -70,7 +76,7 @@ describe('/twiglets', () => {
       });
 
       it('returns a list of twiglets', () => {
-        expect(res.body).to.deep.contains(twiglet);
+        expect(res.body).to.deep.include(createdTwiglet);
       });
 
       after(() => deleteTwiglet(twiglet));
@@ -121,10 +127,10 @@ describe('/twiglets/{id}', () => {
 
       it('GET twiglet returns 404', (done) => {
         getTwiglet({ _id: twiglet._id })
-        .end((err, response) => {
-          expect(response).to.have.status(404);
-          done();
-        });
+          .end((err, response) => {
+            expect(response).to.have.status(404);
+            done();
+          });
       });
 
       it('not included in the list of twiglets', function* () {
