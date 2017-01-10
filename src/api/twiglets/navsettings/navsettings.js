@@ -43,6 +43,7 @@ module.exports.routes = [{
         key: Joi.string().required().trim(),
         value: Joi.any().required(),
       }
-    }
+    },
+    tags: ['api'],
   }
 }];

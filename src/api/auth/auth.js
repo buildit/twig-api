@@ -67,6 +67,7 @@ module.exports.routes = [{
         password: Joi.string().required().trim()
       }
     },
+    tags: ['api'],
   }
 },
 {
@@ -75,5 +76,6 @@ module.exports.routes = [{
   handler: logout,
   config: {
     auth: false,
+    tags: ['api'],
   }
 }];

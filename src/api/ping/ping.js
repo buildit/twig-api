@@ -15,6 +15,7 @@ module.exports.routes = {
   handler: ping,
   config: {
     auth: { mode: 'try' },
+    tags: ['api'],
   }
 };
 
