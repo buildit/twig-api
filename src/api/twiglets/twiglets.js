@@ -10,6 +10,7 @@ const twigletSchema = {
 };
 
 const createTwiglet = (request, reply) => {
+  const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   const dbString = config.getTenantDatabaseString(request.payload._id);
   const db = new PouchDB(dbString, { skip_setup: true });
   return db
@@ -18,10 +19,13 @@ const createTwiglet = (request, reply) => {
     .catch(error => {
       if (error.status === 404) {
         const createdDb = new PouchDB(dbString);
-        return createdDb.info().then(() => {
-          const url = request.buildUrl(`/twiglets/${request.payload._id}`);
-          return reply({ url }).created(url);
-        });
+        return createdDb.info()
+          .then(() => twigletLookupDb.put(request.payload))
+          .then(() => twigletLookupDb.get(request.payload._id))
+          .then((doc) => {
+            const url = request.buildUrl(`/twiglets/${request.payload._id}`);
+            return reply(Object.assign({}, doc, { url })).created(url);
+          });
       }
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
@@ -41,10 +45,29 @@ const getTwiglet = (request, reply) => {
     });
 };
 
+const getTwiglets = (request, reply) => {
+  const dbString = config.getTenantDatabaseString('twiglets');
+  const db = new PouchDB(dbString, { skip_setup: true });
+  return db.allDocs({ include_docs: true })
+    .then((doc) => {
+      const twiglets = doc.rows.map((twiglet) => Object.assign({},
+        twiglet.doc,
+        { url: request.buildUrl(`/twiglets/${twiglet.doc._id}`) }));
+      return reply(twiglets);
+    })
+    .catch((error) => {
+      logger.error(JSON.stringify(error));
+      return reply(Boom.create(error.status || 500, error.message, error));
+    });
+};
+
 const deleteTwiglet = (request, reply) => {
+  const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   const dbString = config.getTenantDatabaseString(request.params.id);
   const db = new PouchDB(dbString, { skip_setup: true });
   return db.destroy()
+    .then(() => twigletLookupDb.get(request.params.id))
+    .then(doc => twigletLookupDb.remove(doc._id, doc._rev))
     .then(() => reply().code(204))
     .catch((error) => {
       logger.error(JSON.stringify(error));
@@ -61,6 +84,14 @@ module.exports.routes = [
       validate: {
         payload: twigletSchema,
       }
+    }
+  },
+  {
+    method: ['GET'],
+    path: '/twiglets',
+    handler: getTwiglets,
+    config: {
+      auth: { mode: 'optional' },
     }
   },
   {
