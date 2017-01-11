@@ -9,6 +9,9 @@ const Auth = require('./api/auth');
 const Node = require('./api/twiglets/node');
 const NavSettings = require('./api/twiglets/navsettings');
 const Twiglets = require('./api/twiglets');
+const Views = require('./api/twiglets/views');
+const Model = require('./api/twiglets/model');
+const Models = require('./api/models');
 const Inert = require('inert');
 const Vision = require('vision');
 const HapiSwagger = require('hapi-swagger');
@@ -78,6 +81,9 @@ server.route(Changelog.routes);
 server.route(Auth.routes);
 server.route(Node.routes);
 server.route(NavSettings.routes);
+server.route(Views.routes);
+server.route(Models.routes);
+server.route(Model.routes);
 
 server.start(err => {
   if (err) {

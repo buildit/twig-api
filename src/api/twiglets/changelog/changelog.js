@@ -5,6 +5,18 @@ const Joi = require('joi');
 const config = require('../../../config');
 const logger = require('../../../log')('CHANGELOG');
 
+// probably want to return raw array rather than object (been flipping on this)
+// but that would now be a breaking change
+// thinking was object because that is extensible to include paging metadata
+// but now maybe it's better to use Link headers (this is what GitHub does)
+const getChangelogResponse = Joi.object({
+  changelog: Joi.array().required().items(Joi.object({
+    message: Joi.string().required(),
+    user: Joi.string().required(),
+    timestamp: Joi.date().iso(),
+  }))
+});
+
 const get = (request, reply) => {
   const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
   return db.info()
@@ -55,9 +67,9 @@ module.exports.routes = [
     handler: add,
     config: {
       validate: {
-        payload: {
+        payload: Joi.object({
           commitMessage: Joi.string().required().trim(),
-        }
+        })
       },
       tags: ['api'],
     }
@@ -68,6 +80,7 @@ module.exports.routes = [
     handler: get,
     config: {
       auth: { mode: 'optional' },
+      response: { schema: getChangelogResponse },
       tags: ['api'],
     }
   },

@@ -5,9 +5,41 @@ const PouchDB = require('pouchdb');
 const config = require('../../config');
 const logger = require('../../log')('TWIGLETS');
 
-const twigletSchema = {
+const createTwigletRequest = Joi.object({
   _id: Joi.string().required(),
+  name: Joi.string().required(),
+  description: Joi.string().required(),
+  model: Joi.string().required(), // could be url instead?
+  twiglet: Joi.string(), // twiglet to copy from...could be url instead?
+  googlesheet: Joi.string().uri(),
+  commitMessage: Joi.string().required(),
+});
+
+const baseTwigletRequest = Joi.object({
+  _id: Joi.string().required(),
+  _rev: Joi.string().required(),
+  name: Joi.string().required(),
+  description: Joi.string().required(),
+});
+
+const updateTwigletRequest = baseTwigletRequest.keys({
+  nodes: Joi.array().required(),
+  links: Joi.array().required(),
+  commitMessage: Joi.string().required(),
+});
+
+const baseTwigletResponse = {
+  url: Joi.string().uri().required(),
+  model_url: Joi.string().uri().required(),
+  changelog_url: Joi.string().uri().required(),
+  views_url: Joi.string().uri().required(),
 };
+
+const getTwigletResponse = updateTwigletRequest.keys(baseTwigletResponse);
+
+const getTwigletsResponse = Joi.array().items(
+  baseTwigletRequest.keys(baseTwigletResponse)
+);
 
 const createTwiglet = (request, reply) => {
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
@@ -82,8 +114,9 @@ module.exports.routes = [
     handler: createTwiglet,
     config: {
       validate: {
-        payload: twigletSchema,
+        payload: createTwigletRequest,
       },
+      response: { schema: getTwigletResponse },
       tags: ['api'],
     }
   },
@@ -93,6 +126,7 @@ module.exports.routes = [
     handler: getTwiglets,
     config: {
       auth: { mode: 'optional' },
+      response: { schema: getTwigletsResponse },
       tags: ['api'],
     }
   },
@@ -102,6 +136,19 @@ module.exports.routes = [
     handler: getTwiglet,
     config: {
       auth: { mode: 'optional' },
+      response: { schema: getTwigletResponse },
+      tags: ['api'],
+    }
+  },
+  {
+    method: ['PUT'],
+    path: '/twiglets/{id}',
+    handler: (request, reply) => reply(Boom.notImplemented()),
+    config: {
+      validate: {
+        payload: updateTwigletRequest
+      },
+      response: { schema: getTwigletResponse },
       tags: ['api'],
     }
   },

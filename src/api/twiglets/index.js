@@ -1,4 +1,4 @@
 'use strict';
-const changelog = require('./twiglets');
+const twiglets = require('./twiglets');
 
-module.exports = changelog;
+module.exports = twiglets;
