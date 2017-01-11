@@ -4,7 +4,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { anonAgent, authAgent } = require('../../../../test/e2e');
-const { createTwiglet, deleteTwiglet } = require('../twiglets.e2e');
+const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -34,14 +34,10 @@ describe('/twiglets/{id}/changelog', () => {
     });
 
     describe('Success', () => {
-      const twiglet = {
-        _id: 'test-01b0c01d-65f0-4285-b039-ba07901bc35b'
-      };
-
-      beforeEach('Create new twiglet', () => createTwiglet(twiglet));
+      beforeEach('Create new twiglet', () => createTwiglet(baseTwiglet));
 
       it('Creates a changelog', function* () {
-        const res = yield authAgent.post(`/twiglets/${twiglet._id}/changelog`)
+        const res = yield authAgent.post(`/twiglets/${baseTwiglet._id}/changelog`)
         .send({
           commitMessage: 'foobarbaz'
         });
@@ -49,7 +45,7 @@ describe('/twiglets/{id}/changelog', () => {
         expect(res).to.have.status(204);
       });
 
-      afterEach('Delete new twiglet', () => deleteTwiglet(twiglet));
+      afterEach('Delete new twiglet', () => deleteTwiglet(baseTwiglet));
     });
   });
 });
