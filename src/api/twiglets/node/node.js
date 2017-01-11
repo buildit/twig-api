@@ -244,5 +244,6 @@ module.exports.routes = {
   handler: this.nodeRollupView,
   config: {
     auth: false,
+    tags: ['api'],
   }
 };

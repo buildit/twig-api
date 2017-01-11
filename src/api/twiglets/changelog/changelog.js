@@ -58,7 +58,8 @@ module.exports.routes = [
         payload: {
           commitMessage: Joi.string().required().trim(),
         }
-      }
+      },
+      tags: ['api'],
     }
   },
   {
@@ -67,6 +68,7 @@ module.exports.routes = [
     handler: get,
     config: {
       auth: { mode: 'optional' },
+      tags: ['api'],
     }
   },
 ];

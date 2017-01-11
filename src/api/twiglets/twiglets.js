@@ -83,7 +83,8 @@ module.exports.routes = [
     config: {
       validate: {
         payload: twigletSchema,
-      }
+      },
+      tags: ['api'],
     }
   },
   {
@@ -92,6 +93,7 @@ module.exports.routes = [
     handler: getTwiglets,
     config: {
       auth: { mode: 'optional' },
+      tags: ['api'],
     }
   },
   {
@@ -100,11 +102,15 @@ module.exports.routes = [
     handler: getTwiglet,
     config: {
       auth: { mode: 'optional' },
+      tags: ['api'],
     }
   },
   {
     method: ['DELETE'],
     path: '/twiglets/{id}',
     handler: deleteTwiglet,
+    config: {
+      tags: ['api'],
+    }
   },
 ];

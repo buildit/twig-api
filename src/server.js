@@ -9,6 +9,20 @@ const Auth = require('./api/auth');
 const Node = require('./api/twiglets/node');
 const NavSettings = require('./api/twiglets/navsettings');
 const Twiglets = require('./api/twiglets');
+const Inert = require('inert');
+const Vision = require('vision');
+const HapiSwagger = require('hapi-swagger');
+const version = require('../package').version;
+
+const options = {
+  info: {
+    title: 'Twig API',
+    version,
+    license: {
+      name: 'Apache-2.0'
+    }
+  }
+};
 
 const ns = cls.createNamespace('hapi-request');
 
@@ -42,16 +56,21 @@ server.ext('onRequest', (req, reply) => {
   });
 });
 
-server.register(cookieAuth, (err) => {
-  if (err) {
-    throw err;
-  }
+server.register([cookieAuth, Inert, Vision,
+  {
+    register: HapiSwagger,
+    options
+  }],
+  (err) => {
+    if (err) {
+      throw err;
+    }
 
-  server.auth.strategy('session', 'cookie', 'required', {
-    password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
-    isSecure: false
+    server.auth.strategy('session', 'cookie', 'required', {
+      password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
+      isSecure: false
+    });
   });
-});
 
 server.route(Ping.routes);
 server.route(Twiglets.routes);
