@@ -62,13 +62,18 @@ module.exports.routes = [{
       strategy: 'session'
     },
     validate: {
-      payload: {
+      payload: Joi.object({
         email: Joi.string().email().required().trim(),
         password: Joi.string().required().trim()
-      }
+      })
     },
     tags: ['api'],
-  }
+    plugins: {
+      'hapi-swagger': {
+        payloadType: 'form'
+      }
+    }
+  },
 },
 {
   method: 'POST',
