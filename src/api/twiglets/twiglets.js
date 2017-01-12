@@ -10,7 +10,7 @@ const Changelog = require('./changelog');
 const createTwigletRequest = Joi.object({
   _id: Joi.string().required(),
   name: Joi.string().required(),
-  description: Joi.string().required(),
+  description: Joi.string(),
   model: Joi.string().required(), // could be url instead?
   twiglet: Joi.string(), // twiglet to copy from...could be url instead?
   googlesheet: Joi.string().uri(),
@@ -20,7 +20,7 @@ const createTwigletRequest = Joi.object({
 const baseTwigletRequest = Joi.object({
   _id: Joi.string().required(),
   name: Joi.string().required(),
-  description: Joi.string().required(),
+  description: Joi.string(),
 });
 
 const updateTwigletRequest = baseTwigletRequest.keys({
