@@ -54,7 +54,7 @@ const config = {
 
 function clearEnvVars () {
   ramda.keys(config).forEach((key) => {
-    process.env[key] = '';
+    process.env[`TWIG_API_${key}`] = '';
   });
 }
 

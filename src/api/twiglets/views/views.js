@@ -7,7 +7,7 @@ const updateViewsRequest = Joi.object({
   views: Joi.array().required().items(Joi.object({
     _id: Joi.string().required(),
     name: Joi.string().required(),
-    description: Joi.string(),
+    description: Joi.string().required().allow(''),
   })),
   commitMessage: Joi.string().required(),
 });

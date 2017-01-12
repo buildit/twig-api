@@ -10,7 +10,7 @@ const Changelog = require('./changelog');
 const createTwigletRequest = Joi.object({
   _id: Joi.string().required(),
   name: Joi.string().required(),
-  description: Joi.string(),
+  description: Joi.string().required().allow(''),
   model: Joi.string().required(), // could be url instead?
   twiglet: Joi.string(), // twiglet to copy from...could be url instead?
   googlesheet: Joi.string().uri(),
@@ -20,7 +20,7 @@ const createTwigletRequest = Joi.object({
 const baseTwigletRequest = Joi.object({
   _id: Joi.string().required(),
   name: Joi.string().required(),
-  description: Joi.string(),
+  description: Joi.string().required().allow(''),
 });
 
 const updateTwigletRequest = baseTwigletRequest.keys({
@@ -112,7 +112,6 @@ const createTwigletHandler = (request, reply) => {
           .then((twiglet) =>
             reply(twiglet).created(twiglet.url))
           .catch((err) => {
-            logger.error(err);
             logger.error(JSON.stringify(err));
             return reply(Boom.create(err.status || 500, err.message, err));
           });
