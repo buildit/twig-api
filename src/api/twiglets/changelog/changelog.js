@@ -17,7 +17,28 @@ const getChangelogResponse = Joi.object({
   }))
 });
 
-const get = (request, reply) => {
+const addCommitMessage = ({ _id, commitMessage }, user, timestamp = new Date().toISOString()) => {
+  const db = new PouchDb(config.getTenantDatabaseString(_id), { skip_setup: true });
+  return db.info()
+    .then(() => db.get('changelog')
+      .catch((error) => {
+        if (error.status !== 404) {
+          throw error;
+        }
+        return { _id: 'changelog', data: [] };
+      }))
+    .then((doc) => {
+      const commit = {
+        message: commitMessage,
+        user,
+        timestamp,
+      };
+      doc.data.unshift(commit);
+      return db.put(doc);
+    });
+};
+
+const getChangelogHandler = (request, reply) => {
   const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
   return db.info()
     .then(() => db.get('changelog')
@@ -34,37 +55,22 @@ const get = (request, reply) => {
     });
 };
 
-const add = (request, reply) => {
-  const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
-  return db.info()
-    .then(() => db.get('changelog')
-      .catch((error) => {
-        if (error.status !== 404) {
-          throw error;
-        }
-        return { _id: 'changelog', data: [] };
-      }))
-    .then((doc) => {
-      const commit = {
-        message: request.payload.commitMessage,
-        user: request.auth.credentials.user.name,
-        timestamp: new Date().toISOString(),
-      };
-      doc.data.unshift(commit);
-      return db.put(doc);
-    })
+const addCommitMessageHandler = (request, reply) =>
+  addCommitMessage({
+    _id: request.params.id,
+    commitMessage: request.payload.commitMessage,
+  }, request.auth.credentials.user.name)
     .then(() => reply({}).code(204))
     .catch((error) => {
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });
-};
 
-module.exports.routes = [
+const routes = [
   {
     method: ['POST'],
     path: '/twiglets/{id}/changelog',
-    handler: add,
+    handler: addCommitMessageHandler,
     config: {
       validate: {
         payload: Joi.object({
@@ -77,7 +83,7 @@ module.exports.routes = [
   {
     method: ['GET'],
     path: '/twiglets/{id}/changelog',
-    handler: get,
+    handler: getChangelogHandler,
     config: {
       auth: { mode: 'optional' },
       response: { schema: getChangelogResponse },
@@ -85,3 +91,5 @@ module.exports.routes = [
     }
   },
 ];
+
+module.exports = { routes, addCommitMessage };

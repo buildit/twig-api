@@ -5,6 +5,7 @@ const R = require('ramda');
 const PouchDB = require('pouchdb');
 const config = require('../../config');
 const logger = require('../../log')('TWIGLETS');
+const Changelog = require('./changelog');
 
 const createTwigletRequest = Joi.object({
   _id: Joi.string().required(),
@@ -18,12 +19,12 @@ const createTwigletRequest = Joi.object({
 
 const baseTwigletRequest = Joi.object({
   _id: Joi.string().required(),
-  _rev: Joi.string().required(),
   name: Joi.string().required(),
   description: Joi.string().required(),
 });
 
 const updateTwigletRequest = baseTwigletRequest.keys({
+  _rev: Joi.string().required(),
   nodes: Joi.array().required(),
   links: Joi.array().required(),
   commitMessage: Joi.string().required(),
@@ -38,11 +39,57 @@ const baseTwigletResponse = {
 
 const getTwigletResponse = updateTwigletRequest.keys(baseTwigletResponse);
 
-const getTwigletsResponse = Joi.array().items(
-  baseTwigletRequest.keys(baseTwigletResponse)
+const getTwigletsResponse = Joi.array().required().items(
+  baseTwigletRequest.keys(baseTwigletResponse).unknown()
 );
 
-const createTwiglet = (request, reply) => {
+const getTwiglet = (id, urlBuilder) => {
+  const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
+  const dbString = config.getTenantDatabaseString(id);
+  const db = new PouchDB(dbString, { skip_setup: true });
+  return Promise.all([
+    twigletLookupDb.get(id),
+    db.allDocs({
+      include_docs: true,
+      keys: ['nodes', 'links', 'changelog']
+    }),
+  ])
+  .then(([twigletInfo, twigletDocs]) => {
+    const url = urlBuilder(`/twiglets/${id}`);
+    const modelUrl = urlBuilder(`/twiglets/${id}/model`);
+    const changelogUrl = urlBuilder(`/twiglets/${id}/changelog`);
+    const viewsUrl = urlBuilder(`/twiglets/${id}/views`);
+    const twigletData = twigletDocs.rows.reduce((obj, row) => {
+      obj[row.id] = row.doc;
+      return obj;
+    }, {});
+    return R.merge(
+      R.omit(['changelog'], twigletData),
+      {
+        _id: id,
+        _rev: `${twigletInfo._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`,
+        name: twigletInfo.name,
+        description: twigletInfo.description,
+        commitMessage: twigletData.changelog.data[0].message,
+        nodes: twigletData.nodes.data,
+        links: twigletData.links.data,
+        url,
+        model_url: modelUrl,
+        changelog_url: changelogUrl,
+        views_url: viewsUrl,
+      });
+  });
+};
+
+const getTwigletHandler = (request, reply) =>
+  getTwiglet(request.params.id, request.buildUrl)
+    .then((twiglet) => reply(twiglet))
+    .catch((error) => {
+      logger.error(JSON.stringify(error));
+      return reply(Boom.create(error.status || 500, error.message, error));
+    });
+
+const createTwigletHandler = (request, reply) => {
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   const dbString = config.getTenantDatabaseString(request.payload._id);
   const db = new PouchDB(dbString, { skip_setup: true });
@@ -53,26 +100,21 @@ const createTwiglet = (request, reply) => {
       if (error.status === 404) {
         const createdDb = new PouchDB(dbString);
         return createdDb.info()
-          .then(() => twigletLookupDb.put(
-            R.pick(['_id', '_rev', 'name', 'description'], request.payload)
-          ))
-          .then(() => twigletLookupDb.get(request.payload._id))
-          .then((doc) => {
-            const url = request.buildUrl(`/twiglets/${request.payload._id}`);
-            const modelUrl = request.buildUrl(`/twiglets/${request.payload._id}/model`);
-            const changelogUrl = request.buildUrl(`/twiglets/${request.payload._id}/changelog`);
-            const viewsUrl = request.buildUrl(`/twiglets/${request.payload._id}/views`);
-            return reply(R.merge(
-              doc,
-              {
-                url,
-                model_url: modelUrl,
-                changelog_url: changelogUrl,
-                views_url: viewsUrl,
-                nodes: [],
-                links: [],
-                commitMessage: request.payload.commitMessage,
-              })).created(url);
+          .then(() => Promise.all([
+            createdDb.bulkDocs([
+              { _id: 'nodes', data: [] },
+              { _id: 'links', data: [] },
+            ]),
+            twigletLookupDb.put(R.pick(['_id', 'name', 'description'], request.payload)),
+            Changelog.addCommitMessage(request.payload, request.auth.credentials.user.name),
+          ]))
+          .then(() => getTwiglet(request.payload._id, request.buildUrl))
+          .then((twiglet) =>
+            reply(twiglet).created(twiglet.url))
+          .catch((err) => {
+            logger.error(err);
+            logger.error(JSON.stringify(err));
+            return reply(Boom.create(err.status || 500, err.message, err));
           });
       }
       logger.error(JSON.stringify(error));
@@ -80,38 +122,13 @@ const createTwiglet = (request, reply) => {
     });
 };
 
-const getTwiglet = (request, reply) => {
-  const dbString = config.getTenantDatabaseString(request.params.id);
-  const db = new PouchDB(dbString, { skip_setup: true });
-  return db.allDocs({ include_docs: true })
-    .then((doc) => {
-      const url = request.buildUrl(`/twiglets/${request.params._id}`);
-      const modelUrl = request.buildUrl(`/twiglets/${request.params._id}/model`);
-      const changelogUrl = request.buildUrl(`/twiglets/${request.params._id}/changelog`);
-      const viewsUrl = request.buildUrl(`/twiglets/${request.params._id}/views`);
-      reply(R.merge(
-        doc,
-        {
-          url,
-          model_url: modelUrl,
-          changelog_url: changelogUrl,
-          views_url: viewsUrl,
-        }
-      ));
-    })
-    .catch((error) => {
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
-};
-
-const getTwiglets = (request, reply) => {
+const getTwigletsHandler = (request, reply) => {
   const dbString = config.getTenantDatabaseString('twiglets');
   const db = new PouchDB(dbString, { skip_setup: true });
   return db.allDocs({ include_docs: true })
     .then((doc) => {
       const twiglets = doc.rows.map((twiglet) => R.merge(
-        twiglet.doc,
+        R.omit(['_rev'], twiglet.doc),
         {
           url: request.buildUrl(`/twiglets/${twiglet.doc._id}`),
           model_url: request.buildUrl(`/twiglets/${twiglet.doc._id}/model`),
@@ -126,7 +143,7 @@ const getTwiglets = (request, reply) => {
     });
 };
 
-const deleteTwiglet = (request, reply) => {
+const deleteTwigletHandler = (request, reply) => {
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   const dbString = config.getTenantDatabaseString(request.params.id);
   const db = new PouchDB(dbString, { skip_setup: true });
@@ -144,7 +161,7 @@ module.exports.routes = [
   {
     method: ['POST'],
     path: '/twiglets',
-    handler: createTwiglet,
+    handler: createTwigletHandler,
     config: {
       validate: {
         payload: createTwigletRequest,
@@ -156,17 +173,17 @@ module.exports.routes = [
   {
     method: ['GET'],
     path: '/twiglets',
-    handler: getTwiglets,
+    handler: getTwigletsHandler,
     config: {
       auth: { mode: 'optional' },
-      response: { schema: getTwigletsResponse, failAction: 'log' },
+      response: { schema: getTwigletsResponse },
       tags: ['api'],
     }
   },
   {
     method: ['GET'],
     path: '/twiglets/{id}',
-    handler: getTwiglet,
+    handler: getTwigletHandler,
     config: {
       auth: { mode: 'optional' },
       response: { schema: getTwigletResponse },
@@ -188,7 +205,7 @@ module.exports.routes = [
   {
     method: ['DELETE'],
     path: '/twiglets/{id}',
-    handler: deleteTwiglet,
+    handler: deleteTwigletHandler,
     config: {
       tags: ['api'],
     }
