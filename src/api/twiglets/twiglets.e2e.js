@@ -116,6 +116,21 @@ describe('GET /twiglets/{id}', () => {
 
     after(() => deleteTwiglet(baseTwiglet));
   });
+
+  describe('(Error)', () => {
+    let promise;
+
+    before(() => {
+      promise = getTwiglet({ _id: 'non-existant-id' });
+    });
+
+    it('returns 404', (done) => {
+      promise.catch(res => {
+        expect(res).to.have.status(404);
+        done();
+      });
+    });
+  });
 });
 
 describe('DELETE /twiglets/{id}', () => {
