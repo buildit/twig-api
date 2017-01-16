@@ -8,6 +8,10 @@ const server = new Hapi.Server();
 
 server.connection();
 
+server.decorate('request', 'buildUrl', (request) =>
+  (path) => `${request.headers['x-forwarded-proto'] || request.connection.info.protocol}://` +
+    `${request.headers['x-forwarded-host'] || request.info.host}${path}`, { apply: true });
+
 server.ext('onRequest', (req, reply) => {
   ns.bindEmitter(req.raw.req);
   ns.bindEmitter(req.raw.res);
