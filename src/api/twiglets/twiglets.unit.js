@@ -3,6 +3,7 @@
 const chai = require('chai');
 chai.use(require('chai-string'));
 const sinon = require('sinon');
+require('sinon-as-promised');
 const PouchDb = require('pouchdb');
 const Twiglet = require('./twiglets');
 const server = require('../../../test/unit/test-server');
@@ -11,7 +12,67 @@ const expect = chai.expect;
 
 server.route(Twiglet.routes);
 
-describe('/twiglets', () => {
+function twigletInfo () {
+  return {
+    _rev: 'infoRev',
+    name: 'Some Twiglet',
+    description: 'The returning twiglet',
+  };
+}
+function twigletDocs () {
+  return {
+    rows: [
+      {
+        id: 'nodes',
+        doc: {
+          _rev: 'nodeRev',
+          data: [
+            {
+              id: 'node 1',
+            },
+            {
+              id: 'node 2',
+            }
+          ]
+        }
+      },
+      {
+        id: 'links',
+        doc: {
+          _rev: 'linkRev',
+          data: [
+            {
+              id: 'link 1',
+              source: 'node 1',
+              target: 'node 2',
+            },
+            {
+              id: 'link 2',
+              source: 'node 2',
+              target: 'node 1',
+            }
+          ]
+        }
+      },
+      {
+        id: 'changelog',
+        doc: {
+          _rev: 'changelogRev',
+          data: [
+            {
+              message: 'this one should be returned',
+            },
+            {
+              message: 'older log, should not come through',
+            }
+          ]
+        }
+      },
+    ]
+  };
+}
+
+describe.only('/twiglets', () => {
   let sandbox;
 
   beforeEach(() => {
@@ -133,70 +194,14 @@ describe('/twiglets', () => {
   });
 
   describe('getTwiglet', () => {
-    let twigletDocs;
     const req = {
       method: 'get',
       url: '/twiglets/someid'
     };
     describe('successes', () => {
       beforeEach(() => {
-        const twigletInfo = {
-          _rev: 'infoRev',
-          name: 'Some Twiglet',
-          description: 'The returning twiglet',
-        };
-        twigletDocs = {
-          rows: [
-            {
-              id: 'nodes',
-              doc: {
-                _rev: 'nodeRev',
-                data: [
-                  {
-                    id: 'node 1',
-                  },
-                  {
-                    id: 'node 2',
-                  }
-                ]
-              }
-            },
-            {
-              id: 'links',
-              doc: {
-                _rev: 'linkRev',
-                data: [
-                  {
-                    id: 'link 1',
-                    source: 'node 1',
-                    target: 'node 2',
-                  },
-                  {
-                    id: 'link 2',
-                    source: 'node 2',
-                    target: 'node 1',
-                  }
-                ]
-              }
-            },
-            {
-              id: 'changelog',
-              doc: {
-                _rev: 'changelogRev',
-                data: [
-                  {
-                    message: 'this one should be returned',
-                  },
-                  {
-                    message: 'older log, should not come through',
-                  }
-                ]
-              }
-            },
-          ]
-        };
-        sandbox.stub(PouchDb.prototype, 'get').returns(Promise.resolve(twigletInfo));
-        sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve(twigletDocs));
+        sandbox.stub(PouchDb.prototype, 'get').returns(Promise.resolve(twigletInfo()));
+        sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve(twigletDocs()));
       });
 
       it('returns the id, name and description', () =>
@@ -222,7 +227,7 @@ describe('/twiglets', () => {
           .then((response) => {
             const twiglet = response.result;
             expect(twiglet.commitMessage).to.exist.and.to
-              .equal(twigletDocs.rows[2].doc.data[0].message);
+              .equal(twigletDocs().rows[2].doc.data[0].message);
           })
       );
 
@@ -230,8 +235,8 @@ describe('/twiglets', () => {
         server.inject(req)
           .then((response) => {
             const twiglet = response.result;
-            expect(twiglet.nodes).to.exist.and.to.deep.equal(twigletDocs.rows[0].doc.data);
-            expect(twiglet.links).to.exist.and.to.deep.equal(twigletDocs.rows[1].doc.data);
+            expect(twiglet.nodes).to.exist.and.to.deep.equal(twigletDocs().rows[0].doc.data);
+            expect(twiglet.links).to.exist.and.to.deep.equal(twigletDocs().rows[1].doc.data);
           })
       );
 
@@ -272,6 +277,158 @@ describe('/twiglets', () => {
             expect(response.result.message).to
               .not.equal('this message will not be pushed to the user');
           });
+      });
+    });
+  });
+
+  describe('createTwigletHandler', () => {
+    function req () {
+      return {
+        method: 'post',
+        url: '/twiglets',
+        payload: {
+          _id: 'anId',
+          name: 'some name',
+          description: 'a description',
+          model: 'some model',
+          commitMessage: 'Creation'
+        },
+        credentials: {
+          id: 123,
+          username: 'ben',
+          user: {
+            name: 'Ben Hernandez',
+          },
+        }
+      };
+    }
+
+    describe('successes', () => {
+      let put;
+      beforeEach(() => {
+        const info = sandbox.stub(PouchDb.prototype, 'info');
+        info.onFirstCall().rejects({ status: 404 });
+        info.resolves();
+
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletInfo());
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+        sandbox.stub(PouchDb.prototype, 'allDocs').resolve(twigletDocs());
+      });
+
+      it('returns the newly created twiglet', () =>
+          server.inject(req())
+          .then(response => {
+            expect(response.result).to.include.keys({ _id: 'anId' });
+          })
+      );
+
+      it('creates the twiglet in the twiglets list database', () =>
+          server.inject(req())
+          .then(() => {
+            expect(put.getCall(0).args[0]).to.have.keys(
+              { _id: 'anId', name: 'some name', description: 'a description' }
+            );
+          })
+      );
+
+      it('logs the post to the commit log.', () =>
+          server.inject(req())
+          .then(() => {
+            expect(put.getCall(1).args[0]).to.include.keys({ _id: 'changelog' });
+          })
+      );
+    });
+
+    describe('errors', () => {
+      describe('Joi errors', () => {
+        let request;
+        beforeEach(() => {
+          request = req();
+        });
+
+        it('requires an id', () => {
+          delete request.payload._id;
+          return server.inject(request)
+          .then((response) => {
+            expect(response.result.statusCode).to.equal(400);
+            expect(response.result.message).to.contain('"_id" is required');
+          });
+        });
+
+        it('requires a name', () => {
+          delete request.payload.name;
+          return server.inject(request)
+          .then((response) => {
+            expect(response.result.statusCode).to.equal(400);
+            expect(response.result.message).to.contain('"name" is required');
+          });
+        });
+
+        it('requires a description', () => {
+          delete request.payload.description;
+          return server.inject(request)
+          .then((response) => {
+            expect(response.result.statusCode).to.equal(400);
+            expect(response.result.message).to.contain('"description" is required');
+          });
+        });
+
+        it('requires a commit message', () => {
+          delete request.payload.commitMessage;
+          return server.inject(request)
+          .then((response) => {
+            expect(response.result.statusCode).to.equal(400);
+            expect(response.result.message).to.contain('"commitMessage" is required');
+          });
+        });
+      });
+
+      it('responds with a conflict if the twiglet already exists', () => {
+        sandbox.stub(PouchDb.prototype, 'info').resolves();
+
+        return server.inject(req())
+          .then((response) => {
+            expect(response.result.statusCode).to.equal(409);
+          });
+      });
+
+      it('Passes along the error if the error is anything other than a 404', () => {
+        sandbox.stub(PouchDb.prototype, 'info').rejects({ status: 500 });
+
+        return server.inject(req())
+          .then((response) => {
+            expect(response.result.statusCode).to.equal(500);
+          });
+      });
+    });
+  });
+
+  describe.only('deleteTwigletHandler', () => {
+    function req () {
+      return {
+        method: 'delete',
+        url: '/twiglets/anId',
+        credentials: {
+          id: 123,
+          username: 'ben',
+          user: {
+            name: 'Ben Hernandez',
+          },
+        }
+      };
+    }
+
+    describe('errors', () => {
+      it('relays an error from the database', () => {
+        sandbox.stub(PouchDb.prototype, 'destroy').rejects({ status: 500 });
+
+        return server.inject(req())
+            .catch((response) => {
+              expect(response.result.statusCode).to.equal(500);
+            });
       });
     });
   });

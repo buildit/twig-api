@@ -60,6 +60,14 @@ describe('POST /twiglets', () => {
       expect(res.body).to.contain.all.keys(['_rev']);
     });
 
+    it('returns a conflict error if the twiglet already exists', () => {
+      createTwiglet(baseTwiglet)
+        .catch(secondResponse => {
+          console.log('catch');
+          expect(secondResponse).to.have.status(409);
+        });
+    });
+
     after(() => deleteTwiglet(baseTwiglet));
   });
 });

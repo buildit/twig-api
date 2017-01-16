@@ -55,6 +55,7 @@ const getTwiglet = (id, urlBuilder) => {
     }),
   ])
   .then(([twigletInfo, twigletDocs]) => {
+    console.log('twigletInfo', twigletInfo);
     const url = urlBuilder(`/twiglets/${id}`);
     const modelUrl = urlBuilder(`/twiglets/${id}/model`);
     const changelogUrl = urlBuilder(`/twiglets/${id}/changelog`);
@@ -108,9 +109,12 @@ const createTwigletHandler = (request, reply) => {
             twigletLookupDb.put(R.pick(['_id', 'name', 'description'], request.payload)),
             Changelog.addCommitMessage(request.payload, request.auth.credentials.user.name),
           ]))
-          .then(() => getTwiglet(request.payload._id, request.buildUrl))
-          .then((twiglet) =>
-            reply(twiglet).created(twiglet.url))
+          .then(() =>
+            getTwiglet(request.payload._id, request.buildUrl)
+          )
+          .then((twiglet) => {
+            reply(twiglet).created(twiglet.url);
+          })
           .catch((err) => {
             logger.error(JSON.stringify(err));
             return reply(Boom.create(err.status || 500, err.message, err));

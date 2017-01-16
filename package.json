@@ -42,7 +42,8 @@
     "nsp": "^2.6.1",
     "nyc": "^10.0.0",
     "pre-commit": "^1.1.3",
-    "sinon": "^1.17.6"
+    "sinon": "^1.17.6",
+    "sinon-as-promised": "^4.0.2"
   },
   "dependencies": {
     "boom": "^4.0.0",
