@@ -250,14 +250,14 @@ describe('/twiglets', () => {
     describe('errors', () => {
       it('relays errors from the database with correct error codes', () => {
         sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject({
-          status: '404',
-          message: 'this twiglet can not be found!'
+          status: '500',
+          message: 'Internal Server Error or something'
         }));
 
         return server.inject(req)
           .then((response) => {
-            expect(response.result.statusCode).to.equal(404);
-            expect(response.result.message).to.equal('this twiglet can not be found!');
+            expect(response.result.statusCode).to.equal(500);
+            expect(response.result.message).to.equal('An internal server error occurred');
           });
       });
 
