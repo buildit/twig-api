@@ -315,7 +315,7 @@ describe.only('/twiglets', () => {
         get.resolves(twigletInfo());
         sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
         put = sandbox.stub(PouchDb.prototype, 'put').resolves();
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolve(twigletDocs());
+        sandbox.stub(PouchDb.prototype, 'allDocs').resolves(twigletDocs());
       });
 
       it('returns the newly created twiglet', () =>
@@ -406,7 +406,123 @@ describe.only('/twiglets', () => {
     });
   });
 
-  describe.only('deleteTwigletHandler', () => {
+  describe.only('putTwigletHandler', () => {
+    function req () {
+      return {
+        method: 'put',
+        url: '/twiglets/anId',
+        credentials: {
+          id: 123,
+          username: 'ben',
+          user: {
+            name: 'Ben Hernandez',
+          },
+        },
+        payload: {
+          name: 'a name',
+          description: 'a descirption',
+          _rev: 'infoRev:nodeRev:linkRev',
+          nodes: [{ a: 'node' }],
+          links: [{ a: 'link' }],
+          commitMessage: 'an update'
+        },
+      };
+    }
+
+    describe('success', () => {
+      let put;
+      beforeEach(function* foo () {
+        sandbox.stub(PouchDb.prototype, 'info').resolves();
+        const get = sandbox.stub(PouchDb.prototype, 'get').resolves(twigletInfo());
+        get.withArgs('changelog').rejects({ status: 404 });
+        sandbox.stub(PouchDb.prototype, 'allDocs').resolves(twigletDocs());
+        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+        yield server.inject(req());
+      });
+
+      it('correctly updates the name and description of the twiglet', () => {
+        const newTwigletInfo = twigletInfo();
+        newTwigletInfo.name = req().payload.name;
+        newTwigletInfo.description = req().payload.description;
+        expect(put.getCall(0).args[0]).to.deep.equal(newTwigletInfo);
+      });
+
+      it('updates the nodes and links', () => {
+        expect(put.getCall(1).args[0].data).to.deep.equal(req().payload.nodes);
+        expect(put.getCall(2).args[0].data).to.deep.equal(req().payload.links);
+      });
+
+      it('adds a changelog entry for the put', () => {
+        const expectedLogEntry = {
+          user: req().credentials.user.name,
+          message: req().payload.commitMessage,
+        };
+        expect(put.getCall(3).args[0].data[0]).to.include.keys(expectedLogEntry);
+      });
+
+      it('returns the updated twiglet', () => {
+
+      });
+    });
+
+    describe('errors', () => {
+      it('fails immediately if the rev cannot be split into 3 parts', () => {
+        const request = req();
+        request.payload._rev = 'not splittable';
+        return server.inject(request)
+          .then(response => {
+            expect(response.statusCode).to.equal(400);
+          });
+      });
+
+      it('responds with a 404 the twiglet cannot be found', () => {
+        sandbox.stub(PouchDb.prototype, 'get').rejects({ status: 404 });
+        return server.inject(req())
+          .then(response => {
+            expect(response.statusCode).to.equal(404);
+          });
+      });
+
+      describe('_rev mistakes', () => {
+        const docs = twigletDocs();
+        docs.rows.pop();
+        it('breaks when the twigletInfo._rev is incorrect', () => {
+          sandbox.stub(PouchDb.prototype, 'get').resolves(twigletInfo());
+          sandbox.stub(PouchDb.prototype, 'allDocs').resolves(twigletDocs());
+          const request = req();
+          request.payload._rev = 'INCORRECTinfoRev:nodeRev:linkRev';
+          return server.inject(request)
+            .then(response => {
+              expect(response.statusCode).to.equal(409);
+            });
+        });
+
+        it('breaks when the twigletInfo._rev is incorrect', () => {
+          sandbox.stub(PouchDb.prototype, 'get').resolves(twigletInfo());
+          sandbox.stub(PouchDb.prototype, 'allDocs').resolves(twigletDocs());
+          const request = req();
+          request.payload._rev = 'infoRev:INCORRECTnodeRev:linkRev';
+          return server.inject(request)
+            .then(response => {
+              expect(response.statusCode).to.equal(409);
+            });
+        });
+
+        it('breaks when the twigletInfo._rev is incorrect', () => {
+          sandbox.stub(PouchDb.prototype, 'get').resolves(twigletInfo());
+          sandbox.stub(PouchDb.prototype, 'allDocs').resolves(twigletDocs());
+          const request = req();
+          request.payload._rev = 'infoRev:nodeRev:INCORRECTlinkRev';
+          return server.inject(request)
+            .then(response => {
+              expect(response.statusCode).to.equal(409);
+            });
+        });
+      });
+    });
+  });
+
+  describe('deleteTwigletHandler', () => {
     function req () {
       return {
         method: 'delete',
@@ -421,14 +537,29 @@ describe.only('/twiglets', () => {
       };
     }
 
+    describe('success', () => {
+      beforeEach(() => {
+        sandbox.stub(PouchDb.prototype, 'destroy').resolves();
+        sandbox.stub(PouchDb.prototype, 'get').resolves({ _id: 'some id', _rev: 'rev' });
+        sandbox.stub(PouchDb.prototype, 'remove').resolves();
+      });
+
+      it('returns 204 once deleted', () =>
+        server.inject(req())
+          .then(response => {
+            expect(response.statusCode).to.equal(204);
+          })
+      );
+    });
+
     describe('errors', () => {
       it('relays an error from the database', () => {
         sandbox.stub(PouchDb.prototype, 'destroy').rejects({ status: 500 });
 
         return server.inject(req())
-            .catch((response) => {
-              expect(response.result.statusCode).to.equal(500);
-            });
+          .catch((response) => {
+            expect(response.result.statusCode).to.equal(500);
+          });
       });
     });
   });

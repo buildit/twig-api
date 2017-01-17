@@ -24,6 +24,7 @@ const baseTwigletRequest = Joi.object({
 });
 
 const updateTwigletRequest = baseTwigletRequest.keys({
+  _id: Joi.string(),
   _rev: Joi.string().required(),
   nodes: Joi.array().required(),
   links: Joi.array().required(),
@@ -55,7 +56,6 @@ const getTwiglet = (id, urlBuilder) => {
     }),
   ])
   .then(([twigletInfo, twigletDocs]) => {
-    console.log('twigletInfo', twigletInfo);
     const url = urlBuilder(`/twiglets/${id}`);
     const modelUrl = urlBuilder(`/twiglets/${id}/model`);
     const changelogUrl = urlBuilder(`/twiglets/${id}/changelog`);
@@ -149,6 +149,65 @@ const getTwigletsHandler = (request, reply) => {
     });
 };
 
+const putTwigletHandler = (request, reply) => {
+  console.log('hello????');
+  const _revs = request.payload._rev.split(':');
+  if (_revs.length !== 3) {
+    return reply(
+      Boom.badRequest('_rev must be in the form of twigletInfo._rev:nodes._rev:links._rev')
+    );
+  }
+  const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
+  const dbString = config.getTenantDatabaseString(request.params.id);
+  const db = new PouchDB(dbString, { skip_setup: true });
+  return Promise.all([
+    twigletLookupDb.get(request.params.id),
+    db.allDocs({
+      include_docs: true,
+      keys: ['nodes', 'links']
+    }),
+  ])
+  .then(([twigletInfo, twigletDocs]) => {
+    const twigletData = twigletDocs.rows.reduce((obj, row) => {
+      obj[row.id] = row.doc;
+      return obj;
+    }, {});
+    if (twigletInfo._rev !== _revs[0]
+        || twigletData.nodes._rev !== _revs[1]
+        || twigletData.links._rev !== _revs[2]) {
+      const error = Error('Your revision number is out of date');
+      error.status = 409;
+      throw error;
+    }
+    twigletInfo.name = request.payload.name;
+    twigletInfo.description = request.payload.description;
+    twigletData.nodes.data = request.payload.nodes;
+    twigletData.links.data = request.payload.links;
+    return Promise.all([
+      twigletLookupDb.put(twigletInfo),
+      db.put(twigletData.nodes),
+      db.put(twigletData.links),
+      Changelog.addCommitMessage(
+        {
+          _id: request.params.id,
+          commitMessage: request.payload.commitMessage
+        },
+        request.auth.credentials.user.name),
+    ]);
+  })
+  .then(() =>
+    getTwiglet(request.params.id, request.buildUrl)
+  )
+  .then((twiglet) => {
+    reply(twiglet).ok(twiglet.url);
+  })
+  .catch((error) => {
+    console.log('error!', error);
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
+  });
+};
+
 const deleteTwigletHandler = (request, reply) => {
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   const dbString = config.getTenantDatabaseString(request.params.id);
@@ -199,8 +258,9 @@ module.exports.routes = [
   {
     method: ['PUT'],
     path: '/twiglets/{id}',
-    handler: (request, reply) => reply(Boom.notImplemented()),
+    handler: putTwigletHandler,
     config: {
+      auth: { mode: 'optional' },
       validate: {
         payload: updateTwigletRequest
       },
