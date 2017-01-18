@@ -6,12 +6,13 @@ const PouchDB = require('pouchdb');
 const config = require('../../config');
 const logger = require('../../log')('TWIGLETS');
 const Changelog = require('./changelog');
+const Model = require('../models/');
 
 const createTwigletRequest = Joi.object({
   _id: Joi.string().required(),
   name: Joi.string().required(),
   description: Joi.string().required().allow(''),
-  model: Joi.string().required(), // could be url instead?
+  model: Joi.string().required(),
   twiglet: Joi.string(), // twiglet to copy from...could be url instead?
   googlesheet: Joi.string().uri(),
   commitMessage: Joi.string().required(),
@@ -101,10 +102,19 @@ const createTwigletHandler = (request, reply) => {
       if (error.status === 404) {
         const createdDb = new PouchDB(dbString);
         return createdDb.info()
-          .then(() => Promise.all([
+          .then(() => Model.getModel(request.payload.model))
+          .then(model => {
+            delete model._id;
+            delete model._rev;
+            delete model.url;
+            return model;
+          })
+          .then(model => Promise.all([
             createdDb.bulkDocs([
+              { _id: 'model', data: model.data },
               { _id: 'nodes', data: [] },
               { _id: 'links', data: [] },
+              { _id: 'views', data: [] },
             ]),
             twigletLookupDb.put(R.pick(['_id', 'name', 'description'], request.payload)),
             Changelog.addCommitMessage(request.payload, request.auth.credentials.user.name),
@@ -116,6 +126,7 @@ const createTwigletHandler = (request, reply) => {
             reply(twiglet).created(twiglet.url);
           })
           .catch((err) => {
+            console.log('error!', err);
             logger.error(JSON.stringify(err));
             return reply(Boom.create(err.status || 500, err.message, err));
           });
@@ -150,7 +161,6 @@ const getTwigletsHandler = (request, reply) => {
 };
 
 const putTwigletHandler = (request, reply) => {
-  console.log('hello????');
   const _revs = request.payload._rev.split(':');
   if (_revs.length !== 3) {
     return reply(
@@ -199,10 +209,9 @@ const putTwigletHandler = (request, reply) => {
     getTwiglet(request.params.id, request.buildUrl)
   )
   .then((twiglet) => {
-    reply(twiglet).ok(twiglet.url);
+    reply(twiglet).ok();
   })
   .catch((error) => {
-    console.log('error!', error);
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));
   });
@@ -260,7 +269,6 @@ module.exports.routes = [
     path: '/twiglets/{id}',
     handler: putTwigletHandler,
     config: {
-      auth: { mode: 'optional' },
       validate: {
         payload: updateTwigletRequest
       },

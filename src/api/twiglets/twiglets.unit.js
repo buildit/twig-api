@@ -72,7 +72,7 @@ function twigletDocs () {
   };
 }
 
-describe.only('/twiglets', () => {
+describe('/twiglets', () => {
   let sandbox;
 
   beforeEach(() => {
@@ -406,7 +406,7 @@ describe.only('/twiglets', () => {
     });
   });
 
-  describe.only('putTwigletHandler', () => {
+  describe('putTwigletHandler', () => {
     function req () {
       return {
         method: 'put',

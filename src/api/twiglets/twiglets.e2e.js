@@ -146,7 +146,7 @@ describe('GET /twiglets/{id}', () => {
   });
 });
 
-describe.only('PUT /twiglets/{id}', () => {
+describe('PUT /twiglets/{id}', () => {
   describe('(Successful)', () => {
     let res;
     let updates;

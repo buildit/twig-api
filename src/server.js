@@ -16,6 +16,7 @@ const Inert = require('inert');
 const Vision = require('vision');
 const HapiSwagger = require('hapi-swagger');
 const version = require('../package').version;
+const helpers = require('./server.helpers');
 
 const options = {
   info: {
@@ -47,8 +48,9 @@ server.connection({
 });
 
 server.decorate('request', 'buildUrl', (request) =>
-  (path) => `${request.headers['x-forwarded-proto'] || request.connection.info.protocol}://` +
-    `${request.headers['x-forwarded-host'] || request.info.host}${path}`, { apply: true });
+  helpers.buildUrl(request),
+  { apply: true });
+
 
 server.ext('onRequest', (req, reply) => {
   ns.bindEmitter(req.raw.req);

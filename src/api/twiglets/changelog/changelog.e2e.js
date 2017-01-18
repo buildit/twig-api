@@ -34,10 +34,10 @@ describe('/twiglets/{id}/changelog', () => {
     });
 
     describe('Success', () => {
-      beforeEach('Create new twiglet', () => createTwiglet(baseTwiglet));
+      beforeEach('Create new twiglet', () => createTwiglet(baseTwiglet()));
 
       it('Creates a changelog', function* () {
-        const res = yield authAgent.post(`/twiglets/${baseTwiglet._id}/changelog`)
+        const res = yield authAgent.post(`/twiglets/${baseTwiglet()._id}/changelog`)
         .send({
           commitMessage: 'foobarbaz'
         });
@@ -45,7 +45,7 @@ describe('/twiglets/{id}/changelog', () => {
         expect(res).to.have.status(204);
       });
 
-      afterEach('Delete new twiglet', () => deleteTwiglet(baseTwiglet));
+      afterEach('Delete new twiglet', () => deleteTwiglet(baseTwiglet()));
     });
   });
 });

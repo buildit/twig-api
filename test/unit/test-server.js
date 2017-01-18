@@ -2,6 +2,7 @@
 const Hapi = require('hapi');
 const cookieAuth = require('hapi-auth-cookie');
 const cls = require('continuation-local-storage');
+const helpers = require('../../src/server.helpers');
 
 const ns = cls.createNamespace('hapi-request');
 const server = new Hapi.Server();
@@ -9,8 +10,8 @@ const server = new Hapi.Server();
 server.connection();
 
 server.decorate('request', 'buildUrl', (request) =>
-  (path) => `${request.headers['x-forwarded-proto'] || request.connection.info.protocol}://` +
-    `${request.headers['x-forwarded-host'] || request.info.host}${path}`, { apply: true });
+  helpers.buildUrl(request),
+  { apply: true });
 
 server.ext('onRequest', (req, reply) => {
   ns.bindEmitter(req.raw.req);
