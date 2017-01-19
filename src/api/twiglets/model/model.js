@@ -46,14 +46,13 @@ const putModelHandler = (request, reply) => {
     .then(() => db.get('model'))
     .then((doc) => {
       if (doc._rev === request.payload._rev) {
-        doc.data = R.omit(['_rev'], request.payload);
+        doc.data = R.omit(['_rev', '_id'], request.payload);
         return db.put(doc)
           .then(() => doc);
       }
       const error = Error('Conflict, bad revision number');
       error.status = 409;
       error._rev = doc._rev;
-      reply(Boom.create(error.status, error.message, error));
       throw error;
     })
     .then((doc) =>
@@ -64,7 +63,9 @@ const putModelHandler = (request, reply) => {
     )
     .catch((error) => {
       logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
+      const boomError = Boom.create(error.status || 500, error.message);
+      boomError.output.payload._rev = error._rev;
+      return reply(boomError);
     });
 };
 

@@ -187,6 +187,7 @@ const putTwigletHandler = (request, reply) => {
         || twigletData.links._rev !== _revs[2]) {
       const error = Error('Your revision number is out of date');
       error.status = 409;
+      error._rev = `${twigletInfo._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`;
       throw error;
     }
     twigletInfo.name = request.payload.name;
@@ -213,7 +214,9 @@ const putTwigletHandler = (request, reply) => {
   })
   .catch((error) => {
     logger.error(JSON.stringify(error));
-    return reply(Boom.create(error.status || 500, error.message, error));
+    const boomError = Boom.create(error.status || 500, error.message);
+    boomError.output.payload._rev = error._rev;
+    return reply(boomError);
   });
 };
 

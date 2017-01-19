@@ -4,6 +4,7 @@ const Joi = require('joi');
 const PouchDB = require('pouchdb');
 const config = require('../../config');
 const logger = require('../../log')('MODELS');
+const R = require('ramda');
 
 const createModelRequest = Joi.object({
   _id: Joi.string().required(),
@@ -29,6 +30,39 @@ const getModelsResponse = Joi.array().items(Joi.object({
   url: Joi.string().required(),
 }));
 
+const getModel = (id) => {
+  const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
+  return db.get(id);
+};
+
+const postModelsHandler = (request, reply) => {
+  const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
+  return db.get(request.payload._id)
+    .then(() => reply(`Model "${request.payload._id}" already exists`).code(409))
+    .catch(error => {
+      if (error.status !== 404) {
+        logger.error(JSON.stringify(error));
+        return reply(Boom.create(error.status || 500, error.message, error));
+      }
+      return db.put(request.payload)
+        .then(() => getModel(request.payload._id))
+        .then(newModel => {
+          const modelResponse = {
+            entities: newModel.entities,
+            _id: newModel._id,
+            _rev: newModel._rev,
+            url: request.buildUrl(`/models/${newModel._id}`),
+          };
+          reply(modelResponse).created();
+        })
+        .catch(e => {
+          console.log('e!', e);
+          logger.error(JSON.stringify(e));
+          return reply(Boom.create(e.status || 500, e.message, e));
+        });
+    });
+};
+
 const getModelsHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return db.allDocs({ include_docs: true })
@@ -44,20 +78,15 @@ const getModelsHandler = (request, reply) => {
       return reply(orgModels);
     })
     .catch((error) => {
+      console.log('error!', error);
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });
 };
 
-const getModel = (id) => {
-  const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-  return db.get(id);
-};
-
 const getModelHandler = (request, reply) => {
   getModel(request.params.id)
     .then(model => {
-      console.log('model', model);
       const modelResponse = {
         entities: model.data.entities,
         _id: model._id,
@@ -72,11 +101,56 @@ const getModelHandler = (request, reply) => {
     });
 };
 
+const putModelHandler = (request, reply) => {
+  const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
+  getModel(request.payload._id)
+    .then(model => {
+      if (model._rev === request.payload._rev) {
+        model.data = R.omit(['_rev', '_id'], request.payload);
+        return db.put(model);
+      }
+      const error = Error('Conflict, bad revision number');
+      error.status = 409;
+      error._rev = model._rev;
+      throw error;
+    })
+    .then(() => getModel(request.payload._id))
+    .then(model => {
+      const modelResponse = {
+        entities: model.data.entities,
+        _id: model._id,
+        _rev: model._rev,
+        url: request.buildUrl(`/models/${model._id}`),
+      };
+      reply(modelResponse);
+      reply(modelResponse).code(200);
+    })
+    .catch((error) => {
+      logger.error(JSON.stringify(error));
+      const boomError = Boom.create(error.status || 500, error.message);
+      if (error._rev) {
+        boomError.output.payload._rev = error._rev;
+      }
+      return reply(boomError);
+    });
+};
+
+const deleteModelsHandler = (request, reply) => {
+  const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
+  return db.get(request.params.id)
+    .then(({ _rev }) => db.remove(request.params.id, _rev))
+    .then(() => reply().code(204))
+    .catch(error => {
+      logger.error(JSON.stringify(error));
+      return reply(Boom.create(error.status || 500, error.message, error));
+    });
+};
+
 const routes = [
   {
     method: ['POST'],
     path: '/models',
-    handler: (request, reply) => reply(Boom.notImplemented()),
+    handler: postModelsHandler,
     config: {
       validate: {
         payload: createModelRequest
@@ -108,7 +182,7 @@ const routes = [
   {
     method: ['PUT'],
     path: '/models/{id}',
-    handler: (request, reply) => reply(Boom.notImplemented()),
+    handler: putModelHandler,
     config: {
       validate: {
         payload: updateModelRequest
@@ -120,7 +194,7 @@ const routes = [
   {
     method: ['DELETE'],
     path: '/models/{id}',
-    handler: (request, reply) => reply(Boom.notImplemented()),
+    handler: deleteModelsHandler,
     config: {
       tags: ['api'],
     }
