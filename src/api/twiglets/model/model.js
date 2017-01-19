@@ -11,7 +11,7 @@ const twigletModelBase = Joi.object({
   entities: Joi.object().pattern(/[\S\s]*/, Joi.object({
     type: Joi.string(),
     color: Joi.string(),
-    size: [Joi.string(), Joi.number()],
+    size: [Joi.string().allow(''), Joi.number()],
     class: Joi.string().required(),
     image: Joi.string().required(),
   })),

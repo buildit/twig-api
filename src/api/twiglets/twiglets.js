@@ -13,8 +13,9 @@ const createTwigletRequest = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required().allow(''),
   model: Joi.string().required(),
+  cloneTwiglet: Joi.string(),
   twiglet: Joi.string(), // twiglet to copy from...could be url instead?
-  googlesheet: Joi.string().uri(),
+  googlesheet: Joi.string().uri().allow(''),
   commitMessage: Joi.string().required(),
 });
 
@@ -87,6 +88,7 @@ const getTwigletHandler = (request, reply) =>
   getTwiglet(request.params.id, request.buildUrl)
     .then((twiglet) => reply(twiglet))
     .catch((error) => {
+      console.log('ERROR', error);
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });
@@ -131,6 +133,7 @@ const createTwigletHandler = (request, reply) => {
             return reply(Boom.create(err.status || 500, err.message, err));
           });
       }
+      console.log('error!', error);
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });
