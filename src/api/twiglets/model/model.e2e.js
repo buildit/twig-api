@@ -5,6 +5,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { authAgent } = require('../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
+const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -12,11 +13,17 @@ chai.use(chaiHttp);
 describe('/twiglets/{id}/model', () => {
   describe('PUT', () => {
     describe('Success', () => {
-      beforeEach('Create new twiglet', () => createTwiglet(baseTwiglet()));
+      beforeEach('Create new twiglet', function* foo () {
+        yield createModel(baseModel());
+        yield createTwiglet(baseTwiglet());
+      });
 
-      afterEach('Delete new twiglet', () => deleteTwiglet(baseTwiglet()));
+      afterEach('Delete new twiglet', function* foo () {
+        yield deleteModel(baseModel());
+        yield deleteTwiglet(baseTwiglet());
+      });
 
-      it('Creates a model', function* () {
+      it('updates a model', function* () {
         const res = yield authAgent.put(`/twiglets/${baseTwiglet()._id}/model`)
         .send({
           entities: {

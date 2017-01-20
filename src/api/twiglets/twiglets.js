@@ -141,17 +141,16 @@ const getTwigletsHandler = (request, reply) => {
   const db = new PouchDB(dbString, { skip_setup: true });
   return db.allDocs({ include_docs: true })
     .then((doc) => {
-      const twiglets = doc.rows.map((twiglet) => {
-        const ok = R.merge(
+      const twiglets = doc.rows.map((twiglet) =>
+        R.merge(
           R.omit(['_rev'], twiglet.doc),
           {
             url: request.buildUrl(`/twiglets/${twiglet.doc._id}`),
             model_url: request.buildUrl(`/twiglets/${twiglet.doc._id}/model`),
             changelog_url: request.buildUrl(`/twiglets/${twiglet.doc._id}/changelog`),
             views_url: request.buildUrl(`/twiglets/${twiglet.doc._id}/views`),
-          });
-        return ok;
-      });
+          })
+      );
       return reply(twiglets);
     })
     .catch((error) => {

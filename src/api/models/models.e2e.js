@@ -3,6 +3,7 @@
 /* eslint no-unused-expressions: 0 */
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+chai.use(require('chai-string'));
 const { anonAgent, authAgent, url } = require('../../../test/e2e');
 const R = require('ramda');
 
@@ -51,27 +52,27 @@ function baseModel () {
   };
 }
 
-// function baseModel2 () {
-//   return {
-//     _id: 'automated-test-model2',
-//     entities: {
-//       ent1: {
-//         class: 'ent3',
-//         color: '#770077',
-//         image: '3',
-//         size: '30',
-//         type: 'type 3',
-//       },
-//       ent2: {
-//         class: 'ent4',
-//         color: '#000088',
-//         image: '4',
-//         size: 41,
-//         type: 'type 4',
-//       }
-//     }
-//   };
-// }
+function baseModel2 () {
+  return {
+    _id: 'automated-test-model2',
+    entities: {
+      ent1: {
+        class: 'ent3',
+        color: '#770077',
+        image: '3',
+        size: '30',
+        type: 'type 3',
+      },
+      ent2: {
+        class: 'ent4',
+        color: '#000088',
+        image: '4',
+        size: 41,
+        type: 'type 4',
+      }
+    }
+  };
+}
 
 describe('POST /models', () => {
   describe('(Successful)', () => {
@@ -95,7 +96,7 @@ describe('POST /models', () => {
     });
 
     describe('(Error)', () => {
-      it('returns a conflict error if the twiglet already exists', () => {
+      it('returns a conflict error if the model already exists', () => {
         createModel(baseModel())
           .catch(secondResponse => {
             expect(secondResponse).to.have.status(409);
@@ -107,126 +108,108 @@ describe('POST /models', () => {
   });
 });
 
-// describe('GET /models', () => {
-//   describe('(Successful)', () => {
-//     let res;
-//     const createdModel = [];
-
-//     before(function* () {
-//       res = yield createModel(baseModel());
-//       createdModel.push(res.body);
-//       res = yield createModel(baseModel2());
-//       createdModel.push(res.body);
-//       res = yield getModels();
-//     });
-
-//     it('returns 200', () => {
-//       expect(res).to.have.status(200);
-//     });
-
-//     it('returns a list of twiglets', () => {
-//       const foundTwiglet = res.body.find(({ _id }) => _id === baseModel()._id);
-//       expect(foundTwiglet).to.containSubset(
-//         R.omit(['links', 'nodes', '_rev', 'commitMessage'], )
-//       );
-//     });
-
-//     after(() => deleteModel(baseModel()));
-//   });
-// });
-
-describe('GET /twiglets/{id}', () => {
+describe('GET /models', () => {
   describe('(Successful)', () => {
     let res;
+    let testModels;
 
     before(function* () {
-      res = yield createModel(baseModel());
+      const ids = [baseModel()._id, baseModel2()._id];
+      yield createModel(baseModel());
+      yield createModel(baseModel2());
+      res = yield getModels();
+      testModels = res.body.filter(model => ids.includes(model._id));
     });
 
     it('returns 200', () => {
       expect(res).to.have.status(200);
     });
 
-    it('contains the twiglet', () => {
-      expect(res.body).to.containSubset(R.merge(
-        R.omit(['model'], baseModel()),
-        {
-          nodes: [],
-          links: [],
-        }
-      ));
-      expect(res.body).to.include.keys('_rev', 'url', 'model_url', 'changelog_url', 'views_url');
+    it('returns a list of models', () => {
+      expect(testModels.length).to.equal(2);
+      expect(testModels[0]._id).to.equal('automated-test-model');
+      expect(testModels[0].url).to.endsWith('/models/automated-test-model');
+      expect(testModels[1]._id).to.equal('automated-test-model2');
+      expect(testModels[1].url).to.endsWith('/models/automated-test-model2');
+    });
+
+    after(function* foo () {
+      yield deleteModel(baseModel());
+      yield deleteModel(baseModel2());
+    });
+  });
+});
+
+describe('GET /models/{id}', () => {
+  describe('(Successful)', () => {
+    let res;
+
+    before(function* () {
+      yield createModel(baseModel());
+      res = yield getModel(baseModel());
+    });
+
+    it('returns 200', () => {
+      expect(res).to.have.status(200);
+    });
+
+    it('contains the model', () => {
+      expect(res.body).to.containSubset(baseModel());
+      expect(res.body).to.include.keys('_rev');
     });
 
     after(() => deleteModel(baseModel()));
   });
 
   describe('(Error)', () => {
-    let promise;
-
-    before(() => {
-      promise = getModel({ _id: 'non-existant-id' });
-    });
-
-    it('returns 404', (done) => {
-      promise.catch(res => {
-        expect(res).to.have.status(404);
-        done();
-      });
-    });
+    it('returns 404', () =>
+      getModel({ _id: 'non-existant-id' })
+        .catch(res => {
+          expect(res).to.have.status(404);
+        })
+    );
   });
 });
 
-describe('PUT /twiglets/{id}', () => {
+describe('PUT /models/{id}', () => {
   describe('(Successful)', () => {
     let res;
     let updates;
 
     before(function* () {
-      updates = baseModel();
-      delete updates._id;
-      delete updates.model;
-      updates._rev = (yield createModel(baseModel())).body._rev;
-      updates.name = 'a different name';
-      updates.description = 'a different description';
-      updates.nodes = [{ a: 'node' }];
-      updates.links = [{ a: 'link' }];
-      updates.commitMessage = 'this was totally updated!';
-      res = yield updateModel('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+      res = yield createModel(baseModel());
+      updates = baseModel2();
+      updates._rev = res.body._rev;
+      updates._id = baseModel()._id;
+      res = yield updateModel(baseModel()._id, updates);
     });
 
     it('returns 200', () => {
       expect(res).to.have.status(200);
     });
 
-    it('contains the twiglet', () => {
+    it('contains the model', () => {
       expect(res.body).to.containSubset(R.omit(['_rev'], updates));
-      expect(res.body).to.include.keys('_rev', 'url', 'model_url', 'changelog_url', 'views_url');
     });
 
     after(() => deleteModel(baseModel()));
   });
 
   describe('(Error)', () => {
-    let promise;
-
-    before(() => {
-      promise = getModel({ _id: 'non-existant-id' });
-    });
-
-    it('returns 404', (done) => {
-      promise.catch(res => {
-        expect(res).to.have.status(404);
-        done();
-      });
+    it('returns 404', () => {
+      const updates = baseModel();
+      updates._rev = 'does not matter';
+      return updateModel(updates._id, updates)
+        .catch(res => {
+          expect(res.status).to.equal(404);
+        });
     });
   });
 });
 
-describe('DELETE /twiglets/{id}', () => {
+describe('DELETE /models/{id}', () => {
   describe('(Successful)', () => {
     let res;
-
     before(function* () {
       yield createModel(baseModel());
       res = yield deleteModel(baseModel());
@@ -236,25 +219,31 @@ describe('DELETE /twiglets/{id}', () => {
       expect(res).to.have.status(204);
     });
 
-    it('GET twiglet returns 404', (done) => {
-      getModel({ _id: baseModel()._id })
-        .end((err, response) => {
+    it('GET model returns 404', () =>
+      getModel(baseModel())
+        .catch(response => {
           expect(response).to.have.status(404);
-          done();
-        });
-    });
+        })
+    );
 
-    it('not included in the list of twiglets', function* () {
-      const twiglets = yield getModels();
-      expect(twiglets.body).to.not.deep.contains(baseModel());
-    });
-
-    it('returns 404 when twiglet doesnt exist', (done) => {
-      deleteModel(baseModel())
-        .end((err, response) => {
-          expect(response).to.have.status(404);
-          done();
-        });
+    it('not included in the list of models', function* () {
+      const models = yield getModels();
+      expect(models.body).to.not.deep.contains(baseModel());
     });
   });
+
+  describe('(Error)', () => {
+    it('returns 404 when models doesnt exist', () =>
+      deleteModel(baseModel())
+        .catch(response => {
+          expect(response).to.have.status(404);
+        })
+    );
+  });
 });
+
+module.exports = {
+  createModel,
+  deleteModel,
+  baseModel,
+};

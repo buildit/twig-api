@@ -5,6 +5,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { anonAgent, authAgent } = require('../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
+const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -34,7 +35,10 @@ describe('/twiglets/{id}/changelog', () => {
     });
 
     describe('Success', () => {
-      beforeEach('Create new twiglet', () => createTwiglet(baseTwiglet()));
+      beforeEach('Create new twiglet', () => {
+        createModel(baseModel());
+        createTwiglet(baseTwiglet());
+      });
 
       it('Creates a changelog', function* () {
         const res = yield authAgent.post(`/twiglets/${baseTwiglet()._id}/changelog`)
@@ -45,7 +49,10 @@ describe('/twiglets/{id}/changelog', () => {
         expect(res).to.have.status(204);
       });
 
-      afterEach('Delete new twiglet', () => deleteTwiglet(baseTwiglet()));
+      afterEach('Delete new twiglet', () => {
+        deleteTwiglet(baseTwiglet());
+        deleteModel(baseModel());
+      });
     });
   });
 });

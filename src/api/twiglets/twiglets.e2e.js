@@ -6,6 +6,7 @@ const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
 const R = require('ramda');
 const { authAgent, anonAgent, url } = require('../../../test/e2e');
+const { createModel, deleteModel, baseModel } = require('../models/models.e2e.js');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -36,7 +37,7 @@ function baseTwiglet () {
     _id: 'test-c44e6001-1abd-483f-a8ab-bf807da7e455',
     name: 'test-c44e6001-1abd-483f-a8ab-bf807da7e455',
     description: 'foo bar baz',
-    model: 'fake model',
+    model: baseModel()._id,
     commitMessage: 'fee fie fo fum'
   };
 }
@@ -45,8 +46,9 @@ describe('POST /twiglets', () => {
   describe('(Successful)', () => {
     let res;
 
-    before(function* () {
+    before(function* foo () {
         // act
+      yield createModel(baseModel());
       res = yield createTwiglet(baseTwiglet());
     });
 
@@ -74,7 +76,10 @@ describe('POST /twiglets', () => {
         });
     });
 
-    after(() => deleteTwiglet(baseTwiglet()));
+    after(function* foo () {
+      yield deleteTwiglet(baseTwiglet());
+      yield deleteModel(baseModel());
+    });
   });
 });
 
@@ -84,6 +89,7 @@ describe('GET /twiglets', () => {
     let createdTwiglet;
 
     before(function* () {
+      yield createModel(baseModel());
       res = yield createTwiglet(baseTwiglet());
       createdTwiglet = res.body;
       res = yield getTwiglets();
@@ -100,7 +106,10 @@ describe('GET /twiglets', () => {
       );
     });
 
-    after(() => deleteTwiglet(baseTwiglet()));
+    after(function* foo () {
+      yield deleteTwiglet(baseTwiglet());
+      yield deleteModel(baseModel());
+    });
   });
 });
 
@@ -109,6 +118,7 @@ describe('GET /twiglets/{id}', () => {
     let res;
 
     before(function* () {
+      yield createModel(baseModel());
       res = yield createTwiglet(baseTwiglet());
     });
 
@@ -127,7 +137,10 @@ describe('GET /twiglets/{id}', () => {
       expect(res.body).to.include.keys('_rev', 'url', 'model_url', 'changelog_url', 'views_url');
     });
 
-    after(() => deleteTwiglet(baseTwiglet()));
+    after(function* foo () {
+      yield deleteTwiglet(baseTwiglet());
+      yield deleteModel(baseModel());
+    });
   });
 
   describe('(Error)', () => {
@@ -152,6 +165,7 @@ describe('PUT /twiglets/{id}', () => {
     let updates;
 
     before(function* () {
+      yield createModel(baseModel());
       updates = baseTwiglet();
       delete updates._id;
       delete updates.model;
@@ -173,7 +187,10 @@ describe('PUT /twiglets/{id}', () => {
       expect(res.body).to.include.keys('_rev', 'url', 'model_url', 'changelog_url', 'views_url');
     });
 
-    after(() => deleteTwiglet(baseTwiglet()));
+    after(function* foo () {
+      yield deleteTwiglet(baseTwiglet());
+      yield deleteModel(baseModel());
+    });
   });
 
   describe('(Error)', () => {
@@ -197,8 +214,10 @@ describe('DELETE /twiglets/{id}', () => {
     let res;
 
     before(function* () {
+      yield createModel(baseModel());
       yield createTwiglet(baseTwiglet());
       res = yield deleteTwiglet(baseTwiglet());
+      yield deleteModel(baseModel());
     });
 
     it('returns 204', () => {

@@ -56,7 +56,6 @@ const postModelsHandler = (request, reply) => {
           reply(modelResponse).created();
         })
         .catch(e => {
-          console.log('e!', e);
           logger.error(JSON.stringify(e));
           return reply(Boom.create(e.status || 500, e.message, e));
         });
@@ -88,7 +87,7 @@ const getModelHandler = (request, reply) => {
   getModel(request.params.id)
     .then(model => {
       const modelResponse = {
-        entities: model.data.entities,
+        entities: model.entities,
         _id: model._id,
         _rev: model._rev,
         url: request.buildUrl(`/models/${model._id}`),
@@ -122,8 +121,7 @@ const putModelHandler = (request, reply) => {
         _rev: model._rev,
         url: request.buildUrl(`/models/${model._id}`),
       };
-      reply(modelResponse);
-      reply(modelResponse).code(200);
+      return reply(modelResponse).code(200);
     })
     .catch((error) => {
       logger.error(JSON.stringify(error));
