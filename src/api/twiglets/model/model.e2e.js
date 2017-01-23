@@ -13,9 +13,11 @@ chai.use(chaiHttp);
 describe('/twiglets/{id}/model', () => {
   describe('PUT', () => {
     describe('Success', () => {
+      let _rev;
       beforeEach('Create new twiglet', function* foo () {
         yield createModel(baseModel());
         yield createTwiglet(baseTwiglet());
+        _rev = (yield authAgent.get(`/twiglets/${baseTwiglet()._id}/model`)).body._rev;
       });
 
       afterEach('Delete new twiglet', function* foo () {
@@ -26,6 +28,7 @@ describe('/twiglets/{id}/model', () => {
       it('updates a model', function* () {
         const res = yield authAgent.put(`/twiglets/${baseTwiglet()._id}/model`)
         .send({
+          _rev,
           entities: {
             some: {
               type: 'some',
@@ -43,7 +46,7 @@ describe('/twiglets/{id}/model', () => {
             }
           }
         });
-        expect(res).to.have.status(204);
+        expect(res).to.have.status(200);
       });
     });
 
@@ -57,6 +60,30 @@ describe('/twiglets/{id}/model', () => {
             expect(res).to.have.status(404);
             done();
           });
+      });
+    });
+  });
+
+  describe('GET', () => {
+    describe('success', () => {
+      let res;
+      beforeEach(function* foo () {
+        yield createModel(baseModel());
+        yield createTwiglet(baseTwiglet());
+        res = (yield authAgent.get(`/twiglets/${baseTwiglet()._id}/model`));
+      });
+
+      afterEach('Delete new twiglet', function* foo () {
+        yield deleteModel(baseModel());
+        yield deleteTwiglet(baseTwiglet());
+      });
+
+      it('returns 200 (OK)', () => {
+        expect(res.statusCode).to.equal(200);
+      });
+
+      it('returns the model', () => {
+        expect(res.body.entities).to.deep.equal(baseModel().entities);
       });
     });
   });

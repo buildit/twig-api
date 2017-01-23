@@ -55,31 +55,7 @@ const getChangelogHandler = (request, reply) => {
     });
 };
 
-const addCommitMessageHandler = (request, reply) =>
-  addCommitMessage({
-    _id: request.params.id,
-    commitMessage: request.payload.commitMessage,
-  }, request.auth.credentials.user.name)
-    .then(() => reply({}).code(204))
-    .catch((error) => {
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
-
 const routes = [
-  {
-    method: ['POST'],
-    path: '/twiglets/{id}/changelog',
-    handler: addCommitMessageHandler,
-    config: {
-      validate: {
-        payload: Joi.object({
-          commitMessage: Joi.string().required().trim(),
-        })
-      },
-      tags: ['api'],
-    }
-  },
   {
     method: ['GET'],
     path: '/twiglets/{id}/changelog',

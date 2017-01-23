@@ -77,7 +77,6 @@ const getModelsHandler = (request, reply) => {
       return reply(orgModels);
     })
     .catch((error) => {
-      console.log('error!', error);
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });

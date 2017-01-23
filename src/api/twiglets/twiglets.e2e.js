@@ -71,7 +71,6 @@ describe('POST /twiglets', () => {
     it('returns a conflict error if the twiglet already exists', () => {
       createTwiglet(baseTwiglet())
         .catch(secondResponse => {
-          console.log('catch');
           expect(secondResponse).to.have.status(409);
         });
     });
@@ -119,7 +118,8 @@ describe('GET /twiglets/{id}', () => {
 
     before(function* () {
       yield createModel(baseModel());
-      res = yield createTwiglet(baseTwiglet());
+      yield createTwiglet(baseTwiglet());
+      res = yield getTwiglet(baseTwiglet());
     });
 
     it('returns 200', () => {

@@ -16,22 +16,20 @@ function stubModel () {
     _id: 'testModel',
     _rev: '12345',
     name: 'some name',
-    data: {
-      entities: {
-        ent1: {
-          class: 'ent1',
-          color: '#008800',
-          image: '1',
-          size: '40',
-          type: 'type 1',
-        },
-        ent2: {
-          class: 'ent2',
-          color: '#880000',
-          image: '2',
-          size: 25,
-          type: 'type 2',
-        }
+    entities: {
+      ent1: {
+        class: 'ent1',
+        color: '#008800',
+        image: '1',
+        size: '40',
+        type: 'type 1',
+      },
+      ent2: {
+        class: 'ent2',
+        color: '#880000',
+        image: '2',
+        size: 25,
+        type: 'type 2',
       }
     }
   };
@@ -421,7 +419,7 @@ describe('/models/{id}', () => {
       });
 
       it('returns the correct number of entities', () => {
-        console.log(res.result);
+        console.log('res.result', res.result);
         expect(Reflect.ownKeys(res.result.entities).length).to.equal(2);
       });
     });

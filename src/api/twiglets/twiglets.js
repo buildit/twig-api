@@ -88,7 +88,6 @@ const getTwigletHandler = (request, reply) =>
   getTwiglet(request.params.id, request.buildUrl)
     .then((twiglet) => reply(twiglet))
     .catch((error) => {
-      console.log('ERROR', error);
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });
@@ -113,7 +112,7 @@ const createTwigletHandler = (request, reply) => {
           })
           .then(model => Promise.all([
             createdDb.bulkDocs([
-              { _id: 'model', data: model.data },
+              { _id: 'model', data: model },
               { _id: 'nodes', data: [] },
               { _id: 'links', data: [] },
               { _id: 'views', data: [] },
@@ -128,12 +127,10 @@ const createTwigletHandler = (request, reply) => {
             reply(twiglet).created(twiglet.url);
           })
           .catch((err) => {
-            console.log('error!', err);
             logger.error(JSON.stringify(err));
             return reply(Boom.create(err.status || 500, err.message, err));
           });
       }
-      console.log('error!', error);
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });
