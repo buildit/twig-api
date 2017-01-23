@@ -19,13 +19,21 @@ const twigletModelBase = Joi.object({
 
 const getModelHandler = (request, reply) => {
   const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
-  return db.get('model')
-    .then((doc) => {
-      reply({
-        _rev: doc._rev,
-        entities: doc.data.entities,
-      });
-    })
+  return db.info()
+    .then(() => db.get('model')
+      .then((doc) => {
+        reply({
+          _rev: doc._rev,
+          entities: doc.data.entities,
+        });
+      })
+      .catch((error) => {
+        if (error.status !== 404) {
+          throw error;
+        }
+        error.message = 'please upload a model for this twiglet';
+        return reply(Boom.create(error.status, error.message, error));
+      }))
     .catch((error) => {
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
