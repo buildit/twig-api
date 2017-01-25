@@ -2,7 +2,7 @@
 const Boom = require('boom');
 const PouchDb = require('pouchdb');
 const config = require('../../../config');
-const logger = require('../../../log')('CHANGELOG');
+const logger = require('../../../log')('MODEL');
 const Joi = require('joi');
 const R = require('ramda');
 

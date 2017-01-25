@@ -56,6 +56,7 @@ const postModelsHandler = (request, reply) => {
           reply(modelResponse).created();
         })
         .catch(e => {
+          console.log('error', error);
           logger.error(JSON.stringify(e));
           return reply(Boom.create(e.status || 500, e.message, e));
         });

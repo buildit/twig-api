@@ -103,23 +103,45 @@ const createTwigletHandler = (request, reply) => {
       if (error.status === 404) {
         const createdDb = new PouchDB(dbString);
         return createdDb.info()
-          .then(() => Model.getModel(request.payload.model))
-          .then(model => {
-            delete model._id;
-            delete model._rev;
-            delete model.url;
-            return model;
+          .then(() => {
+            if (!request.payload.cloneTwiglet) {
+              return Model.getModel(request.payload.model)
+              .then(model => {
+                delete model._id;
+                delete model._rev;
+                delete model.url;
+                return model;
+              })
+              .then(model => Promise.all([
+                createdDb.bulkDocs([
+                  { _id: 'model', data: model },
+                  { _id: 'nodes', data: [] },
+                  { _id: 'links', data: [] },
+                  { _id: 'views', data: [] },
+                ]),
+                twigletLookupDb.put(R.pick(['_id', 'name', 'description'], request.payload)),
+                Changelog.addCommitMessage(request.payload, request.auth.credentials.user.name),
+              ]));
+            }
+            const cloneString = config.getTenantDatabaseString(request.payload.cloneTwiglet);
+            const cloneDb = new PouchDB(cloneString, { skip_setup: true });
+            return cloneDb.allDocs({
+              include_docs: true,
+              keys: ['links', 'model', 'nodes', 'views']
+            })
+            .then(twigletDocs =>
+              Promise.all([
+                createdDb.bulkDocs([
+                  { _id: 'links', data: twigletDocs.rows[0].doc.data },
+                  { _id: 'model', data: twigletDocs.rows[1].doc.data },
+                  { _id: 'nodes', data: twigletDocs.rows[2].doc.data },
+                  { _id: 'views', data: twigletDocs.rows[3].doc.data },
+                ]),
+                twigletLookupDb.put(R.pick(['_id', 'name', 'description'], request.payload)),
+                Changelog.addCommitMessage(request.payload, request.auth.credentials.user.name),
+              ])
+            );
           })
-          .then(model => Promise.all([
-            createdDb.bulkDocs([
-              { _id: 'model', data: model },
-              { _id: 'nodes', data: [] },
-              { _id: 'links', data: [] },
-              { _id: 'views', data: [] },
-            ]),
-            twigletLookupDb.put(R.pick(['_id', 'name', 'description'], request.payload)),
-            Changelog.addCommitMessage(request.payload, request.auth.credentials.user.name),
-          ]))
           .then(() =>
             getTwiglet(request.payload._id, request.buildUrl)
           )
@@ -209,7 +231,7 @@ const putTwigletHandler = (request, reply) => {
     getTwiglet(request.params.id, request.buildUrl)
   )
   .then((twiglet) => {
-    reply(twiglet).ok();
+    reply(twiglet).code(200);
   })
   .catch((error) => {
     logger.error(JSON.stringify(error));

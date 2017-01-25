@@ -24,6 +24,21 @@ function getTwiglet ({ _id }) {
   return anonAgent.get(`/twiglets/${_id}`);
 }
 
+function getEntireTwiglet ({ _id }) {
+  return getTwiglet({ _id })
+  .then(response =>
+    Promise.all([
+      anonAgent.get(`/twiglets/${_id}/model`),
+      anonAgent.get(`/twiglets/${_id}/changelog`),
+    ])
+    .then(([model, changelog]) => {
+      response.body.model = model.body;
+      response.body.changelog = changelog.body.changelog;
+      return response.body;
+    })
+  );
+}
+
 function getTwiglets () {
   return anonAgent.get('/twiglets');
 }
@@ -78,6 +93,57 @@ describe('POST /twiglets', () => {
     after(function* foo () {
       yield deleteTwiglet(baseTwiglet());
       yield deleteModel(baseModel());
+    });
+  });
+
+  describe('(Clone)', () => {
+    let res;
+
+    function cloneTwiglet () {
+      return {
+        cloneTwiglet: baseTwiglet()._id,
+        commitMessage: 'cloned from BaseTwiglet',
+        description: 'This was cloned',
+        _id: 'clone-c44e6001-1abd-483f-a8ab-bf807da7e455',
+        model: 'does not matter',
+        name: 'clone',
+      };
+    }
+
+    before(function* foo () {
+      yield createModel(baseModel());
+      const updates = baseTwiglet();
+      delete updates._id;
+      delete updates.model;
+      updates._rev = (yield createTwiglet(baseTwiglet())).body._rev;
+      updates.nodes = [{ a: 'node' }];
+      updates.links = [{ a: 'link' }];
+      yield updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+      yield createTwiglet(cloneTwiglet());
+      res = yield getEntireTwiglet(cloneTwiglet());
+    });
+
+    after(function* foo () {
+      yield deleteTwiglet(baseTwiglet());
+      yield deleteTwiglet(cloneTwiglet());
+      yield deleteModel(baseModel());
+    });
+
+    it('correctly clones the nodes', () => {
+      expect(res.nodes).to.deep.equal([{ a: 'node' }]);
+    });
+
+    it('correctly clones the links', () => {
+      expect(res.links).to.deep.equal([{ a: 'link' }]);
+    });
+
+    it('correctly clones the model', () => {
+      expect(res.model.entities).to.deep.equal(baseModel().entities);
+    });
+
+    it('does not clone the name or description', () => {
+      expect(res.name).to.equal('clone');
+      expect(res.description).to.equal('This was cloned');
     });
   });
 });

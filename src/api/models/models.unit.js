@@ -248,7 +248,7 @@ describe('/models/', () => {
   });
 });
 
-describe('/models/{id}', () => {
+describe('/modelss/{id}', () => {
   let sandbox = sinon.sandbox.create();
   beforeEach(() => {
     sandbox = sinon.sandbox.create();
@@ -419,7 +419,6 @@ describe('/models/{id}', () => {
       });
 
       it('returns the correct number of entities', () => {
-        console.log('res.result', res.result);
         expect(Reflect.ownKeys(res.result.entities).length).to.equal(2);
       });
     });
