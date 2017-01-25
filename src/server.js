@@ -41,6 +41,7 @@ server.connection({
         'https://localhost:*',
         'http://*.riglet',
         'https://*.riglet',
+        '*://*.local:*'
       ],
       credentials: true,
     }

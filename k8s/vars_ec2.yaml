@@ -1,0 +1,10 @@
+image:
+  repository: 006393696278.dkr.ecr.us-east-1.amazonaws.com/twig-api
+  tag: "latest"
+  pullPolicy: Always
+service:
+  hostName: twig-api.riglet
+app:
+  dbUrl: http://couchdb-prod-couchdb:5984
+  ldapUrl: ldap://corp.riglet.local
+  logLevel: warn

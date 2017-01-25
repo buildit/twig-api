@@ -1,0 +1,10 @@
+image:
+  repository: builditdigital/twig-api
+  tag: "latest"
+  pullPolicy: IfNotPresent
+service:
+  hostName: twig-api.kube.local
+app:
+  dbUrl: http://couchdb-staging-couchdb:5984
+  ldapUrl: ldap://10.10.243.23
+  logLevel: debug
