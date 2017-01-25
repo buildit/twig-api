@@ -91,8 +91,8 @@ describe('POST /twiglets', () => {
     });
 
     after(function* foo () {
-      yield deleteTwiglet(baseTwiglet());
       yield deleteModel(baseModel());
+      yield deleteTwiglet(baseTwiglet());
     });
   });
 
@@ -124,9 +124,9 @@ describe('POST /twiglets', () => {
     });
 
     after(function* foo () {
+      yield deleteModel(baseModel());
       yield deleteTwiglet(baseTwiglet());
       yield deleteTwiglet(cloneTwiglet());
-      yield deleteModel(baseModel());
     });
 
     it('correctly clones the nodes', () => {
@@ -172,8 +172,8 @@ describe('GET /twiglets', () => {
     });
 
     after(function* foo () {
-      yield deleteTwiglet(baseTwiglet());
       yield deleteModel(baseModel());
+      yield deleteTwiglet(baseTwiglet());
     });
   });
 });
@@ -204,8 +204,8 @@ describe('GET /twiglets/{id}', () => {
     });
 
     after(function* foo () {
-      yield deleteTwiglet(baseTwiglet());
       yield deleteModel(baseModel());
+      yield deleteTwiglet(baseTwiglet());
     });
   });
 
@@ -254,8 +254,8 @@ describe('PUT /twiglets/{id}', () => {
     });
 
     after(function* foo () {
-      yield deleteTwiglet(baseTwiglet());
       yield deleteModel(baseModel());
+      yield deleteTwiglet(baseTwiglet());
     });
   });
 
@@ -282,8 +282,8 @@ describe('DELETE /twiglets/{id}', () => {
     before(function* () {
       yield createModel(baseModel());
       yield createTwiglet(baseTwiglet());
-      res = yield deleteTwiglet(baseTwiglet());
       yield deleteModel(baseModel());
+      res = yield deleteTwiglet(baseTwiglet());
     });
 
     it('returns 204', () => {
