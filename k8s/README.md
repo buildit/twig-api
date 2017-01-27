@@ -6,6 +6,7 @@
 2. `buildit/jenkins-pipeline-library` configured as global pipline library `buildit`
 3. Helm 2.x client
 4. CouchDB deployment named `couchdb-staging` (created using `helm install {{PATH_TO_FORK_OF_CHARTS}}/stable/couchdb -n couch-staging`)
+5. Test AD user `twigtest` (may be created using [adtool](https://github.com/buildit/digitalrig-docker/tree/master/images/adtool))
 
 ### Installation
 
