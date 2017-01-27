@@ -6,5 +6,5 @@ service:
   hostName: twig-api.kube.local
 app:
   dbUrl: http://couchdb-staging-couchdb:5984
-  ldapUrl: ldap://d-dc-samba-ad-dc
+  ldapUrl: ldap://ad-dc-samba-ad-dc
   logLevel: debug

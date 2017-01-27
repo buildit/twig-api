@@ -41,7 +41,8 @@ server.connection({
         'https://localhost:*',
         'http://*.riglet',
         'https://*.riglet',
-        '*://*.local:*'
+        'http://*.kube.local:*',
+        'https://*.kube.local:*'
       ],
       credentials: true,
     }
