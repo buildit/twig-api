@@ -5,8 +5,11 @@
 1. Rig 3.0 deployed on Minikube 0.15 or Kubernetes 1.5+
 2. `buildit/jenkins-pipeline-library` configured as global pipline library `buildit`
 3. Helm 2.x client
-4. CouchDB deployment named `couchdb-staging` (created using `helm install {{PATH_TO_FORK_OF_CHARTS}}/stable/couchdb -n couch-staging`)
-5. Test AD user `twigtest` (may be created using [adtool](https://github.com/buildit/digitalrig-docker/tree/master/images/adtool))
+4. CouchDB deployment named `couchdb-staging`
+    * For EC2 use `helm install {{PATH_TO_FORK_OF_CHARTS}}/stable/couchdb -n couchdb-staging -f ./couchdb/vars_ec2.yaml`
+    * For Minikube use `helm install {{PATH_TO_FORK_OF_CHARTS}}/stable/couchdb -n couchdb-staging -f ./couchdb/vars_local.yaml`
+5. Initialized CouchDB database (see twig's README.md)
+6. Test AD user `twigtest` (may be created using [adtool](https://github.com/buildit/digitalrig-docker/tree/master/images/adtool))
 
 ### Installation
 

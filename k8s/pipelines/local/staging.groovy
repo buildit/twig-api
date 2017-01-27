@@ -1,6 +1,6 @@
 @Library('buildit')
 def LOADED = true
-podTemplate(label: 'nodeapp',
+podTemplate(label: 'twig-api',
   containers: [
     containerTemplate(name: 'nodejs-builder', image: 'builditdigital/node-builder', ttyEnabled: true, command: 'cat', privileged: true),
     containerTemplate(name: 'docker', image: 'docker:1.11', ttyEnabled: true, command: 'cat'),
@@ -8,7 +8,7 @@ podTemplate(label: 'nodeapp',
   volumes: [
     hostPathVolume(mountPath: '/var/projects', hostPath: '/Users/romansafronov/dev/projects'),
     hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')]) {
-  node('nodeapp') {
+  node('twig-api') {
 
     currentBuild.result = "SUCCESS"
     sendNotifications = false //FIXME !DEV_MODE

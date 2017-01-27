@@ -5,6 +5,7 @@ image:
 service:
   hostName: twig-api.riglet
 app:
-  dbUrl: http://couchdb-prod-couchdb:5984
-  ldapUrl: ldap://corp.riglet.local
+  dbUrl: http://couchdb-staging-couchdb:5984
+  # Please update to match AD controller IP address
+  ldapUrl: ldap://172.20.0.149
   logLevel: warn

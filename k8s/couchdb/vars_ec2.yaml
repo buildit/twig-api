@@ -1,0 +1,22 @@
+# Default values for couchdb chart
+couchdb:
+  cors: true
+  corsOrigins: "*://localhost:*, *://*.riglet"
+persistence:
+  enabled: true
+  storageClass: generic
+  accessMode: ReadWriteOnce
+  size: 2Gi
+
+service:
+  type: ClusterIP
+  hostName: couchdb.riglet
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 256Mi
+  requests:
+    cpu: 300m
+    memory: 128Mi
+
