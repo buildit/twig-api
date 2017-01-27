@@ -30,8 +30,8 @@ podTemplate(label: 'nodeapp',
       }
       container('nodejs-builder') {
         stage('Checkout') {
-          //checkout scm
-          git(url: '/var/projects/twig-api', branch: 'k8s')
+          checkout scm
+          //git(url: '/var/projects/twig-api', branch: 'k8s')
           //'https://github.com/buildit/twig-api.git') // fixme: checkout scm
 
           // global for exception handling
@@ -76,7 +76,7 @@ podTemplate(label: 'nodeapp',
         stage('Deploy To K8S') {
           // fixme: need to create deployment if it does not exist
           sh "cd k8s && helm upgrade $deployment ./twig-api -f vars_local.yaml --set image.tag=$tag"
-          sh "kubectl rollout status deployment/$deployment-twig-api"
+          sh "kubectl rollout status deployment/$deployment-twig-ap"
         }
       }
 
@@ -84,9 +84,10 @@ podTemplate(label: 'nodeapp',
         stage("Run Functional Tests") {
           // run integration tests
           try {
-            sh "URL=http://twig-api-staging-twig-api npm run test:e2e:ci"
+            sh "URL=http://twig-api-staging-twig-ap npm run test:e2e:ci"
           }
           finally {
+            archiveArtifacts artifacts: '**/reports/e2e-test-results.xml'
             junit 'reports/e2e-test-results.xml'
           }
         }
@@ -94,10 +95,6 @@ podTemplate(label: 'nodeapp',
 
       container('docker') {
         stage('Promote Build to latest') {
-          // fixme
-          /*docker.withRegistry(registry) {
-              image.push("latest")
-          }*/
           sh "docker tag builditdigital/$appName:$tag $image:latest"
           if (sendNotifications) slackInst.notify("Deployed to Staging", "Commit <${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}> has been deployed to <${appUrl}|${appUrl}>\n\n${commitMessage}", "good", "http://i3.kym-cdn.com/entries/icons/square/000/002/230/42.png", slackChannel)
         }
