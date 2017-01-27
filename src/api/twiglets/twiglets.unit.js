@@ -291,7 +291,8 @@ describe('/twiglets', () => {
           name: 'some name',
           description: 'a description',
           model: 'some model',
-          commitMessage: 'Creation'
+          commitMessage: 'Creation',
+          cloneTwiglet: 'N/A'
         },
         credentials: {
           id: 123,

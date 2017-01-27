@@ -16,20 +16,22 @@ function stubModel () {
     _id: 'testModel',
     _rev: '12345',
     name: 'some name',
-    entities: {
-      ent1: {
-        class: 'ent1',
-        color: '#008800',
-        image: '1',
-        size: '40',
-        type: 'type 1',
-      },
-      ent2: {
-        class: 'ent2',
-        color: '#880000',
-        image: '2',
-        size: 25,
-        type: 'type 2',
+    data: {
+      entities: {
+        ent1: {
+          class: 'ent1',
+          color: '#008800',
+          image: '1',
+          size: '40',
+          type: 'type 1',
+        },
+        ent2: {
+          class: 'ent2',
+          color: '#880000',
+          image: '2',
+          size: 25,
+          type: 'type 2',
+        }
       }
     }
   };
@@ -85,8 +87,13 @@ describe('/models/', () => {
       beforeEach(function* foo () {
         const get = sandbox.stub(PouchDb.prototype, 'get');
         get.onFirstCall().rejects({ status: 404 });
-        const secondGet = req().payload;
-        secondGet._rev = 'some rev';
+        const secondGet = {
+          _rev: 'some rev',
+          _id: req().payload._id,
+          data: {
+            entities: req().payload.entities,
+          },
+        };
         get.onSecondCall().resolves(secondGet);
         sandbox.stub(PouchDb.prototype, 'put').resolves();
         res = yield server.inject(req());
@@ -248,7 +255,7 @@ describe('/models/', () => {
   });
 });
 
-describe('/modelss/{id}', () => {
+describe('/models/{id}', () => {
   let sandbox = sinon.sandbox.create();
   beforeEach(() => {
     sandbox = sinon.sandbox.create();

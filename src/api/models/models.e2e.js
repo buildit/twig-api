@@ -154,6 +154,7 @@ describe('GET /models/{id}', () => {
     });
 
     it('contains the model', () => {
+      console.log(res.body, baseModel());
       expect(res.body).to.containSubset(baseModel());
       expect(res.body).to.include.keys('_rev');
     });

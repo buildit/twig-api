@@ -100,32 +100,29 @@ const createTwigletHandler = (request, reply) => {
     .info()
     .then(() => reply(Boom.conflict('Twiglet already exists')))
     .catch(error => {
+      console.log('new twiglet');
       if (error.status === 404) {
         const createdDb = new PouchDB(dbString);
         return createdDb.info()
           .then(() => {
-            if (!request.payload.cloneTwiglet) {
+            if (request.payload.cloneTwiglet === 'N/A' || !request.payload.cloneTwiglet) {
               return Model.getModel(request.payload.model)
-              .then(model => {
-                delete model._id;
-                delete model._rev;
-                delete model.url;
-                return model;
-              })
-              .then(model => Promise.all([
-                createdDb.bulkDocs([
-                  { _id: 'model', data: model },
-                  { _id: 'nodes', data: [] },
-                  { _id: 'links', data: [] },
-                  { _id: 'views', data: [] },
-                ]),
-                twigletLookupDb.put(R.pick(['_id', 'name', 'description'], request.payload)),
-                Changelog.addCommitMessage(request.payload, request.auth.credentials.user.name),
-              ]));
+              .then(model =>
+                Promise.all([
+                  createdDb.bulkDocs([
+                    { _id: 'model', data: model.data },
+                    { _id: 'nodes', data: [] },
+                    { _id: 'links', data: [] },
+                    { _id: 'views', data: [] },
+                  ]),
+                  twigletLookupDb.put(R.pick(['_id', 'name', 'description'], request.payload)),
+                  Changelog.addCommitMessage(request.payload, request.auth.credentials.user.name),
+                ])
+              );
             }
             const cloneString = config.getTenantDatabaseString(request.payload.cloneTwiglet);
-            const cloneDb = new PouchDB(cloneString, { skip_setup: true });
-            return cloneDb.allDocs({
+            const clonedDb = new PouchDB(cloneString, { skip_setup: true });
+            return clonedDb.allDocs({
               include_docs: true,
               keys: ['links', 'model', 'nodes', 'views']
             })
@@ -149,10 +146,12 @@ const createTwigletHandler = (request, reply) => {
             reply(twiglet).created(twiglet.url);
           })
           .catch((err) => {
+            console.log('error!', error);
             logger.error(JSON.stringify(err));
             return reply(Boom.create(err.status || 500, err.message, err));
           });
       }
+      console.log('error!', error);
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });

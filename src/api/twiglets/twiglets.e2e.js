@@ -53,7 +53,7 @@ function baseTwiglet () {
     name: 'test-c44e6001-1abd-483f-a8ab-bf807da7e455',
     description: 'foo bar baz',
     model: baseModel()._id,
-    commitMessage: 'fee fie fo fum'
+    commitMessage: 'fee fie fo fum',
   };
 }
 
