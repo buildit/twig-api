@@ -12,7 +12,7 @@ const createModelRequest = Joi.object({
     class: Joi.string().required(),
     color: Joi.string(),
     image: Joi.string().required(),
-    size: [Joi.string().allow(''), Joi.number()],
+    size: [Joi.string().allow('').allow(null), Joi.number()],
     type: Joi.string(),
   })),
 });

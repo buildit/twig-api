@@ -13,7 +13,7 @@ const createTwigletRequest = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required().allow(''),
   model: Joi.string().required(),
-  cloneTwiglet: Joi.string(),
+  cloneTwiglet: Joi.string().allow(''),
   twiglet: Joi.string(), // twiglet to copy from...could be url instead?
   googlesheet: Joi.string().uri().allow(''),
   commitMessage: Joi.string().required(),
