@@ -94,67 +94,77 @@ const getTwigletHandler = (request, reply) =>
 
 const createTwigletHandler = (request, reply) => {
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
-  const dbString = config.getTenantDatabaseString(request.payload._id);
-  const db = new PouchDB(dbString, { skip_setup: true });
-  return db
-    .info()
-    .then(() => reply(Boom.conflict('Twiglet already exists')))
-    .catch(error => {
-      console.log('new twiglet');
-      if (error.status === 404) {
-        const createdDb = new PouchDB(dbString);
-        return createdDb.info()
-          .then(() => {
-            if (request.payload.cloneTwiglet === 'N/A' || !request.payload.cloneTwiglet) {
-              return Model.getModel(request.payload.model)
-              .then(model =>
+  return twigletLookupDb.allDocs({ include_docs: true })
+  .then(docs => {
+    if (docs.rows.some(row => row.doc.name === request.payload.name)) {
+      return reply(Boom.conflict('Twiglet already exists'));
+    }
+    const dbString = config.getTenantDatabaseString(request.payload._id);
+    const db = new PouchDB(dbString, { skip_setup: true });
+    return db
+      .info()
+      .then(() => reply(Boom.conflict('Twiglet already exists')))
+      .catch(error => {
+        if (error.status === 404) {
+          const createdDb = new PouchDB(dbString);
+          return createdDb.info()
+            .then(() => {
+              if (request.payload.cloneTwiglet === 'N/A' || !request.payload.cloneTwiglet) {
+                return Model.getModel(request.payload.model)
+                .then(model =>
+                  Promise.all([
+                    createdDb.bulkDocs([
+                      { _id: 'model', data: model.data },
+                      { _id: 'nodes', data: [] },
+                      { _id: 'links', data: [] },
+                      { _id: 'views', data: [] },
+                    ]),
+                    twigletLookupDb.put(R.pick(['_id', 'name', 'description'], request.payload)),
+                    Changelog.addCommitMessage(request.payload, request.auth.credentials.user.name),
+                  ])
+                );
+              }
+              const cloneString = config.getTenantDatabaseString(request.payload.cloneTwiglet);
+              const clonedDb = new PouchDB(cloneString, { skip_setup: true });
+              return clonedDb.allDocs({
+                include_docs: true,
+                keys: ['links', 'model', 'nodes', 'views']
+              })
+              .then(twigletDocs =>
                 Promise.all([
                   createdDb.bulkDocs([
-                    { _id: 'model', data: model.data },
-                    { _id: 'nodes', data: [] },
-                    { _id: 'links', data: [] },
-                    { _id: 'views', data: [] },
+                    { _id: 'links', data: twigletDocs.rows[0].doc.data },
+                    { _id: 'model', data: twigletDocs.rows[1].doc.data },
+                    { _id: 'nodes', data: twigletDocs.rows[2].doc.data },
+                    { _id: 'views', data: twigletDocs.rows[3].doc.data },
                   ]),
                   twigletLookupDb.put(R.pick(['_id', 'name', 'description'], request.payload)),
                   Changelog.addCommitMessage(request.payload, request.auth.credentials.user.name),
                 ])
               );
-            }
-            const cloneString = config.getTenantDatabaseString(request.payload.cloneTwiglet);
-            const clonedDb = new PouchDB(cloneString, { skip_setup: true });
-            return clonedDb.allDocs({
-              include_docs: true,
-              keys: ['links', 'model', 'nodes', 'views']
             })
-            .then(twigletDocs =>
-              Promise.all([
-                createdDb.bulkDocs([
-                  { _id: 'links', data: twigletDocs.rows[0].doc.data },
-                  { _id: 'model', data: twigletDocs.rows[1].doc.data },
-                  { _id: 'nodes', data: twigletDocs.rows[2].doc.data },
-                  { _id: 'views', data: twigletDocs.rows[3].doc.data },
-                ]),
-                twigletLookupDb.put(R.pick(['_id', 'name', 'description'], request.payload)),
-                Changelog.addCommitMessage(request.payload, request.auth.credentials.user.name),
-              ])
-            );
-          })
-          .then(() =>
-            getTwiglet(request.payload._id, request.buildUrl)
-          )
-          .then((twiglet) => {
-            reply(twiglet).created(twiglet.url);
-          })
-          .catch((err) => {
-            console.log('error!', error);
-            logger.error(JSON.stringify(err));
-            return reply(Boom.create(err.status || 500, err.message, err));
-          });
-      }
-      console.log('error!', error);
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
+            .then(() =>
+              getTwiglet(request.payload._id, request.buildUrl)
+            )
+            .then((twiglet) => {
+              reply(twiglet).created(twiglet.url);
+            })
+            .catch((err) => {
+              console.log('error!', error);
+              logger.error(JSON.stringify(err));
+              return reply(Boom.create(err.status || 500, err.message, err));
+            });
+        }
+        console.log('error!', error);
+        logger.error(JSON.stringify(error));
+        return reply(Boom.create(error.status || 500, error.message, error));
+      });
+  })
+  .catch((error) => {
+    console.log('error!', error);
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
+  });
 };
 
 const getTwigletsHandler = (request, reply) => {

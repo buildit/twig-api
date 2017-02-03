@@ -146,6 +146,41 @@ describe('POST /twiglets', () => {
       expect(res.description).to.equal('This was cloned');
     });
   });
+
+  describe('(Error)', () => {
+    before(function* foo () {
+        // act
+      yield createModel(baseModel());
+      yield createTwiglet(baseTwiglet());
+    });
+
+    after(function* foo () {
+      yield deleteModel(baseModel());
+      yield deleteTwiglet(baseTwiglet());
+    });
+
+    it('errors if the name is already being used', function* foo () {
+      const otherTwigletWithSameName = baseTwiglet();
+      otherTwigletWithSameName._id = 'a different id';
+      try {
+        yield createTwiglet(otherTwigletWithSameName);
+      }
+      catch (error) {
+        expect(error).to.have.status(409);
+      }
+    });
+
+    it('errors if the id is a repeat', function* foo () {
+      const otherTwigletWithSameId = baseTwiglet();
+      otherTwigletWithSameId.name = 'a different name';
+      try {
+        yield createTwiglet(otherTwigletWithSameId);
+      }
+      catch (error) {
+        expect(error).to.have.status(409);
+      }
+    });
+  });
 });
 
 describe('GET /twiglets', () => {

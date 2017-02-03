@@ -388,6 +388,9 @@ describe('/twiglets', () => {
       });
 
       it('responds with a conflict if the twiglet already exists', () => {
+        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({
+          rows: []
+        });
         sandbox.stub(PouchDb.prototype, 'info').resolves();
 
         return server.inject(req())
@@ -396,9 +399,21 @@ describe('/twiglets', () => {
           });
       });
 
+      it('responds with a conflict if the name is already being used', () => {
+        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({
+          rows: [
+            { doc: { name: 'some other name' } },
+            { doc: { name: 'some name' } }
+          ]
+        });
+        return server.inject(req())
+          .then((response) => {
+            expect(response.result.statusCode).to.equal(409);
+          });
+      });
+
       it('Passes along the error if the error is anything other than a 404', () => {
         sandbox.stub(PouchDb.prototype, 'info').rejects({ status: 500 });
-
         return server.inject(req())
           .then((response) => {
             expect(response.result.statusCode).to.equal(500);
