@@ -69,8 +69,8 @@ describe('/twiglets/{id}/model', () => {
       let res;
       beforeEach(function* foo () {
         yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        res = (yield authAgent.get(`/twiglets/${baseTwiglet()._id}/model`));
+        res = yield createTwiglet(baseTwiglet());
+        res = yield chai.request(res.body.model_url).get('');
       });
 
       afterEach('Delete new twiglet', function* foo () {

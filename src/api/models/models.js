@@ -6,7 +6,6 @@ const config = require('../../config');
 const logger = require('../../log')('MODELS');
 
 const createModelRequest = Joi.object({
-  _id: Joi.string().required(),
   commitMessage: Joi.string().required(),
   entities: Joi.object().pattern(/[\S\s]*/, Joi.object({
     class: Joi.string().required(),
@@ -15,6 +14,7 @@ const createModelRequest = Joi.object({
     size: [Joi.string().allow('').allow(null), Joi.number()],
     type: Joi.string(),
   })),
+  name: Joi.string().required(),
 });
 
 const updateModelRequest = createModelRequest.keys({
@@ -28,26 +28,30 @@ const getModelResponse = updateModelRequest.keys({
 });
 
 const getModelsResponse = Joi.array().items(Joi.object({
-  _id: Joi.string().required(),
+  name: Joi.string().required(),
   url: Joi.string().required(),
 }));
 
-const getModel = (id) => {
+const getModel = (name) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-  return db.get(id);
+  return db.allDocs({ include_docs: true })
+  .then(modelsRaw => {
+    const modelArray = modelsRaw.rows.filter(row => row.doc.data.name === name);
+    if (modelArray.length) {
+      return modelArray[0].doc;
+    }
+    const error = Error('Not Found');
+    error.status = 404;
+    throw error;
+  });
 };
 
 const postModelsHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-  return db.get(request.payload._id)
-    .then(() => reply(`Model "${request.payload._id}" already exists`).code(409))
-    .catch(error => {
-      if (error.status !== 404) {
-        logger.error(JSON.stringify(error));
-        return reply(Boom.create(error.status || 500, error.message, error));
-      }
-      return db.put({
-        _id: request.payload._id,
+  return getModel(request.payload.name)
+  .catch(error => {
+    if (error.status === 404) {
+      return db.post({
         data: {
           entities: request.payload.entities,
           changelog: [{
@@ -55,34 +59,37 @@ const postModelsHandler = (request, reply) => {
             user: request.auth.credentials.user.name,
             timestamp: new Date().toISOString(),
           }],
+          name: request.payload.name,
         }
       })
-        .then(() => getModel(request.payload._id))
-        .then(newModel => {
-          const modelResponse = {
-            entities: newModel.data.entities,
-            _id: newModel._id,
-            _rev: newModel._rev,
-            url: request.buildUrl(`/models/${newModel._id}`),
-            changelog_url: request.buildUrl(`/models/${newModel._id}/changelog`)
-          };
-          reply(modelResponse).code(201);
-        })
-        .catch(e => {
-          logger.error(JSON.stringify(e));
-          return reply(Boom.create(e.status || 500, e.message, e));
-        });
-    });
+      .then(() => getModel(request.payload.name))
+      .then(newModel => {
+        const modelResponse = {
+          entities: newModel.data.entities,
+          _rev: newModel._rev,
+          name: newModel.data.name,
+          url: request.buildUrl(`/models/${newModel.data.name}`),
+          changelog_url: request.buildUrl(`/models/${newModel.data.name}/changelog`)
+        };
+        reply(modelResponse).code(201);
+      });
+    }
+    throw error;
+  })
+  .catch(e => {
+    logger.error(JSON.stringify(e));
+    return reply(Boom.create(e.status || 500, e.message, e));
+  });
 };
 
 const getModelsHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return db.allDocs({ include_docs: true })
     .then(modelsRaw => {
-      const orgModels = modelsRaw.rows.reduce((array, model) => {
+      const orgModels = modelsRaw.rows.reduce((array, row) => {
         const object = {
-          _id: model.id,
-          url: request.buildUrl(`/models/${model.id}`),
+          name: row.doc.data.name,
+          url: request.buildUrl(`/models/${row.doc.data.name}`),
         };
         array.push(object);
         return array;
@@ -96,16 +103,16 @@ const getModelsHandler = (request, reply) => {
 };
 
 const getModelHandler = (request, reply) => {
-  getModel(request.params.id)
+  getModel(request.params.name)
     .then(model => {
       const modelResponse = {
         entities: model.data.entities,
-        _id: model._id,
+        name: model.data.name,
         _rev: model._rev,
-        url: request.buildUrl(`/models/${model._id}`),
-        changelog_url: request.buildUrl(`/models/${model._id}/changelog`)
+        url: request.buildUrl(`/models/${model.data.name}`),
+        changelog_url: request.buildUrl(`/models/${model.data.name}/changelog`)
       };
-      reply(modelResponse);
+      return reply(modelResponse);
     })
     .catch((error) => {
       logger.error(JSON.stringify(error));
@@ -115,10 +122,11 @@ const getModelHandler = (request, reply) => {
 
 const putModelHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-  getModel(request.payload._id)
+  getModel(request.params.name)
     .then(model => {
       if (model._rev === request.payload._rev) {
         model.data.entities = request.payload.entities;
+        model.data.name = request.payload.name;
         model.data.changelog.unshift({
           message: request.payload.commitMessage,
           user: request.auth.credentials.user.name,
@@ -131,14 +139,14 @@ const putModelHandler = (request, reply) => {
       error._rev = model._rev;
       throw error;
     })
-    .then(() => getModel(request.payload._id))
+    .then(() => getModel(request.payload.name))
     .then(model => {
       const modelResponse = {
-        entities: model.data.entities,
-        _id: model._id,
+        name: model.data.name,
         _rev: model._rev,
-        url: request.buildUrl(`/models/${model._id}`),
-        changelog_url: request.buildUrl(`/models/${model._id}/changelog`)
+        entities: model.data.entities,
+        url: request.buildUrl(`/models/${model.data.name}`),
+        changelog_url: request.buildUrl(`/models/${model.data.name}/changelog`)
       };
       return reply(modelResponse).code(200);
     })
@@ -154,13 +162,12 @@ const putModelHandler = (request, reply) => {
 
 const deleteModelsHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-  return db.get(request.params.id)
-    .then(({ _rev }) => db.remove(request.params.id, _rev))
-    .then(() => reply().code(204))
-    .catch(error => {
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
+  return getModel(request.params.name)
+  .then(model => db.remove(model._id, model._rev).then(() => reply().code(204)))
+  .catch(error => {
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
+  });
 };
 
 const routes = [
@@ -188,7 +195,7 @@ const routes = [
   },
   {
     method: ['GET'],
-    path: '/models/{id}',
+    path: '/models/{name}',
     handler: getModelHandler,
     config: {
       auth: { mode: 'optional' },
@@ -198,7 +205,7 @@ const routes = [
   },
   {
     method: ['PUT'],
-    path: '/models/{id}',
+    path: '/models/{name}',
     handler: putModelHandler,
     config: {
       validate: {
@@ -210,7 +217,7 @@ const routes = [
   },
   {
     method: ['DELETE'],
-    path: '/models/{id}',
+    path: '/models/{name}',
     handler: deleteModelsHandler,
     config: {
       tags: ['api'],

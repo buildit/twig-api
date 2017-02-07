@@ -14,25 +14,25 @@ function createModel (model) {
   return authAgent.post('/models').send(model);
 }
 
-function updateModel (_id, model) {
-  return authAgent.put(`/models/${_id}`).send(model);
+function updateModel (name, model) {
+  return authAgent.put(`/models/${name}`).send(model);
 }
 
-function getModel ({ _id }) {
-  return anonAgent.get(`/models/${_id}`);
+function getModel ({ name }) {
+  return anonAgent.get(`/models/${name}`);
 }
 
 function getModels () {
   return anonAgent.get('/models');
 }
 
-function deleteModel ({ _id }) {
-  return authAgent.delete(`/models/${_id}`);
+function deleteModel ({ name }) {
+  return authAgent.delete(`/models/${name}`);
 }
 
 function baseModel () {
   return {
-    _id: 'automated-test-model',
+    commitMessage: 'Model Created',
     entities: {
       ent1: {
         class: 'ent1',
@@ -49,13 +49,13 @@ function baseModel () {
         type: 'type 2',
       }
     },
-    commitMessage: 'Model Created'
+    name: 'model1',
   };
 }
 
 function baseModel2 () {
   return {
-    _id: 'automated-test-model2',
+    commitMessage: 'Model Created',
     entities: {
       ent1: {
         class: 'ent3',
@@ -72,7 +72,7 @@ function baseModel2 () {
         type: 'type 4',
       }
     },
-    commitMessage: 'Model Created',
+    name: 'model2',
   };
 }
 
@@ -89,11 +89,24 @@ describe('POST /models', () => {
         expect(res).to.have.status(201);
       });
 
-      it('returns the model', () => {
-        expect(res.body._id).to.equal(baseModel()._id);
-        expect(res.body.url).to.equal(`${url}/models/${baseModel()._id}`);
+      it('returns the model name', () => {
+        expect(res.body.name).to.equal(baseModel().name);
+      });
+
+      it('returns the model entities', () => {
         expect(res.body.entities).to.deep.equal(baseModel().entities);
+      });
+
+      it('returns a revision number', () => {
         expect(res.body).to.contain.all.keys(['_rev']);
+      });
+
+      it('returns a model url', () => {
+        expect(res.body.url).to.equal(`${url}/models/${baseModel().name}`);
+      });
+
+      it('returns a model changelog_url', () => {
+        expect(res.body.changelog_url).to.equal(`${url}/models/${baseModel().name}/changelog`);
       });
     });
 
@@ -116,11 +129,11 @@ describe('GET /models', () => {
     let testModels;
 
     before(function* () {
-      const ids = [baseModel()._id, baseModel2()._id];
+      const names = [baseModel().name, baseModel2().name];
       yield createModel(baseModel());
       yield createModel(baseModel2());
       res = yield getModels();
-      testModels = res.body.filter(model => ids.includes(model._id));
+      testModels = res.body.filter(model => names.includes(model.name));
     });
 
     it('returns 200', () => {
@@ -129,10 +142,14 @@ describe('GET /models', () => {
 
     it('returns a list of models', () => {
       expect(testModels.length).to.equal(2);
-      expect(testModels[0]._id).to.equal('automated-test-model');
-      expect(testModels[0].url).to.endsWith('/models/automated-test-model');
-      expect(testModels[1]._id).to.equal('automated-test-model2');
-      expect(testModels[1].url).to.endsWith('/models/automated-test-model2');
+    });
+
+    it('returns the name of the models', () => {
+      expect(testModels[0].name).to.equal('model1');
+    });
+
+    it('returns the model url', () => {
+      expect(testModels[0].url).to.endsWith('/models/model1');
     });
 
     after(function* foo () {
@@ -142,7 +159,7 @@ describe('GET /models', () => {
   });
 });
 
-describe('GET /models/{id}', () => {
+describe('GET /models/{name}', () => {
   describe('(Successful)', () => {
     let res;
 
@@ -161,16 +178,20 @@ describe('GET /models/{id}', () => {
       expect(res.body).to.containSubset(expected);
     });
 
+    it('includes the name', () => {
+      expect(res.body.name).to.equal('model1');
+    });
+
     it('includes the revision number', () => {
       expect(res.body).to.include.keys('_rev');
     });
 
     it('includes the url', () => {
-      expect(res.body.url).to.endsWith('/models/automated-test-model');
+      expect(res.body.url).to.endsWith('/models/model1');
     });
 
     it('includes the changelog url', () => {
-      expect(res.body.changelog_url).to.endsWith('/models/automated-test-model/changelog');
+      expect(res.body.changelog_url).to.endsWith('/models/model1/changelog');
     });
 
     after(() => deleteModel(baseModel()));
@@ -178,7 +199,7 @@ describe('GET /models/{id}', () => {
 
   describe('(Error)', () => {
     it('returns 404', () =>
-      getModel({ _id: 'non-existant-id' })
+      getModel({ name: 'non-existant-name' })
         .catch(res => {
           expect(res).to.have.status(404);
         })
@@ -186,7 +207,7 @@ describe('GET /models/{id}', () => {
   });
 });
 
-describe('PUT /models/{id}', () => {
+describe('PUT /models/{name}', () => {
   describe('(Successful)', () => {
     let res;
     let updates;
@@ -195,8 +216,7 @@ describe('PUT /models/{id}', () => {
       res = yield createModel(baseModel());
       updates = baseModel2();
       updates._rev = res.body._rev;
-      updates._id = baseModel()._id;
-      res = yield updateModel(baseModel()._id, updates);
+      res = yield updateModel(baseModel().name, updates);
     });
 
     it('returns 200', () => {
@@ -208,14 +228,14 @@ describe('PUT /models/{id}', () => {
     });
 
     it('includes the url', () => {
-      expect(res.body.url).to.endsWith('/models/automated-test-model');
+      expect(res.body.url).to.endsWith('/models/model2');
     });
 
     it('includes the changelog url', () => {
-      expect(res.body.changelog_url).to.endsWith('/models/automated-test-model/changelog');
+      expect(res.body.changelog_url).to.endsWith('/models/model2/changelog');
     });
 
-    after(() => deleteModel(baseModel()));
+    after(() => deleteModel(baseModel2()));
   });
 
   describe('(Error)', () => {

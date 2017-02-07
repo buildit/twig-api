@@ -3,7 +3,6 @@
 /* eslint no-unused-expressions: 0 */
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const { anonAgent } = require('../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
@@ -17,7 +16,7 @@ describe('/twiglets/{id}/changelog', () => {
     before(function* () {
       yield createModel(baseModel());
       res = yield createTwiglet(baseTwiglet());
-      res = yield anonAgent.get(`/twiglets/${baseTwiglet()._id}/changelog`);
+      res = yield chai.request(res.body.changelog_url).get('');
     });
 
     it('returns 200', () => {

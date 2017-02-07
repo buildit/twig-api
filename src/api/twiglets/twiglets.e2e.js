@@ -52,7 +52,7 @@ function baseTwiglet () {
     _id: 'test-c44e6001-1abd-483f-a8ab-bf807da7e455',
     name: 'test-c44e6001-1abd-483f-a8ab-bf807da7e455',
     description: 'foo bar baz',
-    model: baseModel()._id,
+    model: baseModel().name,
     commitMessage: 'fee fie fo fum',
   };
 }
