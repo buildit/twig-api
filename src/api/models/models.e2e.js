@@ -48,7 +48,8 @@ function baseModel () {
         size: 25,
         type: 'type 2',
       }
-    }
+    },
+    commitMessage: 'Model Created'
   };
 }
 
@@ -70,7 +71,8 @@ function baseModel2 () {
         size: 41,
         type: 'type 4',
       }
-    }
+    },
+    commitMessage: 'Model Created',
   };
 }
 
@@ -154,9 +156,21 @@ describe('GET /models/{id}', () => {
     });
 
     it('contains the model', () => {
-      console.log(res.body, baseModel());
-      expect(res.body).to.containSubset(baseModel());
+      const expected = baseModel();
+      delete expected.commitMessage;
+      expect(res.body).to.containSubset(expected);
+    });
+
+    it('includes the revision number', () => {
       expect(res.body).to.include.keys('_rev');
+    });
+
+    it('includes the url', () => {
+      expect(res.body.url).to.endsWith('/models/automated-test-model');
+    });
+
+    it('includes the changelog url', () => {
+      expect(res.body.changelog_url).to.endsWith('/models/automated-test-model/changelog');
     });
 
     after(() => deleteModel(baseModel()));
@@ -190,7 +204,15 @@ describe('PUT /models/{id}', () => {
     });
 
     it('contains the model', () => {
-      expect(res.body).to.containSubset(R.omit(['_rev'], updates));
+      expect(res.body).to.containSubset(R.omit(['_rev', 'commitMessage'], updates));
+    });
+
+    it('includes the url', () => {
+      expect(res.body.url).to.endsWith('/models/automated-test-model');
+    });
+
+    it('includes the changelog url', () => {
+      expect(res.body.changelog_url).to.endsWith('/models/automated-test-model/changelog');
     });
 
     after(() => deleteModel(baseModel()));

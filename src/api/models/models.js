@@ -4,10 +4,10 @@ const Joi = require('joi');
 const PouchDB = require('pouchdb');
 const config = require('../../config');
 const logger = require('../../log')('MODELS');
-const R = require('ramda');
 
 const createModelRequest = Joi.object({
   _id: Joi.string().required(),
+  commitMessage: Joi.string().required(),
   entities: Joi.object().pattern(/[\S\s]*/, Joi.object({
     class: Joi.string().required(),
     color: Joi.string(),
@@ -22,7 +22,9 @@ const updateModelRequest = createModelRequest.keys({
 });
 
 const getModelResponse = updateModelRequest.keys({
-  url: Joi.string().uri().required()
+  url: Joi.string().uri().required(),
+  changelog_url: Joi.string().uri().required(),
+  commitMessage: Joi.invalid(),
 });
 
 const getModelsResponse = Joi.array().items(Joi.object({
@@ -48,22 +50,25 @@ const postModelsHandler = (request, reply) => {
         _id: request.payload._id,
         data: {
           entities: request.payload.entities,
+          changelog: [{
+            message: request.payload.commitMessage,
+            user: request.auth.credentials.user.name,
+            timestamp: new Date().toISOString(),
+          }],
         }
       })
         .then(() => getModel(request.payload._id))
         .then(newModel => {
-          console.log('newModel', newModel);
           const modelResponse = {
             entities: newModel.data.entities,
             _id: newModel._id,
             _rev: newModel._rev,
             url: request.buildUrl(`/models/${newModel._id}`),
+            changelog_url: request.buildUrl(`/models/${newModel._id}/changelog`)
           };
-          console.log('here???', modelResponse);
           reply(modelResponse).code(201);
         })
         .catch(e => {
-          console.log('error', error);
           logger.error(JSON.stringify(e));
           return reply(Boom.create(e.status || 500, e.message, e));
         });
@@ -98,6 +103,7 @@ const getModelHandler = (request, reply) => {
         _id: model._id,
         _rev: model._rev,
         url: request.buildUrl(`/models/${model._id}`),
+        changelog_url: request.buildUrl(`/models/${model._id}/changelog`)
       };
       reply(modelResponse);
     })
@@ -112,7 +118,12 @@ const putModelHandler = (request, reply) => {
   getModel(request.payload._id)
     .then(model => {
       if (model._rev === request.payload._rev) {
-        model.data = R.omit(['_rev', '_id'], request.payload);
+        model.data.entities = request.payload.entities;
+        model.data.changelog.unshift({
+          message: request.payload.commitMessage,
+          user: request.auth.credentials.user.name,
+          timestamp: new Date().toISOString(),
+        });
         return db.put(model);
       }
       const error = Error('Conflict, bad revision number');
@@ -127,6 +138,7 @@ const putModelHandler = (request, reply) => {
         _id: model._id,
         _rev: model._rev,
         url: request.buildUrl(`/models/${model._id}`),
+        changelog_url: request.buildUrl(`/models/${model._id}/changelog`)
       };
       return reply(modelResponse).code(200);
     })

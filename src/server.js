@@ -12,6 +12,7 @@ const Twiglets = require('./api/twiglets');
 const Views = require('./api/twiglets/views');
 const Model = require('./api/twiglets/model');
 const Models = require('./api/models');
+const ModelsChangelog = require('./api/models/changelog');
 const Inert = require('inert');
 const Vision = require('vision');
 const HapiSwagger = require('hapi-swagger');
@@ -87,6 +88,7 @@ server.route(Node.routes);
 server.route(NavSettings.routes);
 server.route(Views.routes);
 server.route(Models.routes);
+server.route(ModelsChangelog.routes);
 server.route(Model.routes);
 
 server.start(err => {

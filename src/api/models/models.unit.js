@@ -32,8 +32,13 @@ function stubModel () {
           size: 25,
           type: 'type 2',
         }
-      }
-    }
+      },
+      changelog: [{
+        message: 'Model Created',
+        user: 'test.user@corp.riglet.io',
+        timestamp: new Date().toISOString(),
+      }],
+    },
   };
 }
 
@@ -61,6 +66,7 @@ describe('/models/', () => {
         },
         payload: {
           _id: 'anId',
+          commitMessage: 'Model Created',
           entities: {
             ent1: {
               class: 'ent1',
@@ -75,8 +81,8 @@ describe('/models/', () => {
               image: '2',
               size: 25,
               type: 'type 2',
-            }
-          }
+            },
+          },
         },
       };
     }
@@ -105,6 +111,10 @@ describe('/models/', () => {
 
       it('returns a url', () => {
         expect(res.result.url).to.endsWith('/models/anId');
+      });
+
+      it('returns a changelog url', () => {
+        expect(res.result.changelog_url).to.endsWith('/models/anId/changelog');
       });
 
       it('returns the revision number', () => {
@@ -280,6 +290,7 @@ describe('/models/{id}', () => {
         payload: {
           _id: 'testModel',
           _rev: '12345',
+          commitMessage: 'some change',
           entities: {
             ent1: {
               class: 'ent1',
