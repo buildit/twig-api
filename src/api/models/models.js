@@ -49,6 +49,11 @@ const getModel = (name) => {
 const postModelsHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return getModel(request.payload.name)
+  .then(() => {
+    const error = Error('Model name already in use');
+    error.status = 409;
+    throw error;
+  })
   .catch(error => {
     if (error.status === 404) {
       return db.post({

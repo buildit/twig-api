@@ -316,12 +316,21 @@ describe('/twiglets', () => {
         get.resolves(twigletInfo());
         sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
         put = sandbox.stub(PouchDb.prototype, 'put').resolves();
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves(twigletDocs());
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onSecondCall().resolves({ rows: [{
+          doc: {
+            data: {
+              name: 'some model',
+            }
+          }
+        }] });
+        allDocs.resolves(twigletDocs());
       });
 
       it('returns the newly created twiglet', () =>
           server.inject(req())
           .then(response => {
+            console.log(response.result);
             expect(response.result).to.include.keys({ _id: 'anId' });
           })
       );
