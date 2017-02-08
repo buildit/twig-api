@@ -16,20 +16,20 @@ function createTwiglet (twiglet) {
   return authAgent.post('/twiglets').send(twiglet);
 }
 
-function updateTwiglet (_id, twiglet) {
-  return authAgent.put(`/twiglets/${_id}`).send(twiglet);
+function updateTwiglet (name, twiglet) {
+  return authAgent.put(`/twiglets/${name}`).send(twiglet);
 }
 
-function getTwiglet ({ _id }) {
-  return anonAgent.get(`/twiglets/${_id}`);
+function getTwiglet ({ name }) {
+  return anonAgent.get(`/twiglets/${name}`);
 }
 
-function getEntireTwiglet ({ _id }) {
-  return getTwiglet({ _id })
+function getEntireTwiglet ({ name }) {
+  return getTwiglet({ name })
   .then(response =>
     Promise.all([
-      anonAgent.get(`/twiglets/${_id}/model`),
-      anonAgent.get(`/twiglets/${_id}/changelog`),
+      anonAgent.get(`/twiglets/${name}/model`),
+      anonAgent.get(`/twiglets/${name}/changelog`),
     ])
     .then(([model, changelog]) => {
       response.body.model = model.body;
@@ -43,13 +43,12 @@ function getTwiglets () {
   return anonAgent.get('/twiglets');
 }
 
-function deleteTwiglet ({ _id }) {
-  return authAgent.delete(`/twiglets/${_id}`);
+function deleteTwiglet ({ name }) {
+  return authAgent.delete(`/twiglets/${name}`);
 }
 
 function baseTwiglet () {
   return {
-    _id: 'test-c44e6001-1abd-483f-a8ab-bf807da7e455',
     name: 'test-c44e6001-1abd-483f-a8ab-bf807da7e455',
     description: 'foo bar baz',
     model: baseModel().name,
@@ -72,13 +71,13 @@ describe('POST /twiglets', () => {
     });
 
     it('has Location header', () => {
-      expect(res).to.have.header('Location', `${url}/twiglets/${baseTwiglet()._id}`);
+      expect(res).to.have.header('Location', `${url}/twiglets/${baseTwiglet().name}`);
     });
 
     it('has an entity response', () => {
       expect(res.body).to.contain.all.keys({
-        _id: baseTwiglet()._id,
-        url: `${url}/twiglets/${baseTwiglet()._id}`
+        name: baseTwiglet().name,
+        url: `${url}/twiglets/${baseTwiglet().name}`
       });
       expect(res.body).to.contain.all.keys(['_rev']);
     });
@@ -101,10 +100,9 @@ describe('POST /twiglets', () => {
 
     function cloneTwiglet () {
       return {
-        cloneTwiglet: baseTwiglet()._id,
+        cloneTwiglet: baseTwiglet().name,
         commitMessage: 'cloned from BaseTwiglet',
         description: 'This was cloned',
-        _id: 'clone-c44e6001-1abd-483f-a8ab-bf807da7e455',
         model: 'does not matter',
         name: 'clone',
       };
@@ -113,13 +111,12 @@ describe('POST /twiglets', () => {
     before(function* foo () {
       yield createModel(baseModel());
       const updates = baseTwiglet();
-      delete updates._id;
       delete updates.model;
       updates._rev = (yield createTwiglet(baseTwiglet())).body._rev;
       updates.nodes = [{ a: 'node' }];
       updates.links = [{ a: 'link' }];
       yield updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
-      yield createTwiglet(cloneTwiglet());
+      res = yield createTwiglet(cloneTwiglet());
       res = yield getEntireTwiglet(cloneTwiglet());
     });
 
@@ -160,21 +157,8 @@ describe('POST /twiglets', () => {
     });
 
     it('errors if the name is already being used', function* foo () {
-      const otherTwigletWithSameName = baseTwiglet();
-      otherTwigletWithSameName._id = 'a different id';
       try {
-        yield createTwiglet(otherTwigletWithSameName);
-      }
-      catch (error) {
-        expect(error).to.have.status(409);
-      }
-    });
-
-    it('errors if the id is a repeat', function* foo () {
-      const otherTwigletWithSameId = baseTwiglet();
-      otherTwigletWithSameId.name = 'a different name';
-      try {
-        yield createTwiglet(otherTwigletWithSameId);
+        yield createTwiglet(baseTwiglet());
       }
       catch (error) {
         expect(error).to.have.status(409);
@@ -200,7 +184,7 @@ describe('GET /twiglets', () => {
     });
 
     it('returns a list of twiglets', () => {
-      const foundTwiglet = res.body.find(({ _id }) => _id === baseTwiglet()._id);
+      const foundTwiglet = res.body.find(({ name }) => name === baseTwiglet().name);
       expect(foundTwiglet).to.containSubset(
         R.omit(['links', 'nodes', '_rev', 'commitMessage'], createdTwiglet)
       );
@@ -213,7 +197,7 @@ describe('GET /twiglets', () => {
   });
 });
 
-describe('GET /twiglets/{id}', () => {
+describe('GET /twiglets/{name}', () => {
   describe('(Successful)', () => {
     let res;
 
@@ -248,7 +232,7 @@ describe('GET /twiglets/{id}', () => {
     let promise;
 
     before(() => {
-      promise = getTwiglet({ _id: 'non-existant-id' });
+      promise = getTwiglet({ name: 'non-existant-name' });
     });
 
     it('returns 404', (done) => {
@@ -260,7 +244,7 @@ describe('GET /twiglets/{id}', () => {
   });
 });
 
-describe('PUT /twiglets/{id}', () => {
+describe('PUT /twiglets/{name}', () => {
   describe('(Successful)', () => {
     let res;
     let updates;
@@ -268,7 +252,6 @@ describe('PUT /twiglets/{id}', () => {
     before(function* () {
       yield createModel(baseModel());
       updates = baseTwiglet();
-      delete updates._id;
       delete updates.model;
       updates._rev = (yield createTwiglet(baseTwiglet())).body._rev;
       updates.name = 'a different name';
@@ -290,7 +273,7 @@ describe('PUT /twiglets/{id}', () => {
 
     after(function* foo () {
       yield deleteModel(baseModel());
-      yield deleteTwiglet(baseTwiglet());
+      yield deleteTwiglet({ name: 'a different name' });
     });
   });
 
@@ -298,7 +281,7 @@ describe('PUT /twiglets/{id}', () => {
     let promise;
 
     before(() => {
-      promise = getTwiglet({ _id: 'non-existant-id' });
+      promise = getTwiglet({ name: 'non-existant-name' });
     });
 
     it('returns 404', (done) => {
@@ -310,7 +293,7 @@ describe('PUT /twiglets/{id}', () => {
   });
 });
 
-describe('DELETE /twiglets/{id}', () => {
+describe('DELETE /twiglets/{name}', () => {
   describe('(Successful)', () => {
     let res;
 
@@ -326,7 +309,7 @@ describe('DELETE /twiglets/{id}', () => {
     });
 
     it('GET twiglet returns 404', (done) => {
-      getTwiglet({ _id: baseTwiglet()._id })
+      getTwiglet({ name: baseTwiglet().name })
         .end((err, response) => {
           expect(response).to.have.status(404);
           done();

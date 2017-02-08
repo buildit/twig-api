@@ -49,6 +49,9 @@ const config = {
     return this.TENANT
       ? `${this.DB_URL}/${this.TENANT}_${dbName}`
       : `${this.DB_URL}/${dbName}`;
+  },
+  get stagingUrls () {
+    return ['staging.twiglet'];
   }
 };
 

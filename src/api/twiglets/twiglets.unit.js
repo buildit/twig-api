@@ -330,7 +330,6 @@ describe('/twiglets', () => {
       it('returns the newly created twiglet', () =>
           server.inject(req())
           .then(response => {
-            console.log(response.result);
             expect(response.result).to.include.keys({ _id: 'anId' });
           })
       );

@@ -1,6 +1,6 @@
-'use strict';
 /* eslint func-names: 0 */
 /* eslint no-unused-expressions: 0 */
+'use strict';
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { authAgent } = require('../../../../test/e2e');
@@ -10,14 +10,14 @@ const { createModel, deleteModel, baseModel } = require('../../models/models.e2e
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-describe('/twiglets/{id}/model', () => {
+describe('/twiglets/{name}/model', () => {
   describe('PUT', () => {
     describe('Success', () => {
       let _rev;
       beforeEach('Create new twiglet', function* foo () {
         yield createModel(baseModel());
         yield createTwiglet(baseTwiglet());
-        _rev = (yield authAgent.get(`/twiglets/${baseTwiglet()._id}/model`)).body._rev;
+        _rev = (yield authAgent.get(`/twiglets/${baseTwiglet().name}/model`)).body._rev;
       });
 
       afterEach('Delete new twiglet', function* foo () {
@@ -26,7 +26,7 @@ describe('/twiglets/{id}/model', () => {
       });
 
       it('updates a model', function* () {
-        const res = yield authAgent.put(`/twiglets/${baseTwiglet()._id}/model`)
+        const res = yield authAgent.put(`/twiglets/${baseTwiglet().name}/model`)
         .send({
           _rev,
           entities: {
@@ -52,7 +52,7 @@ describe('/twiglets/{id}/model', () => {
 
     describe('errors', () => {
       it('Twiglet does not exist -> 404', (done) => {
-        authAgent.put(`/twiglets/${baseTwiglet()._id}/model`)
+        authAgent.put(`/twiglets/${baseTwiglet().name}/model`)
           .send({
             entities: {}
           })

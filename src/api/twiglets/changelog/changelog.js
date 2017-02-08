@@ -17,8 +17,22 @@ const getChangelogResponse = Joi.object({
   }))
 });
 
-const addCommitMessage = ({ _id, commitMessage }, user, timestamp = new Date().toISOString()) => {
-  const db = new PouchDb(config.getTenantDatabaseString(_id), { skip_setup: true });
+const getTwigletInfoByName = (name) => {
+  const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
+  return twigletLookupDb.allDocs({ include_docs: true })
+  .then(twigletsRaw => {
+    const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
+    if (modelArray.length) {
+      return modelArray[0].doc;
+    }
+    const error = Error('Not Found');
+    error.status = 404;
+    throw error;
+  });
+};
+
+const addCommitMessage = (_id, commitMessage, user, timestamp = new Date().toISOString()) => {
+  const db = new PouchDb(config.getTenantDatabaseString(_id));
   return db.info()
     .then(() => db.get('changelog')
       .catch((error) => {
@@ -39,26 +53,29 @@ const addCommitMessage = ({ _id, commitMessage }, user, timestamp = new Date().t
 };
 
 const getChangelogHandler = (request, reply) => {
-  const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
-  return db.info()
-    .then(() => db.get('changelog')
-      .then((doc) => reply({ changelog: doc.data }))
+  getTwigletInfoByName(request.params.name)
+  .then(twigletInfo => {
+    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+    return db.info()
+      .then(() => db.get('changelog')
+        .then((doc) => reply({ changelog: doc.data }))
+        .catch((error) => {
+          if (error.status !== 404) {
+            throw error;
+          }
+          return reply({ changelog: [] });
+        }))
       .catch((error) => {
-        if (error.status !== 404) {
-          throw error;
-        }
-        return reply({ changelog: [] });
-      }))
-    .catch((error) => {
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
+        logger.error(JSON.stringify(error));
+        return reply(Boom.create(error.status || 500, error.message, error));
+      });
+  });
 };
 
 const routes = [
   {
     method: ['GET'],
-    path: '/twiglets/{id}/changelog',
+    path: '/twiglets/{name}/changelog',
     handler: getChangelogHandler,
     config: {
       auth: { mode: 'optional' },
