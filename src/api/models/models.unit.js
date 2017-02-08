@@ -295,7 +295,7 @@ describe('/models/', () => {
   });
 });
 
-describe('/models/{id}', () => {
+describe('/models/{name}', () => {
   let sandbox = sinon.sandbox.create();
   beforeEach(() => {
     sandbox = sinon.sandbox.create();

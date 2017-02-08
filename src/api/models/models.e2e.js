@@ -250,7 +250,7 @@ describe('PUT /models/{name}', () => {
   });
 });
 
-describe('DELETE /models/{id}', () => {
+describe('DELETE /models/{name}', () => {
   describe('(Successful)', () => {
     let res;
     before(function* () {

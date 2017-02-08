@@ -35,18 +35,17 @@ const getModelHandler = (request, reply) => {
   getTwigletInfoByName(request.params.name)
   .then(twigletInfo => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-    return db.info()
-    .then(() => db.get('model'))
-    .then((doc) => {
-      reply({
-        _rev: doc._rev,
-        entities: doc.data.entities,
-      });
-    })
-    .catch((error) => {
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
+    return db.get('model');
+  })
+  .then((doc) => {
+    reply({
+      _rev: doc._rev,
+      entities: doc.data.entities,
     });
+  })
+  .catch((error) => {
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
   });
 };
 
@@ -54,8 +53,7 @@ const putModelHandler = (request, reply) => {
   getTwigletInfoByName(request.params.name)
     .then(twigletInfo => {
       const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-      return db.info()
-      .then(() => db.get('model'))
+      return db.get('model')
       .then((doc) => {
         if (doc._rev === request.payload._rev) {
           doc.data = R.omit(['_rev', 'name'], request.payload);

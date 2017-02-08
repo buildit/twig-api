@@ -14,6 +14,7 @@ server.route(Twiglet.routes);
 
 function twigletInfo () {
   return {
+    _id: 'some id',
     _rev: 'infoRev',
     name: 'Some Twiglet',
     description: 'The returning twiglet',
@@ -99,7 +100,8 @@ describe('/twiglets', () => {
     });
 
     describe('non-empty successes', () => {
-      beforeEach(() => {
+      let results;
+      beforeEach(function* foo () {
         const twiglets = {
           total_rows: 5,
           offset: 0,
@@ -125,43 +127,37 @@ describe('/twiglets', () => {
           ]
         };
         sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve(twiglets));
+        results = (yield server.inject(req)).result;
       });
 
       it('does not return a _rev if it exists', () =>
-        server.inject(req)
-          .then(response => {
-            response.result.forEach(twiglet => {
-              expect(twiglet._rev).to.not.exist;
-            });
-          })
+        results.forEach(twiglet => {
+          expect(twiglet._rev).to.not.exist;
+        })
       );
 
       it('returns name and description', () =>
-        server.inject(req)
-          .then(response => {
-            response.result.forEach(twiglet => {
-              expect(twiglet.name).to.exist;
-              expect(twiglet.description).to.exist;
-            });
-          })
+        results.forEach(twiglet => {
+          expect(twiglet.name).to.exist;
+          expect(twiglet.description).to.exist;
+        })
       );
 
-      it('returns urls to request more informations', () =>
-        server.inject(req)
-          .then(response => {
-            const first = response.result[0];
-            expect(first.url).to.exist.and.endsWith('/twiglets/one');
-            expect(first.model_url).to.exist.and.endsWith('/twiglets/one/model');
-            expect(first.changelog_url).to.exist.and.endsWith('/twiglets/one/changelog');
-            expect(first.views_url).to.exist.and.endsWith('/twiglets/one/views');
-
-            const second = response.result[1];
-            expect(second.url).to.exist.and.endsWith('/twiglets/two');
-            expect(second.model_url).to.exist.and.endsWith('/twiglets/two/model');
-            expect(second.changelog_url).to.exist.and.endsWith('/twiglets/two/changelog');
-            expect(second.views_url).to.exist.and.endsWith('/twiglets/two/views');
-          })
+      it('returns the twiglet url', () =>
+        expect(results[0].url).to.exist.and.endsWith('/twiglets/first')
       );
+
+      it('returns the model_url', () =>
+        expect(results[0].model_url).to.exist.and.endsWith('/twiglets/first/model')
+      );
+
+      it('returns the changelog_url', () =>
+        expect(results[0].changelog_url).to.exist.and.endsWith('/twiglets/first/changelog')
+      );
+
+      it('results the views_url', () => {
+        expect(results[0].views_url).to.exist.and.endsWith('/twiglets/first/views');
+      });
     });
 
     describe('errors', () => {
@@ -196,59 +192,56 @@ describe('/twiglets', () => {
   describe('getTwiglet', () => {
     const req = {
       method: 'get',
-      url: '/twiglets/someid'
+      url: '/twiglets/Some%20Twiglet'
     };
+    let twiglet;
     describe('successes', () => {
-      beforeEach(() => {
-        sandbox.stub(PouchDb.prototype, 'get').returns(Promise.resolve(twigletInfo()));
-        sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve(twigletDocs()));
+      beforeEach(function* foo () {
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves(twigletDocs());
+        twiglet = (yield server.inject(req)).result;
       });
 
-      it('returns the id, name and description', () =>
-        server.inject(req)
-          .then((response) => {
-            const twiglet = response.result;
-            expect(twiglet._id).to.exist.and.to.equal('someid');
-            expect(twiglet.name).to.exist.and.to.equal('Some Twiglet');
-            expect(twiglet.description).to.exist.and.to.equal('The returning twiglet');
-          })
+      it('returns the name and description', () =>
+        expect(twiglet.name).to.exist.and.to.equal('Some Twiglet')
+      );
+
+      it('returns the description', () =>
+        expect(twiglet.description).to.exist.and.to.equal('The returning twiglet')
       );
 
       it('returns a concatinated _rev info:nodes:links', () =>
-        server.inject(req)
-          .then((response) => {
-            const twiglet = response.result;
-            expect(twiglet._rev).to.exist.and.to.equal('infoRev:nodeRev:linkRev');
-          })
+        expect(twiglet._rev).to.exist.and.to.equal('infoRev:nodeRev:linkRev')
       );
 
       it('returns the latest changelog (0th index)', () =>
-        server.inject(req)
-          .then((response) => {
-            const twiglet = response.result;
-            expect(twiglet.commitMessage).to.exist.and.to
-              .equal(twigletDocs().rows[2].doc.data[0].message);
-          })
+        expect(twiglet.commitMessage).to.exist.and.to
+          .equal(twigletDocs().rows[2].doc.data[0].message)
       );
 
-      it('returns the correct array of nodes and links', () =>
-        server.inject(req)
-          .then((response) => {
-            const twiglet = response.result;
-            expect(twiglet.nodes).to.exist.and.to.deep.equal(twigletDocs().rows[0].doc.data);
-            expect(twiglet.links).to.exist.and.to.deep.equal(twigletDocs().rows[1].doc.data);
-          })
+      it('returns the correct array of nodes', () =>
+        expect(twiglet.nodes).to.exist.and.to.deep.equal(twigletDocs().rows[0].doc.data)
       );
 
-      it('returns a set of urls', () =>
-        server.inject(req)
-          .then(response => {
-            const twiglet = response.result;
-            expect(twiglet.url).to.exist.and.endsWith('/twiglets/someid');
-            expect(twiglet.model_url).to.exist.and.endsWith('/twiglets/someid/model');
-            expect(twiglet.changelog_url).to.exist.and.endsWith('/twiglets/someid/changelog');
-            expect(twiglet.views_url).to.exist.and.endsWith('/twiglets/someid/views');
-          })
+      it('returns the correct array of links', () =>
+        expect(twiglet.links).to.exist.and.to.deep.equal(twigletDocs().rows[1].doc.data)
+      );
+
+      it('returns the url for the twiglet', () =>
+        expect(twiglet.url).to.exist.and.endsWith('/twiglets/Some%20Twiglet')
+      );
+
+      it('returns the url for the twiglet model', () =>
+        expect(twiglet.model_url).to.exist.and.endsWith('/twiglets/Some%20Twiglet/model')
+      );
+
+      it('returns the url for the changelog', () =>
+        expect(twiglet.changelog_url).to.exist.and.endsWith('/twiglets/Some%20Twiglet/changelog')
+      );
+
+      it('returns the url for the twiglet views', () =>
+        expect(twiglet.views_url).to.exist.and.endsWith('/twiglets/Some%20Twiglet/views')
       );
     });
 
@@ -287,8 +280,7 @@ describe('/twiglets', () => {
         method: 'post',
         url: '/twiglets',
         payload: {
-          _id: 'anId',
-          name: 'some name',
+          name: 'Some Twiglet',
           description: 'a description',
           model: 'some model',
           commitMessage: 'Creation',
@@ -306,17 +298,11 @@ describe('/twiglets', () => {
 
     describe('successes', () => {
       let put;
-      beforeEach(() => {
-        const info = sandbox.stub(PouchDb.prototype, 'info');
-        info.onFirstCall().rejects({ status: 404 });
-        info.resolves();
-
-        const get = sandbox.stub(PouchDb.prototype, 'get');
-        get.withArgs('changelog').rejects({ status: 404 });
-        get.resolves(twigletInfo());
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
-        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+      let post;
+      let twiglet;
+      beforeEach(function* foo () {
         const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [] });
         allDocs.onSecondCall().resolves({ rows: [{
           doc: {
             data: {
@@ -324,30 +310,31 @@ describe('/twiglets', () => {
             }
           }
         }] });
-        allDocs.resolves(twigletDocs());
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs());
+        post = sandbox.stub(PouchDb.prototype, 'post').resolves({
+          id: 'some id',
+        });
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletInfo());
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+        twiglet = (yield server.inject(req())).result;
       });
 
       it('returns the newly created twiglet', () =>
-          server.inject(req())
-          .then(response => {
-            expect(response.result).to.include.keys({ _id: 'anId' });
-          })
+        expect(twiglet).to.include.keys({ name: 'Some Name' })
       );
 
       it('creates the twiglet in the twiglets list database', () =>
-          server.inject(req())
-          .then(() => {
-            expect(put.getCall(0).args[0]).to.have.keys(
-              { _id: 'anId', name: 'some name', description: 'a description' }
-            );
-          })
+        expect(post.getCall(0).args[0]).to.have.keys(
+          { name: 'some name', description: 'a description' }
+        )
       );
 
       it('logs the post to the commit log.', () =>
-          server.inject(req())
-          .then(() => {
-            expect(put.getCall(1).args[0]).to.include.keys({ _id: 'changelog' });
-          })
+        expect(put.getCall(0).args[0]).to.include.keys({ _id: 'changelog' })
       );
     });
 
@@ -356,15 +343,6 @@ describe('/twiglets', () => {
         let request;
         beforeEach(() => {
           request = req();
-        });
-
-        it('requires an id', () => {
-          delete request.payload._id;
-          return server.inject(request)
-          .then((response) => {
-            expect(response.result.statusCode).to.equal(400);
-            expect(response.result.message).to.contain('"_id" is required');
-          });
         });
 
         it('requires a name', () => {
@@ -396,24 +374,8 @@ describe('/twiglets', () => {
       });
 
       it('responds with a conflict if the twiglet already exists', () => {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({
-          rows: []
-        });
-        sandbox.stub(PouchDb.prototype, 'info').resolves();
-
-        return server.inject(req())
-          .then((response) => {
-            expect(response.result.statusCode).to.equal(409);
-          });
-      });
-
-      it('responds with a conflict if the name is already being used', () => {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({
-          rows: [
-            { doc: { name: 'some other name' } },
-            { doc: { name: 'some name' } }
-          ]
-        });
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.resolves({ rows: [{ doc: (twigletInfo()) }] });
         return server.inject(req())
           .then((response) => {
             expect(response.result.statusCode).to.equal(409);
@@ -434,7 +396,7 @@ describe('/twiglets', () => {
     function req () {
       return {
         method: 'put',
-        url: '/twiglets/anId',
+        url: '/twiglets/Some%20Twiglet',
         credentials: {
           id: 123,
           username: 'ben',
@@ -443,7 +405,7 @@ describe('/twiglets', () => {
           },
         },
         payload: {
-          name: 'a name',
+          name: 'Some Twiglet',
           description: 'a descirption',
           _rev: 'infoRev:nodeRev:linkRev',
           nodes: [{ a: 'node' }],
@@ -456,10 +418,15 @@ describe('/twiglets', () => {
     describe('success', () => {
       let put;
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'info').resolves();
-        const get = sandbox.stub(PouchDb.prototype, 'get').resolves(twigletInfo());
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves(twigletDocs());
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs());
+        const get = sandbox.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves(twigletDocs());
+        get.resolves(twigletInfo());
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
         put = sandbox.stub(PouchDb.prototype, 'put').resolves();
         yield server.inject(req());
       });
@@ -483,13 +450,22 @@ describe('/twiglets', () => {
         };
         expect(put.getCall(3).args[0].data[0]).to.include.keys(expectedLogEntry);
       });
-
-      it('returns the updated twiglet', () => {
-
-      });
     });
 
     describe('errors', () => {
+      let allDocs;
+      beforeEach(() => {
+        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves(twigletDocs());
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs());
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletInfo());
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+      });
+
       it('fails immediately if the rev cannot be split into 3 parts', () => {
         const request = req();
         request.payload._rev = 'not splittable';
@@ -500,7 +476,7 @@ describe('/twiglets', () => {
       });
 
       it('responds with a 404 the twiglet cannot be found', () => {
-        sandbox.stub(PouchDb.prototype, 'get').rejects({ status: 404 });
+        allDocs.onFirstCall().resolves({ rows: [] });
         return server.inject(req())
           .then(response => {
             expect(response.statusCode).to.equal(404);
@@ -511,8 +487,6 @@ describe('/twiglets', () => {
         const docs = twigletDocs();
         docs.rows.pop();
         it('breaks when the twigletInfo._rev is incorrect', () => {
-          sandbox.stub(PouchDb.prototype, 'get').resolves(twigletInfo());
-          sandbox.stub(PouchDb.prototype, 'allDocs').resolves(twigletDocs());
           const request = req();
           request.payload._rev = 'INCORRECTinfoRev:nodeRev:linkRev';
           return server.inject(request)
@@ -523,8 +497,6 @@ describe('/twiglets', () => {
         });
 
         it('breaks when the twigletInfo._rev is incorrect', () => {
-          sandbox.stub(PouchDb.prototype, 'get').resolves(twigletInfo());
-          sandbox.stub(PouchDb.prototype, 'allDocs').resolves(twigletDocs());
           const request = req();
           request.payload._rev = 'infoRev:INCORRECTnodeRev:linkRev';
           return server.inject(request)
@@ -535,8 +507,6 @@ describe('/twiglets', () => {
         });
 
         it('breaks when the twigletInfo._rev is incorrect', () => {
-          sandbox.stub(PouchDb.prototype, 'get').resolves(twigletInfo());
-          sandbox.stub(PouchDb.prototype, 'allDocs').resolves(twigletDocs());
           const request = req();
           request.payload._rev = 'infoRev:nodeRev:INCORRECTlinkRev';
           return server.inject(request)
@@ -553,7 +523,7 @@ describe('/twiglets', () => {
     function req () {
       return {
         method: 'delete',
-        url: '/twiglets/anId',
+        url: '/twiglets/Some%20Twiglet',
         credentials: {
           id: 123,
           username: 'ben',
@@ -566,11 +536,12 @@ describe('/twiglets', () => {
 
     describe('success', () => {
       beforeEach(() => {
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         sandbox.stub(PouchDb.prototype, 'destroy').resolves();
         sandbox.stub(PouchDb.prototype, 'get').resolves({ _id: 'some id', _rev: 'rev' });
         sandbox.stub(PouchDb.prototype, 'remove').resolves();
       });
-
       it('returns 204 once deleted', () =>
         server.inject(req())
           .then(response => {
@@ -581,8 +552,10 @@ describe('/twiglets', () => {
 
     describe('errors', () => {
       it('relays an error from the database', () => {
-        sandbox.stub(PouchDb.prototype, 'destroy').rejects({ status: 500 });
-
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        sandbox.stub(PouchDb.prototype, 'destroy')
+          .rejects({ status: 419, message: 'some message' });
         return server.inject(req())
           .catch((response) => {
             expect(response.result.statusCode).to.equal(500);
@@ -592,3 +565,6 @@ describe('/twiglets', () => {
   });
 });
 
+module.exports = {
+  twigletInfo,
+};

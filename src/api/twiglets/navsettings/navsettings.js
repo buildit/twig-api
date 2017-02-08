@@ -34,7 +34,7 @@ const put = (request, reply) => {
 
 module.exports.routes = [{
   method: ['PUT'],
-  path: '/twiglets/{id}/navsettings',
+  path: '/twiglets/{name}/navsettings',
   handler: put,
   config: {
     validate: {

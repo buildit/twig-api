@@ -9,7 +9,7 @@ const { createModel, deleteModel, baseModel } = require('../../models/models.e2e
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-describe('/twiglets/{id}/changelog', () => {
+describe('/twiglets/{name}/changelog', () => {
   describe('(Successful)', () => {
     let res;
 

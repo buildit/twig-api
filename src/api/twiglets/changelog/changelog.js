@@ -33,14 +33,13 @@ const getTwigletInfoByName = (name) => {
 
 const addCommitMessage = (_id, commitMessage, user, timestamp = new Date().toISOString()) => {
   const db = new PouchDb(config.getTenantDatabaseString(_id));
-  return db.info()
-    .then(() => db.get('changelog')
-      .catch((error) => {
-        if (error.status !== 404) {
-          throw error;
-        }
-        return { _id: 'changelog', data: [] };
-      }))
+  return db.get('changelog')
+    .catch((error) => {
+      if (error.status !== 404) {
+        throw error;
+      }
+      return { _id: 'changelog', data: [] };
+    })
     .then((doc) => {
       const commit = {
         message: commitMessage,
@@ -56,19 +55,22 @@ const getChangelogHandler = (request, reply) => {
   getTwigletInfoByName(request.params.name)
   .then(twigletInfo => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-    return db.info()
-      .then(() => db.get('changelog')
-        .then((doc) => reply({ changelog: doc.data }))
-        .catch((error) => {
-          if (error.status !== 404) {
-            throw error;
-          }
-          return reply({ changelog: [] });
-        }))
+    return db.get('changelog')
+      .then((doc) => reply({ changelog: doc.data }))
+      .catch((error) => {
+        if (error.status !== 404) {
+          throw error;
+        }
+        return reply({ changelog: [] });
+      })
       .catch((error) => {
         logger.error(JSON.stringify(error));
         return reply(Boom.create(error.status || 500, error.message, error));
       });
+  })
+  .catch((error) => {
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
   });
 };
 

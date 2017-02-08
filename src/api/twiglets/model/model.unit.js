@@ -6,6 +6,7 @@ require('sinon-as-promised');
 const PouchDb = require('pouchdb');
 const Model = require('./model');
 const server = require('../../../../test/unit/test-server');
+const twigletInfo = require('../twiglets.unit').twigletInfo;
 
 server.route(Model.routes);
 
@@ -23,9 +24,14 @@ describe('Twiglet::Models', () => {
     function req () {
       return {
         method: 'GET',
-        url: '/twiglets/{id}/model',
+        url: '/twiglets/Some%20Twiglet/model',
       };
     }
+
+    beforeEach(() => {
+      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+      allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+    });
 
     describe('success', () => {
       let response;
@@ -54,7 +60,6 @@ describe('Twiglet::Models', () => {
       }
 
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'info').resolves();
         sandbox.stub(PouchDb.prototype, 'get').resolves(getModelResults());
         response = yield server.inject(req());
       });
@@ -77,10 +82,6 @@ describe('Twiglet::Models', () => {
     });
 
     describe('errors', () => {
-      beforeEach(() => {
-        sandbox.stub(PouchDb.prototype, 'info').resolves();
-      });
-
       it('relays errors', function* foo () {
         sandbox.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
         const response = yield server.inject(req());
@@ -88,7 +89,7 @@ describe('Twiglet::Models', () => {
       });
 
       it('passes 500 for unknown errors', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').rejects();
+        sandbox.stub(PouchDb.prototype, 'get').rejects({ message: 'some message' });
         const response = yield server.inject(req());
         expect(response.statusCode).to.equal(500);
       });

@@ -5,10 +5,11 @@ const sinon = require('sinon');
 const PouchDb = require('pouchdb');
 const Changelog = require('./changelog');
 const server = require('../../../../test/unit/test-server');
+const twigletInfo = require('../twiglets.unit').twigletInfo;
 
 server.route(Changelog.routes);
 
-describe('/twiglets/{id}/changelog', () => {
+describe('/twiglets/{name}/changelog', () => {
   let sandbox = sinon.sandbox.create();
   beforeEach(() => {
     sandbox = sinon.sandbox.create();
@@ -21,24 +22,26 @@ describe('/twiglets/{id}/changelog', () => {
   describe('GET', () => {
     const req = {
       method: 'GET',
-      url: '/twiglets/12345/changelog',
+      url: '/twiglets/Some%20Twiglet/changelog',
     };
 
     it('returns empty changelog', () => {
       // arrange
-      sandbox.stub(PouchDb.prototype, 'info').returns(Promise.resolve());
+      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+      allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
       sandbox.stub(PouchDb.prototype, 'get').returns(Promise.reject({ status: 404 }));
       // act
       return server.inject(req)
         .then((response) => {
           // assert
-          expect(response.result.changelog).to.be.empty;
+          expect(response.result.changelog).to.be.an('array').and.to.be.empty;
         });
     });
 
     it('returns populated changelog', () => {
       // arrange
-      sandbox.stub(PouchDb.prototype, 'info').returns(Promise.resolve());
+      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+      allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
       sandbox.stub(PouchDb.prototype, 'get').returns(Promise.resolve({
         data: [
           {
@@ -63,9 +66,8 @@ describe('/twiglets/{id}/changelog', () => {
 
     it('fails when twiglet doesn\'t exist', () => {
       // arrange
-      const error = new Error('Not Found');
-      error.status = 404;
-      sandbox.stub(PouchDb.prototype, 'info').returns(Promise.reject(error));
+      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+      allDocs.onFirstCall().resolves({ rows: [] });
 
       // act
       return server.inject(req)
