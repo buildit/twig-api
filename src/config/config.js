@@ -50,9 +50,6 @@ const config = {
       ? `${this.DB_URL}/${this.TENANT}_${dbName}`
       : `${this.DB_URL}/${dbName}`;
   },
-  get stagingUrls () {
-    return ['staging.twiglet', 'localhost:3000'];
-  }
 };
 
 function clearEnvVars () {
