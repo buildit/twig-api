@@ -47,7 +47,6 @@ const getModel = (name) => {
 };
 
 const postModelsHandler = (request, reply) => {
-  const staging = config.stagingUrls.some(url => request.info.host.startsWith(url));
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return getModel(request.payload.name)
   .then(() => {
@@ -68,9 +67,6 @@ const postModelsHandler = (request, reply) => {
           name: request.payload.name,
         }
       };
-      if (staging) {
-        modelToCreate.staging = true;
-      }
       return db.post(modelToCreate)
       .then(() => getModel(request.payload.name))
       .then(newModel => {
@@ -93,12 +89,10 @@ const postModelsHandler = (request, reply) => {
 };
 
 const getModelsHandler = (request, reply) => {
-  const staging = config.stagingUrls.some(url => request.info.host.startsWith(url));
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return db.allDocs({ include_docs: true })
     .then(modelsRaw => {
       const orgModels = modelsRaw.rows
-      .filter(row => !!row.doc.staging === staging)
       .map(row =>
         ({
           name: row.doc.data.name,

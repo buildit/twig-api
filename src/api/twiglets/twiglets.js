@@ -101,7 +101,6 @@ const getTwigletHandler = (request, reply) =>
     });
 
 const createTwigletHandler = (request, reply) => {
-  const staging = config.stagingUrls.some(url => request.info.host.startsWith(url));
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({ include_docs: true })
   .then(docs => {
@@ -109,9 +108,6 @@ const createTwigletHandler = (request, reply) => {
       return reply(Boom.conflict('Twiglet already exists'));
     }
     const newTwiglet = R.pick(['name', 'description'], request.payload);
-    if (staging) {
-      newTwiglet.staging = true;
-    }
     return twigletLookupDb.post(newTwiglet)
     .then(twigletInfo => {
       const dbString = config.getTenantDatabaseString(twigletInfo.id);
@@ -169,13 +165,11 @@ const createTwigletHandler = (request, reply) => {
 };
 
 const getTwigletsHandler = (request, reply) => {
-  const staging = config.stagingUrls.some(url => request.info.host.startsWith(url));
   const dbString = config.getTenantDatabaseString('twiglets');
   const db = new PouchDB(dbString, { skip_setup: true });
   return db.allDocs({ include_docs: true })
     .then((doc) => {
       const twiglets = doc.rows
-      .filter(twiglet => !!twiglet.staging === staging)
       .map((twiglet) =>
         R.merge(
           R.omit(['_rev', '_id'], twiglet.doc),

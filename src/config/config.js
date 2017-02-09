@@ -33,7 +33,7 @@ const config = {
       return this._secrets._tenant;
     }
     const hostname = cls.getNamespace('hapi-request').get('host');
-    if (hostname === 'localhost') {
+    if (hostname.startsWith('localhost')) {
       return '';
     }
     if (hostname.startsWith('twig') || !hostname.includes('.twig')) {
@@ -51,7 +51,7 @@ const config = {
       : `${this.DB_URL}/${dbName}`;
   },
   get stagingUrls () {
-    return ['staging.twiglet'];
+    return ['staging.twiglet', 'localhost:3000'];
   }
 };
 
