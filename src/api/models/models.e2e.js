@@ -76,6 +76,15 @@ function baseModel2 () {
   };
 }
 
+function cloneModel () {
+  return {
+    cloneModel: baseModel().name,
+    commitMessage: 'cloned from BaseModel',
+    entities: {},
+    name: 'clone',
+  };
+}
+
 describe('POST /models', () => {
   describe('(Successful)', () => {
     let res;
@@ -120,6 +129,32 @@ describe('POST /models', () => {
     });
 
     after(() => deleteModel(baseModel()));
+  });
+
+  describe('(Clone)', () => {
+    let res;
+
+    before(function* foo () {
+      yield createModel(baseModel());
+      res = yield createModel(cloneModel());
+    });
+
+    after(function* foo () {
+      yield deleteModel(cloneModel());
+      yield deleteModel(baseModel());
+    });
+
+    it('returns 201', () => {
+      expect(res).to.have.status(201);
+    });
+
+    it('clones the entities', () => {
+      expect(res.body.entities).to.deep.equal(baseModel().entities);
+    });
+
+    it('does not clone the name', () => {
+      expect(res.body.name).to.deep.equal('clone');
+    });
   });
 });
 

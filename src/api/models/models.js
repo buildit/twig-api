@@ -6,6 +6,7 @@ const config = require('../../config');
 const logger = require('../../log')('MODELS');
 
 const createModelRequest = Joi.object({
+  cloneModel: Joi.string().allow('').allow(null),
   commitMessage: Joi.string().required(),
   entities: Joi.object().pattern(/[\S\s]*/, Joi.object({
     class: Joi.string().required(),
@@ -56,31 +57,48 @@ const postModelsHandler = (request, reply) => {
   })
   .catch(error => {
     if (error.status === 404) {
-      const modelToCreate = {
-        data: {
-          entities: request.payload.entities,
-          changelog: [{
-            message: request.payload.commitMessage,
-            user: request.auth.credentials.user.name,
-            timestamp: new Date().toISOString(),
-          }],
-          name: request.payload.name,
-        }
-      };
-      return db.post(modelToCreate)
-      .then(() => getModel(request.payload.name))
-      .then(newModel => {
-        const modelResponse = {
-          entities: newModel.data.entities,
-          _rev: newModel._rev,
-          name: newModel.data.name,
-          url: request.buildUrl(`/models/${newModel.data.name}`),
-          changelog_url: request.buildUrl(`/models/${newModel.data.name}/changelog`)
+      if (!request.payload.cloneModel) {
+        const modelToCreate = {
+          data: {
+            entities: request.payload.entities,
+            changelog: [{
+              message: request.payload.commitMessage,
+              user: request.auth.credentials.user.name,
+              timestamp: new Date().toISOString(),
+            }],
+            name: request.payload.name,
+          }
         };
-        reply(modelResponse).code(201);
+        return db.post(modelToCreate);
+      }
+      return getModel(request.payload.cloneModel)
+      .then(originalModel => {
+        const modelToCreate = {
+          data: {
+            entities: originalModel.data.entities,
+            changelog: [{
+              message: request.payload.commitMessage,
+              user: request.auth.credentials.user.name,
+              timestamp: new Date().toISOString(),
+            }],
+            name: request.payload.name,
+          }
+        };
+        return db.post(modelToCreate);
       });
     }
     throw error;
+  })
+  .then(() => getModel(request.payload.name))
+  .then(newModel => {
+    const modelResponse = {
+      entities: newModel.data.entities,
+      _rev: newModel._rev,
+      name: newModel.data.name,
+      url: request.buildUrl(`/models/${newModel.data.name}`),
+      changelog_url: request.buildUrl(`/models/${newModel.data.name}/changelog`)
+    };
+    return reply(modelResponse).code(201);
   })
   .catch(e => {
     logger.error(JSON.stringify(e));
