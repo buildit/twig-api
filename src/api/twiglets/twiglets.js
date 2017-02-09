@@ -49,7 +49,9 @@ const getTwigletInfoByName = (name) => {
   .then(twigletsRaw => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
-      return modelArray[0].doc;
+      const twiglet = modelArray[0].doc;
+      twiglet.twigId = `twig-${twiglet._id}`;
+      return twiglet;
     }
     const error = Error('Not Found');
     error.status = 404;
@@ -60,7 +62,7 @@ const getTwigletInfoByName = (name) => {
 const getTwiglet = (name, urlBuilder) =>
   getTwigletInfoByName(name)
   .then(twigletInfo => {
-    const dbString = config.getTenantDatabaseString(twigletInfo._id);
+    const dbString = config.getTenantDatabaseString(twigletInfo.twigId);
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.allDocs({
       include_docs: true,
@@ -114,7 +116,7 @@ const createTwigletHandler = (request, reply) => {
     }
     return twigletLookupDb.post(newTwiglet)
     .then(twigletInfo => {
-      const dbString = config.getTenantDatabaseString(twigletInfo.id);
+      const dbString = config.getTenantDatabaseString(`twig-${twigletInfo.id}`);
       const createdDb = new PouchDB(dbString);
       if (request.payload.cloneTwiglet === 'N/A' || !request.payload.cloneTwiglet) {
         return Model.getModel(request.payload.model)
@@ -126,7 +128,7 @@ const createTwigletHandler = (request, reply) => {
               { _id: 'links', data: [] },
               { _id: 'views', data: [] },
             ]),
-            Changelog.addCommitMessage(twigletInfo.id,
+            Changelog.addCommitMessage(`twig-${twigletInfo.id}`,
               request.payload.commitMessage,
               request.auth.credentials.user.name),
           ])
@@ -134,7 +136,7 @@ const createTwigletHandler = (request, reply) => {
       }
       return getTwigletInfoByName(request.payload.cloneTwiglet)
       .then(twigletToBeClonedInfo => {
-        const cloneString = config.getTenantDatabaseString(twigletToBeClonedInfo._id);
+        const cloneString = config.getTenantDatabaseString(twigletToBeClonedInfo.twigId);
         const clonedDb = new PouchDB(cloneString, { skip_setup: true });
         return clonedDb.allDocs({
           include_docs: true,
@@ -148,7 +150,7 @@ const createTwigletHandler = (request, reply) => {
               { _id: 'nodes', data: twigletDocs.rows[2].doc.data },
               { _id: 'views', data: twigletDocs.rows[3].doc.data },
             ]),
-            Changelog.addCommitMessage(twigletInfo.id,
+            Changelog.addCommitMessage(`twig-${twigletInfo.id}`,
               request.payload.commitMessage,
               request.auth.credentials.user.name),
           ])
@@ -204,7 +206,7 @@ const putTwigletHandler = (request, reply) => {
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   return getTwigletInfoByName(request.params.name)
   .then(twigletInfo => {
-    const dbString = config.getTenantDatabaseString(twigletInfo._id);
+    const dbString = config.getTenantDatabaseString(twigletInfo.twigId);
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.allDocs({
       include_docs: true,
@@ -225,6 +227,8 @@ const putTwigletHandler = (request, reply) => {
       }
       twigletInfo.name = request.payload.name;
       twigletInfo.description = request.payload.description;
+      const twigIdVar = twigletInfo.twigId;
+      delete twigletInfo.twigId;
       twigletData.nodes.data = request.payload.nodes;
       twigletData.links.data = request.payload.links;
       return Promise.all([
@@ -232,7 +236,7 @@ const putTwigletHandler = (request, reply) => {
         db.put(twigletData.nodes),
         db.put(twigletData.links),
         Changelog.addCommitMessage(
-          twigletInfo._id,
+          twigIdVar,
           request.payload.commitMessage,
           request.auth.credentials.user.name),
       ]);
@@ -252,9 +256,9 @@ const putTwigletHandler = (request, reply) => {
 
 const deleteTwigletHandler = (request, reply) => {
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
-  getTwigletInfoByName(request.params.name)
+  return getTwigletInfoByName(request.params.name)
   .then(twigletInfo => {
-    const dbString = config.getTenantDatabaseString(twigletInfo._id);
+    const dbString = config.getTenantDatabaseString(twigletInfo.twigId);
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.destroy()
       .then(() => twigletLookupDb.remove(twigletInfo._id, twigletInfo._rev))

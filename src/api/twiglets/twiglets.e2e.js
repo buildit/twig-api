@@ -122,8 +122,8 @@ describe('POST /twiglets', () => {
 
     after(function* foo () {
       yield deleteModel(baseModel());
-      yield deleteTwiglet(baseTwiglet());
       yield deleteTwiglet(cloneTwiglet());
+      yield deleteTwiglet(baseTwiglet());
     });
 
     it('correctly clones the nodes', () => {
@@ -159,6 +159,7 @@ describe('POST /twiglets', () => {
     it('errors if the name is already being used', function* foo () {
       try {
         yield createTwiglet(baseTwiglet());
+        expect(false).to.be.true; // should never be called.
       }
       catch (error) {
         expect(error).to.have.status(409);

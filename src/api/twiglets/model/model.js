@@ -23,7 +23,10 @@ const getTwigletInfoByName = (name) => {
   .then(twigletsRaw => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
-      return modelArray[0].doc;
+      const twiglet = modelArray[0].doc;
+      twiglet.originalId = twiglet._id;
+      twiglet._id = `twig-${twiglet._id}`;
+      return twiglet;
     }
     const error = Error('Not Found');
     error.status = 404;
