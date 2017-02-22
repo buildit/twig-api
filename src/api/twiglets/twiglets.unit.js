@@ -61,10 +61,14 @@ function twigletDocs () {
           _rev: 'changelogRev',
           data: [
             {
+              user: 'test@test.com',
               message: 'this one should be returned',
+              timestamp: '2017-02-09T20:12:33.805Z'
             },
             {
+              user: 'test2@test.com',
               message: 'older log, should not come through',
+              timestamp: '2017-02-07T20:12:33.805Z'
             }
           ]
         }
@@ -216,8 +220,8 @@ describe('/twiglets', () => {
       );
 
       it('returns the latest changelog (0th index)', () =>
-        expect(twiglet.commitMessage).to.exist.and.to
-          .equal(twigletDocs().rows[2].doc.data[0].message)
+        expect(twiglet.latestCommit).to.exist.and.to.deep
+          .equal(twigletDocs().rows[2].doc.data[0])
       );
 
       it('returns the correct array of nodes', () =>
@@ -492,7 +496,7 @@ describe('/twiglets', () => {
           return server.inject(request)
             .then(response => {
               expect(response.statusCode).to.equal(409);
-              expect(response.result._rev).to.equal('infoRev:nodeRev:linkRev');
+              expect(response.result.twiglet._rev).to.equal('infoRev:nodeRev:linkRev');
             });
         });
 
@@ -502,7 +506,7 @@ describe('/twiglets', () => {
           return server.inject(request)
             .then(response => {
               expect(response.statusCode).to.equal(409);
-              expect(response.result._rev).to.equal('infoRev:nodeRev:linkRev');
+              expect(response.result.twiglet._rev).to.equal('infoRev:nodeRev:linkRev');
             });
         });
 
@@ -512,7 +516,7 @@ describe('/twiglets', () => {
           return server.inject(request)
             .then(response => {
               expect(response.statusCode).to.equal(409);
-              expect(response.result._rev).to.equal('infoRev:nodeRev:linkRev');
+              expect(response.result.twiglet._rev).to.equal('infoRev:nodeRev:linkRev');
             });
         });
       });

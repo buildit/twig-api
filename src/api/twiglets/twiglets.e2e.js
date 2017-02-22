@@ -187,7 +187,7 @@ describe('GET /twiglets', () => {
     it('returns a list of twiglets', () => {
       const foundTwiglet = res.body.find(({ name }) => name === baseTwiglet().name);
       expect(foundTwiglet).to.containSubset(
-        R.omit(['links', 'nodes', '_rev', 'commitMessage'], createdTwiglet)
+        R.omit(['links', 'nodes', '_rev', 'latestCommit'], createdTwiglet)
       );
     });
 
@@ -214,10 +214,14 @@ describe('GET /twiglets/{name}', () => {
 
     it('contains the twiglet', () => {
       expect(res.body).to.containSubset(R.merge(
-        R.omit(['model'], baseTwiglet()),
+        R.omit(['model', 'commitMessage'], baseTwiglet()),
         {
           nodes: [],
           links: [],
+          latestCommit: {
+            message: 'fee fie fo fum',
+            user: 'twigtest@corp.riglet.io',
+          }
         }
       ));
       expect(res.body).to.include.keys('_rev', 'url', 'model_url', 'changelog_url', 'views_url');
@@ -268,8 +272,9 @@ describe('PUT /twiglets/{name}', () => {
     });
 
     it('contains the twiglet', () => {
-      expect(res.body).to.containSubset(R.omit(['_rev'], updates));
-      expect(res.body).to.include.keys('_rev', 'url', 'model_url', 'changelog_url', 'views_url');
+      expect(res.body).to.containSubset(R.omit(['_rev', 'commitMessage'], updates));
+      expect(res.body).to.include.keys('_rev', 'url', 'model_url', 'changelog_url',
+        'views_url', 'latestCommit');
     });
 
     after(function* foo () {

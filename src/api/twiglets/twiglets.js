@@ -37,7 +37,14 @@ const baseTwigletResponse = {
   views_url: Joi.string().uri().required(),
 };
 
-const getTwigletResponse = updateTwigletRequest.keys(baseTwigletResponse);
+const getTwigletResponse = updateTwigletRequest.keys(baseTwigletResponse).keys({
+  commitMessage: Joi.disallow(),
+  latestCommit: Joi.object({
+    message: Joi.string().required(),
+    user: Joi.string().required(),
+    timestamp: Joi.date().iso(),
+  })
+});
 
 const getTwigletsResponse = Joi.array().required().items(
   baseTwigletRequest.keys(baseTwigletResponse).unknown()
@@ -83,7 +90,7 @@ const getTwiglet = (name, urlBuilder) =>
           _rev: `${twigletInfo._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`,
           name: twigletInfo.name,
           description: twigletInfo.description,
-          commitMessage: twigletData.changelog.data[0].message,
+          latestCommit: twigletData.changelog.data[0],
           nodes: twigletData.nodes.data,
           links: twigletData.links.data,
           url,
@@ -214,10 +221,13 @@ const putTwigletHandler = (request, reply) => {
       if (twigletInfo._rev !== _revs[0]
           || twigletData.nodes._rev !== _revs[1]
           || twigletData.links._rev !== _revs[2]) {
-        const error = Error('Your revision number is out of date');
-        error.status = 409;
-        error._rev = `${twigletInfo._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`;
-        throw error;
+        return getTwiglet(request.params.name, request.buildUrl)
+        .then(twiglet => {
+          const error = Error('Your revision number is out of date');
+          error.status = 409;
+          error.twiglet = twiglet;
+          throw error;
+        });
       }
       twigletInfo.name = request.payload.name;
       twigletInfo.description = request.payload.description;
@@ -243,7 +253,7 @@ const putTwigletHandler = (request, reply) => {
   .catch((error) => {
     logger.error(JSON.stringify(error));
     const boomError = Boom.create(error.status || 500, error.message);
-    boomError.output.payload._rev = error._rev;
+    boomError.output.payload.twiglet = error.twiglet;
     return reply(boomError);
   });
 };
