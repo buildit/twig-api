@@ -28,6 +28,7 @@ const updateTwigletRequest = baseTwigletRequest.keys({
   nodes: Joi.array().required(),
   links: Joi.array().required(),
   commitMessage: Joi.string().required(),
+  doReplacement: Joi.boolean(),
 });
 
 const baseTwigletResponse = {
@@ -43,6 +44,7 @@ const getTwigletResponse = updateTwigletRequest.keys(baseTwigletResponse).keys({
     message: Joi.string().required(),
     user: Joi.string().required(),
     timestamp: Joi.date().iso(),
+    replacement: Joi.bool(),
   })
 });
 
@@ -242,7 +244,9 @@ const putTwigletHandler = (request, reply) => {
         Changelog.addCommitMessage(
           twigIdVar,
           request.payload.commitMessage,
-          request.auth.credentials.user.name),
+          request.auth.credentials.user.name,
+          request.payload.doReplacement
+        ),
       ]);
     });
   })
@@ -251,9 +255,11 @@ const putTwigletHandler = (request, reply) => {
   )
   .then((twiglet) => reply(twiglet).code(200))
   .catch((error) => {
-    logger.error(JSON.stringify(error));
+    if (error.status !== 409) {
+      logger.error(JSON.stringify(error));
+    }
     const boomError = Boom.create(error.status || 500, error.message);
-    boomError.output.payload.twiglet = error.twiglet;
+    boomError.output.payload.data = error.twiglet;
     return reply(boomError);
   });
 };

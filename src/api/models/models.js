@@ -20,12 +20,19 @@ const createModelRequest = Joi.object({
 
 const updateModelRequest = createModelRequest.keys({
   _rev: Joi.string().required(),
+  doReplacement: Joi.bool(),
 });
 
 const getModelResponse = updateModelRequest.keys({
   url: Joi.string().uri().required(),
   changelog_url: Joi.string().uri().required(),
   commitMessage: Joi.invalid(),
+  latestCommit: Joi.object({
+    message: Joi.string().required(),
+    user: Joi.string().required(),
+    timestamp: Joi.date().iso(),
+    replacement: Joi.bool(),
+  }),
 });
 
 const getModelsResponse = Joi.array().items(Joi.object({
@@ -132,6 +139,7 @@ const getModelHandler = (request, reply) => {
         entities: model.data.entities,
         name: model.data.name,
         _rev: model._rev,
+        latestCommit: model.data.changelog[0],
         url: request.buildUrl(`/models/${model.data.name}`),
         changelog_url: request.buildUrl(`/models/${model.data.name}/changelog`)
       };
@@ -150,16 +158,28 @@ const putModelHandler = (request, reply) => {
       if (model._rev === request.payload._rev) {
         model.data.entities = request.payload.entities;
         model.data.name = request.payload.name;
-        model.data.changelog.unshift({
+        const newLog = {
           message: request.payload.commitMessage,
           user: request.auth.credentials.user.name,
           timestamp: new Date().toISOString(),
-        });
+        };
+        if (request.payload.doReplacement) {
+          newLog.replacement = true;
+        }
+        model.data.changelog.unshift(newLog);
         return db.put(model);
       }
       const error = Error('Conflict, bad revision number');
       error.status = 409;
-      error._rev = model._rev;
+      const modelResponse = {
+        entities: model.data.entities,
+        name: model.data.name,
+        _rev: model._rev,
+        latestCommit: model.data.changelog[0],
+        url: request.buildUrl(`/models/${model.data.name}`),
+        changelog_url: request.buildUrl(`/models/${model.data.name}/changelog`)
+      };
+      error.model = modelResponse;
       throw error;
     })
     .then(() => getModel(request.payload.name))
@@ -174,10 +194,12 @@ const putModelHandler = (request, reply) => {
       return reply(modelResponse).code(200);
     })
     .catch((error) => {
-      logger.error(JSON.stringify(error));
+      if (error.status !== 409) {
+        logger.error(JSON.stringify(error));
+      }
       const boomError = Boom.create(error.status || 500, error.message);
-      if (error._rev) {
-        boomError.output.payload._rev = error._rev;
+      if (error.model) {
+        boomError.output.payload.data = error.model;
       }
       return reply(boomError);
     });

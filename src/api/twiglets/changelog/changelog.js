@@ -14,6 +14,7 @@ const getChangelogResponse = Joi.object({
     message: Joi.string().required(),
     user: Joi.string().required(),
     timestamp: Joi.date().iso(),
+    replacement: Joi.bool(),
   }))
 });
 
@@ -34,7 +35,8 @@ const getTwigletInfoByName = (name) => {
   });
 };
 
-const addCommitMessage = (_id, commitMessage, user, timestamp = new Date().toISOString()) => {
+const addCommitMessage = (_id, commitMessage, user, replacement,
+    timestamp = new Date().toISOString()) => {
   const db = new PouchDb(config.getTenantDatabaseString(_id));
   return db.get('changelog')
     .catch((error) => {
@@ -49,6 +51,9 @@ const addCommitMessage = (_id, commitMessage, user, timestamp = new Date().toISO
         user,
         timestamp,
       };
+      if (replacement) {
+        commit.replacement = replacement;
+      }
       doc.data.unshift(commit);
       return db.put(doc);
     });

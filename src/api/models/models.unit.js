@@ -394,7 +394,7 @@ describe('/models/{name}', () => {
         badRev.payload._rev = 'wrong!';
         const res = yield server.inject(badRev);
         expect(res.statusCode).to.equal(409);
-        expect(res.result._rev).to.equal('12345');
+        expect(res.result.data._rev).to.equal('12345');
       });
 
       it('passes database error codes on to the client', function* foo () {

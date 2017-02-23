@@ -496,7 +496,7 @@ describe('/twiglets', () => {
           return server.inject(request)
             .then(response => {
               expect(response.statusCode).to.equal(409);
-              expect(response.result.twiglet._rev).to.equal('infoRev:nodeRev:linkRev');
+              expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
             });
         });
 
@@ -506,7 +506,7 @@ describe('/twiglets', () => {
           return server.inject(request)
             .then(response => {
               expect(response.statusCode).to.equal(409);
-              expect(response.result.twiglet._rev).to.equal('infoRev:nodeRev:linkRev');
+              expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
             });
         });
 
@@ -516,7 +516,7 @@ describe('/twiglets', () => {
           return server.inject(request)
             .then(response => {
               expect(response.statusCode).to.equal(409);
-              expect(response.result.twiglet._rev).to.equal('infoRev:nodeRev:linkRev');
+              expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
             });
         });
       });
