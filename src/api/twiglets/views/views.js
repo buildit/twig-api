@@ -114,6 +114,7 @@ const getViewHandler = (request, reply) => {
       return reply(viewResponse);
     })
     .catch(error => {
+      console.log(error);
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });

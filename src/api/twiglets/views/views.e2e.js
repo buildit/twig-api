@@ -13,6 +13,7 @@ describe('/twiglets/{name}/views', () => {
   describe('GET', () => {
     describe('success', () => {
       let res;
+
       beforeEach(function* foo () {
         yield createModel(baseModel());
         res = yield createTwiglet(baseTwiglet());
@@ -28,8 +29,8 @@ describe('/twiglets/{name}/views', () => {
         expect(res.statusCode).to.equal(200);
       });
 
-      it('returns the views', () => {
-        expect(res.body.views).to.exist;
+      it('returns empty array when there are no views', () => {
+        expect(res.body).to.be.empty;
       });
     });
   });
