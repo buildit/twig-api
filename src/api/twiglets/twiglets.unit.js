@@ -387,10 +387,10 @@ describe('/twiglets', () => {
       });
 
       it('Passes along the error if the error is anything other than a 404', () => {
-        sandbox.stub(PouchDb.prototype, 'info').rejects({ status: 500 });
+        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419 });
         return server.inject(req())
           .then((response) => {
-            expect(response.result.statusCode).to.equal(500);
+            expect(response.result.statusCode).to.equal(419);
           });
       });
     });
