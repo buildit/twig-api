@@ -7,6 +7,7 @@ const PouchDb = require('pouchdb');
 const Views = require('./views');
 const server = require('../../../../test/unit/test-server');
 const twigletInfo = require('../twiglets.unit').twigletInfo;
+const twigletDocs = require('../twiglets.unit').twigletDocs;
 
 server.route(Views.routes);
 
@@ -39,7 +40,6 @@ describe('Twiglet::Views', () => {
         return {
           data: [
             {
-              _rev: 'some revision number',
               description: 'description of view',
               name: 'view name',
             }
@@ -56,12 +56,8 @@ describe('Twiglet::Views', () => {
         expect(response.statusCode).to.equal(200);
       });
 
-      it('only returns 4 keys', () => {
-        expect(Reflect.ownKeys(response.result[0]).length).to.equal(4);
-      });
-
-      it('returns the the _rev field', () => {
-        expect(response.result[0]._rev).to.equal(getViewResults().data[0]._rev);
+      it('only returns 2 keys', () => {
+        expect(Reflect.ownKeys(response.result[0]).length).to.equal(2);
       });
 
       it('returns the url', () => {
@@ -109,22 +105,11 @@ describe('Twiglet::Views', () => {
         return {
           data: [
             {
-              _rev: 'some revision number',
               description: 'description of view',
               name: 'view name',
-              data: {
-                _rev: 'some revision number',
-                collapsed_nodes: [],
-                description: 'description of view',
-                display_name: 'view display',
-                fixed_nodes: {},
-                link_types: {},
-                name: 'view name',
-                nav: {
-                  scale: '3',
-                  'show-node-label': false
-                },
-                node_types: {}
+              userState: {
+                scale: 3,
+                showNodeLabels: false
               }
             }
           ]
@@ -140,17 +125,13 @@ describe('Twiglet::Views', () => {
         expect(response.statusCode).to.equal(200);
       });
 
-      it('returns the the _rev field', () => {
-        expect(response.result._rev).to.equal(getViewResults().data[0]._rev);
-      });
-
       it('returns the url', () => {
         const viewUrl = '/twiglets/Some%20Twiglet/views/view%20name';
         expect(response.result.url).to.exist.and.endsWith(viewUrl);
       });
 
-      it('returns the correct nav settings', () => {
-        expect(response.result.nav['show-node-label']).to.equal(false);
+      it('returns the correct userState settings', () => {
+        expect(response.result.userState.showNodeLabels).to.equal(false);
       });
     });
 
@@ -165,6 +146,98 @@ describe('Twiglet::Views', () => {
         sandbox.stub(PouchDb.prototype, 'get').rejects({ message: 'some message' });
         const response = yield server.inject(req());
         expect(response.statusCode).to.equal(500);
+      });
+    });
+  });
+
+  describe('postViewsHandler', () => {
+    function req () {
+      return {
+        method: 'POST',
+        url: '/twiglets/Some%20Twiglet/views',
+        credentials: {
+          id: 123,
+          username: 'ben',
+          user: {
+            name: 'Ben Hernandez',
+          },
+        },
+        payload: {
+          description: 'view description',
+          name: 'test view',
+          userState: {
+            scale: 3,
+            showNodeLabels: true
+          }
+        }
+      };
+    }
+
+    function getViewResults () {
+      return {
+        data: [
+          {
+            description: 'view description',
+            name: 'test view',
+            userState: {
+              scale: 3,
+              showNodeLabels: true
+            }
+          }
+        ]
+      };
+    }
+
+    describe('success', () => {
+      let response;
+      let put;
+      beforeEach(function* foo () {
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves(twigletDocs());
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs());
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletDocs().rows[3].doc);
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sandbox.stub(PouchDb.prototype, 'put').resolves(getViewResults());
+        response = yield server.inject(req());
+      });
+
+      it('calls put', () => {
+        expect(put.callCount).to.equal(2);
+      });
+
+      it('returns CREATED', () => {
+        expect(response.statusCode).to.equal(201);
+      });
+
+      it('returns the new view', () => {
+        expect(response.result).to.include.keys({ name: 'test view' });
+      });
+    });
+
+    describe('errors', () => {
+      let allDocs;
+      beforeEach(() => {
+        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves(twigletDocs());
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs());
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletDocs().rows[3].doc);
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+      });
+
+      it('relays the error', () => {
+        sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
+        return server.inject(req())
+          .then((response) => {
+            expect(response.result.statusCode).to.equal(420);
+          });
       });
     });
   });

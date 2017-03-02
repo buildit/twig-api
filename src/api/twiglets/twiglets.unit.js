@@ -73,6 +73,13 @@ function twigletDocs () {
           ]
         }
       },
+      {
+        id: 'views',
+        doc: {
+          _rev: 'viewsRev',
+          data: []
+        }
+      },
     ]
   };
 }
@@ -571,4 +578,5 @@ describe('/twiglets', () => {
 
 module.exports = {
   twigletInfo,
+  twigletDocs
 };
