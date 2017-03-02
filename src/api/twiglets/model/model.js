@@ -14,6 +14,11 @@ const twigletModelBase = Joi.object({
     size: [Joi.string().allow(''), Joi.number()],
     class: Joi.string().required(),
     image: Joi.string().required(),
+    attributes: Joi.array().items(Joi.object({
+      name: Joi.string().required(),
+      dataType: Joi.string().required(),
+      required: Joi.bool().required(),
+    })),
   })),
 });
 

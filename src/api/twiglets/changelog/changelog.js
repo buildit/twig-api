@@ -14,7 +14,6 @@ const getChangelogResponse = Joi.object({
     message: Joi.string().required(),
     user: Joi.string().required(),
     timestamp: Joi.date().iso(),
-    replacement: Joi.bool(),
   }))
 });
 
@@ -52,7 +51,12 @@ const addCommitMessage = (_id, commitMessage, user, replacement,
         timestamp,
       };
       if (replacement) {
-        commit.replacement = replacement;
+        const replacementCommit = {
+          message: '--- previous change overwritten ---',
+          user,
+          timestamp,
+        };
+        doc.data.unshift(replacementCommit);
       }
       doc.data.unshift(commit);
       return db.put(doc);

@@ -14,6 +14,11 @@ const createModelRequest = Joi.object({
     image: Joi.string().required(),
     size: [Joi.string().allow('').allow(null), Joi.number()],
     type: Joi.string(),
+    attributes: Joi.array().items(Joi.object({
+      name: Joi.string().required(),
+      dataType: Joi.string().required(),
+      required: Joi.bool().required(),
+    })),
   })),
   name: Joi.string().required(),
 });
@@ -164,7 +169,12 @@ const putModelHandler = (request, reply) => {
           timestamp: new Date().toISOString(),
         };
         if (request.payload.doReplacement) {
-          newLog.replacement = true;
+          const replacementCommit = {
+            message: '--- previous change overwritten ---',
+            user: request.auth.credentials.user.name,
+            timestamp: new Date().toISOString(),
+          };
+          model.data.changelog.unshift(replacementCommit);
         }
         model.data.changelog.unshift(newLog);
         return db.put(model);
