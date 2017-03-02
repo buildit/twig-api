@@ -30,10 +30,12 @@ function getEntireTwiglet ({ name }) {
     Promise.all([
       anonAgent.get(`/twiglets/${name}/model`),
       anonAgent.get(`/twiglets/${name}/changelog`),
+      anonAgent.get(`/twiglets/${name}/views`),
     ])
-    .then(([model, changelog]) => {
+    .then(([model, changelog, views]) => {
       response.body.model = model.body;
       response.body.changelog = changelog.body.changelog;
+      response.body.views = views.body.views;
       return response.body;
     })
   );
