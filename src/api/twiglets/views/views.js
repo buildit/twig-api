@@ -15,64 +15,42 @@ const getViewsResponse = Joi.array().items(Joi.object({
   url: Joi.string().uri().required()
 }));
 
-const getViewResponse = Joi.object({
-  description: Joi.string().required().allow(''),
-  name: Joi.string().required(),
-  userState: Joi.object({
-    autoConnectivity: Joi.string(),
-    autoScale: Joi.string(),
-    biDirectionalLinks: Joi.boolean(),
-    cascadingCollapse: Joi.boolean(),
-    filterEntities: Joi.array(),
-    filters: Joi.object({
-      attributes: Joi.array(),
-      types: Joi.object()
-    }),
-    forceChargeStrength: Joi.number(),
-    forceGravityX: Joi.number(),
-    forceGravityY: Joi.number(),
-    forceLinkDistance: Joi.number(),
-    forceLinkStrength: Joi.number(),
-    forceVelocityDecay: Joi.number(),
-    linkType: Joi.string(),
-    nodeSizingAutomatic: Joi.boolean(),
-    scale: Joi.number(),
-    showLinkLabels: Joi.boolean(),
-    showNodeLabels: Joi.boolean(),
-    treeMode: Joi.boolean(),
-    traverseDepth: Joi.number()
+const userStateResponse = Joi.object({
+  autoConnectivity: Joi.string().required(),
+  autoScale: Joi.string().required(),
+  bidirectionalLinks: Joi.boolean().required(),
+  cascadingCollapse: Joi.boolean().required(),
+  currentNode: Joi.string().required().allow(null),
+  filters: Joi.object({
+    attributes: Joi.array().required(),
+    types: Joi.object().required(),
   }),
-  url: Joi.string().uri().required(),
+  forceChargeStrength: Joi.number().required(),
+  forceGravityX: Joi.number().required(),
+  forceGravityY: Joi.number().required(),
+  forceLinkDistance: Joi.number().required(),
+  forceLinkStrength: Joi.number().required(),
+  forceVelocityDecay: Joi.number().required(),
+  linkType: Joi.string().required(),
+  nodeSizingAutomatic: Joi.boolean().required(),
+  scale: Joi.number().required(),
+  showLinkLabels: Joi.boolean().required(),
+  showNodeLabels: Joi.boolean().required(),
+  treeMode: Joi.boolean().required(),
+  traverseDepth: Joi.number().required(),
 });
 
 const createViewRequest = Joi.object({
-  description: Joi.string(),
+  description: Joi.string().allow(''),
   name: Joi.string().required(),
-  userState: Joi.object({
-    autoConnectivity: Joi.string(),
-    autoScale: Joi.string(),
-    biDirectionalLinks: Joi.boolean(),
-    cascadingCollapse: Joi.boolean(),
-    filterEntities: Joi.array(),
-    filters: Joi.object({
-      attributes: Joi.array(),
-      types: Joi.object()
-    }),
-    forceChargeStrength: Joi.number(),
-    forceGravityX: Joi.number(),
-    forceGravityY: Joi.number(),
-    forceLinkDistance: Joi.number(),
-    forceLinkStrength: Joi.number(),
-    forceVelocityDecay: Joi.number(),
-    linkType: Joi.string(),
-    nodeSizingAutomatic: Joi.boolean(),
-    scale: Joi.number(),
-    showLinkLabels: Joi.boolean(),
-    showNodeLabels: Joi.boolean(),
-    treeMode: Joi.boolean(),
-    traverseDepth: Joi.number()
-  }),
+  userState: userStateResponse.required(),
 });
+
+const getViewResponse = createViewRequest.keys({
+  description: Joi.string().required().allow(''),
+  url: Joi.string().uri().required(),
+});
+
 
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));

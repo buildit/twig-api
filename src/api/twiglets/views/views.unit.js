@@ -11,6 +11,41 @@ const twigletDocs = require('../twiglets.unit').twigletDocs;
 
 server.route(Views.routes);
 
+function getViewResults () {
+  return {
+    data: [
+      {
+        description: 'description of view',
+        name: 'view name',
+        userState: {
+          autoConnectivity: 'in',
+          autoScale: 'linear',
+          bidirectionalLinks: true,
+          cascadingCollapse: true,
+          currentNode: null,
+          filters: {
+            attributes: [],
+            types: { }
+          },
+          forceChargeStrength: 0.1,
+          forceGravityX: 0.1,
+          forceGravityY: 1,
+          forceLinkDistance: 20,
+          forceLinkStrength: 0.5,
+          forceVelocityDecay: 0.9,
+          linkType: 'path',
+          nodeSizingAutomatic: true,
+          scale: 8,
+          showLinkLabels: false,
+          showNodeLabels: false,
+          traverseDepth: 3,
+          treeMode: false,
+        }
+      }
+    ]
+  };
+}
+
 describe('Twiglet::Views', () => {
   let sandbox = sinon.sandbox.create();
   beforeEach(() => {
@@ -36,16 +71,7 @@ describe('Twiglet::Views', () => {
 
     describe('success', () => {
       let response;
-      function getViewResults () {
-        return {
-          data: [
-            {
-              description: 'description of view',
-              name: 'view name',
-            }
-          ]
-        };
-      }
+
 
       beforeEach(function* foo () {
         sandbox.stub(PouchDb.prototype, 'get').resolves(getViewResults());
@@ -101,20 +127,6 @@ describe('Twiglet::Views', () => {
 
     describe('success', () => {
       let response;
-      function getViewResults () {
-        return {
-          data: [
-            {
-              description: 'description of view',
-              name: 'view name',
-              userState: {
-                scale: 3,
-                showNodeLabels: false
-              }
-            }
-          ]
-        };
-      }
 
       beforeEach(function* foo () {
         sandbox.stub(PouchDb.prototype, 'get').resolves(getViewResults());
@@ -166,25 +178,30 @@ describe('Twiglet::Views', () => {
           description: 'view description',
           name: 'test view',
           userState: {
-            scale: 3,
-            showNodeLabels: true
+            autoConnectivity: 'in',
+            autoScale: 'linear',
+            bidirectionalLinks: true,
+            cascadingCollapse: true,
+            currentNode: null,
+            filters: {
+              attributes: [],
+              types: { }
+            },
+            forceChargeStrength: 0.1,
+            forceGravityX: 0.1,
+            forceGravityY: 1,
+            forceLinkDistance: 20,
+            forceLinkStrength: 0.5,
+            forceVelocityDecay: 0.9,
+            linkType: 'path',
+            nodeSizingAutomatic: true,
+            scale: 8,
+            showLinkLabels: false,
+            showNodeLabels: false,
+            traverseDepth: 3,
+            treeMode: false,
           }
         }
-      };
-    }
-
-    function getViewResults () {
-      return {
-        data: [
-          {
-            description: 'view description',
-            name: 'test view',
-            userState: {
-              scale: 3,
-              showNodeLabels: true
-            }
-          }
-        ]
       };
     }
 
