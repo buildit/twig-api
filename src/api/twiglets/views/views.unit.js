@@ -46,7 +46,7 @@ function getViewResults () {
   };
 }
 
-describe('Twiglet::Views', () => {
+describe.only('Twiglet::Views', () => {
   let sandbox = sinon.sandbox.create();
   beforeEach(() => {
     sandbox = sinon.sandbox.create();
@@ -232,6 +232,163 @@ describe('Twiglet::Views', () => {
 
       it('returns the new view', () => {
         expect(response.result).to.include.keys({ name: 'test view' });
+      });
+    });
+
+    describe('errors', () => {
+      let allDocs;
+      beforeEach(() => {
+        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves(twigletDocs());
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs());
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletDocs().rows[3].doc);
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+      });
+
+      it('relays the error', () => {
+        sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
+        return server.inject(req())
+          .then((response) => {
+            expect(response.result.statusCode).to.equal(420);
+          });
+      });
+    });
+  });
+
+  describe('putViewsHandler', () => {
+    function req () {
+      return {
+        method: 'PUT',
+        url: '/twiglets/Some%20Twiglet/views/view%20name',
+        credentials: {
+          id: 123,
+          username: 'ben',
+          user: {
+            name: 'Ben Hernandez',
+          },
+        },
+        payload: {
+          description: 'view description',
+          name: 'new view name',
+          userState: {
+            autoConnectivity: 'in',
+            autoScale: 'linear',
+            bidirectionalLinks: true,
+            cascadingCollapse: true,
+            currentNode: null,
+            filters: {
+              attributes: [],
+              types: { }
+            },
+            forceChargeStrength: 0.1,
+            forceGravityX: 0.1,
+            forceGravityY: 1,
+            forceLinkDistance: 20,
+            forceLinkStrength: 0.5,
+            forceVelocityDecay: 0.9,
+            linkType: 'path',
+            nodeSizingAutomatic: true,
+            scale: 8,
+            showLinkLabels: false,
+            showNodeLabels: false,
+            traverseDepth: 3,
+            treeMode: false,
+          }
+        }
+      };
+    }
+
+    describe('success', () => {
+      let response;
+      let put;
+      beforeEach(function* foo () {
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves(twigletDocs());
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs());
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletDocs().rows[3].doc);
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sandbox.stub(PouchDb.prototype, 'put').resolves(getViewResults());
+        response = yield server.inject(req());
+      });
+
+      it('calls put', () => {
+        expect(put.callCount).to.equal(2);
+      });
+
+      it('has a status of OK', () => {
+        expect(response.statusCode).to.equal(200);
+      });
+
+      it('returns the new view', () => {
+        expect(response.result).to.include.keys({ name: 'test view' });
+      });
+    });
+
+    describe('errors', () => {
+      let allDocs;
+      beforeEach(() => {
+        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves(twigletDocs());
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs());
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletDocs().rows[3].doc);
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+      });
+
+      it('relays the error', () => {
+        sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
+        return server.inject(req())
+          .then((response) => {
+            expect(response.result.statusCode).to.equal(420);
+          });
+      });
+    });
+  });
+
+  describe('DELETE', () => {
+    function req () {
+      return {
+        method: 'DELETE',
+        url: '/twiglets/Some%20Twiglet/views/view%20name',
+        credentials: {
+          id: 123,
+          username: 'ben',
+          user: {
+            name: 'Ben Hernandez',
+          },
+        }
+      };
+    }
+
+    describe('success', () => {
+      let response;
+      beforeEach(function* foo () {
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves(twigletDocs());
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs());
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletDocs().rows[3].doc);
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        sandbox.stub(PouchDb.prototype, 'put').resolves(getViewResults());
+        response = yield server.inject(req());
+      });
+
+      it('responds with code 204', () => {
+        expect(response.statusCode).to.equal(204);
       });
     });
 

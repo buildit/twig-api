@@ -77,7 +77,36 @@ function twigletDocs () {
         id: 'views',
         doc: {
           _rev: 'viewsRev',
-          data: []
+          data: [
+            {
+              description: 'view description',
+              name: 'view name',
+              userState: {
+                autoConnectivity: 'in',
+                autoScale: 'linear',
+                bidirectionalLinks: true,
+                cascadingCollapse: true,
+                currentNode: null,
+                filters: {
+                  attributes: [],
+                  types: { }
+                },
+                forceChargeStrength: 0.1,
+                forceGravityX: 0.1,
+                forceGravityY: 1,
+                forceLinkDistance: 20,
+                forceLinkStrength: 0.5,
+                forceVelocityDecay: 0.9,
+                linkType: 'path',
+                nodeSizingAutomatic: true,
+                scale: 8,
+                showLinkLabels: false,
+                showNodeLabels: false,
+                traverseDepth: 3,
+                treeMode: false,
+              }
+            }
+          ]
         }
       },
     ]
