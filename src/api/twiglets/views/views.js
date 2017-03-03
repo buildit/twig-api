@@ -5,7 +5,6 @@ const PouchDb = require('pouchdb');
 const config = require('../../../config');
 const logger = require('../../../log')('VIEWS');
 const Changelog = require('../changelog');
-const R = require('ramda');
 
 const getViewsResponse = Joi.array().items(Joi.object({
   name: Joi.string().required(),
@@ -68,11 +67,9 @@ const getTwigletInfoByName = (name) => {
 };
 
 const getView = (name, viewName) => {
-  console.log(name, viewName);
   const twigletName = name;
   return getTwigletInfoByName(twigletName)
   .then(twigletInfo => {
-    console.log('alsdkfjalsdfjla', twigletInfo);
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('views');
   })
@@ -189,13 +186,11 @@ const putViewHandler = (request, reply) => {
   let updatedView;
   getTwigletInfoByName(request.params.twigletName)
   .then(twigletInfo => {
-    console.log('getting twiggy info', twigletInfo);
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
     return db.get('views');
   })
   .then((doc) => {
-    console.log('getting views info', doc);
     const viewIndex = doc.data.findIndex(view => view.name === request.params.viewName);
     updatedView = {
       description: request.payload.description,
@@ -211,7 +206,6 @@ const putViewHandler = (request, reply) => {
             request.auth.credentials.user.name),
       ]);
     }
-    console.log('heyy different name');
     return Promise.all([
       db.put(doc),
       Changelog.addCommitMessage(twigletId,
@@ -221,7 +215,6 @@ const putViewHandler = (request, reply) => {
   })
   .then(() => getView(request.params.twigletName, request.payload.name))
   .then((newView) => {
-    console.log('where dat view', newView);
     const viewUrl = `/twiglets/${request.params.twigletName}/views/${request.payload.name}`;
     const viewResponse = {
       description: newView.description,
@@ -232,7 +225,6 @@ const putViewHandler = (request, reply) => {
     return reply(viewResponse).code(200);
   })
   .catch(e => {
-    console.log(e);
     logger.error(JSON.stringify(e));
     return reply(Boom.create(e.status || 500, e.message, e));
   });
@@ -257,9 +249,7 @@ const deleteViewHandler = (request, reply) => {
           request.auth.credentials.user.name),
     ]);
   })
-  .then(() => {
-    return reply().code(204);
-  })
+  .then(() => reply().code(204))
   .catch(error => {
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));

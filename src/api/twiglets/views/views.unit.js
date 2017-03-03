@@ -46,7 +46,7 @@ function getViewResults () {
   };
 }
 
-describe.only('Twiglet::Views', () => {
+describe('Twiglet::Views', () => {
   let sandbox = sinon.sandbox.create();
   beforeEach(() => {
     sandbox = sinon.sandbox.create();
@@ -305,12 +305,11 @@ describe.only('Twiglet::Views', () => {
     describe('success', () => {
       let response;
       let put;
+      let allDocs;
       beforeEach(function* foo () {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-        allDocs.onSecondCall().resolves(twigletDocs());
-        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-        allDocs.onCall(3).resolves(twigletDocs());
+        allDocs.onSecondCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         const get = sandbox.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletDocs().rows[3].doc);
@@ -328,7 +327,7 @@ describe.only('Twiglet::Views', () => {
       });
 
       it('returns the new view', () => {
-        expect(response.result).to.include.keys({ name: 'test view' });
+        expect(response.result).to.include.keys({ name: 'new view name' });
       });
     });
 
