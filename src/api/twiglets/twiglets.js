@@ -3,6 +3,7 @@ const Boom = require('boom');
 const Joi = require('joi');
 const R = require('ramda');
 const PouchDB = require('pouchdb');
+const uuidV4 = require('uuid/v4');
 const config = require('../../config');
 const logger = require('../../log')('TWIGLETS');
 const Changelog = require('./changelog');
@@ -59,7 +60,7 @@ const getTwigletInfoByName = (name) => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
       const twiglet = modelArray[0].doc;
-      twiglet.twigId = `twig-${twiglet._id}`;
+      twiglet.twigId = twiglet._id;
       return twiglet;
     }
     const error = Error('Not Found');
@@ -119,9 +120,10 @@ const createTwigletHandler = (request, reply) => {
       return reply(Boom.conflict('Twiglet already exists'));
     }
     const newTwiglet = R.pick(['name', 'description'], request.payload);
+    newTwiglet._id = `twig-${uuidV4()}`;
     return twigletLookupDb.post(newTwiglet)
     .then(twigletInfo => {
-      const dbString = config.getTenantDatabaseString(`twig-${twigletInfo.id}`);
+      const dbString = config.getTenantDatabaseString(twigletInfo.id);
       const createdDb = new PouchDB(dbString);
       if (request.payload.cloneTwiglet === 'N/A' || !request.payload.cloneTwiglet) {
         return Model.getModel(request.payload.model)
@@ -133,7 +135,7 @@ const createTwigletHandler = (request, reply) => {
               { _id: 'links', data: [] },
               { _id: 'views', data: [] },
             ]),
-            Changelog.addCommitMessage(`twig-${twigletInfo.id}`,
+            Changelog.addCommitMessage(twigletInfo.id,
               request.payload.commitMessage,
               request.auth.credentials.user.name),
           ])
@@ -155,7 +157,7 @@ const createTwigletHandler = (request, reply) => {
               { _id: 'nodes', data: twigletDocs.rows[2].doc.data },
               { _id: 'views', data: twigletDocs.rows[3].doc.data },
             ]),
-            Changelog.addCommitMessage(`twig-${twigletInfo.id}`,
+            Changelog.addCommitMessage(twigletInfo.id,
               request.payload.commitMessage,
               request.auth.credentials.user.name),
           ])

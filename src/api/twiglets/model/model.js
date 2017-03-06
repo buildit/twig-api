@@ -30,7 +30,7 @@ const getTwigletInfoByName = (name) => {
     if (modelArray.length) {
       const twiglet = modelArray[0].doc;
       twiglet.originalId = twiglet._id;
-      twiglet._id = `twig-${twiglet._id}`;
+      twiglet._id = twiglet._id;
       return twiglet;
     }
     const error = Error('Not Found');
