@@ -369,7 +369,7 @@ describe('/twiglets', () => {
 
       it('creates the twiglet in the twiglets list database', () =>
         expect(post.getCall(0).args[0]).to.have.keys(
-          { name: 'some name', description: 'a description' }
+          { name: 'some name', description: 'a description', _id: 'some id' }
         )
       );
 
