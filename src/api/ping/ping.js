@@ -9,13 +9,28 @@ const ping = (request, reply) =>
     config: ramda.omit('_secrets')(config)
   });
 
-module.exports.routes = {
-  method: ['GET'],
-  path: '/ping',
-  handler: ping,
-  config: {
-    auth: { mode: 'try' },
-    tags: ['api'],
+const authCheck = (request, reply) =>
+  reply({
+    authenticated: true,
+  });
+
+module.exports.routes = [
+  {
+    method: ['GET'],
+    path: '/ping',
+    handler: ping,
+    config: {
+      auth: { mode: 'try' },
+      tags: ['api'],
+    }
+  },
+  {
+    method: ['GET'],
+    path: '/authCheck',
+    handler: authCheck,
+    config: {
+      tags: ['api'],
+    }
   }
-};
+];
 
