@@ -35,6 +35,8 @@ function deleteView (twigletName, viewName) {
 function baseView () {
   return {
     description: 'description of view',
+    links: {},
+    nodes: {},
     name: 'view name',
     userState: {
       autoConnectivity: 'in',
