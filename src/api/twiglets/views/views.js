@@ -17,10 +17,7 @@ const userStateResponse = Joi.object({
   bidirectionalLinks: Joi.boolean().required(),
   cascadingCollapse: Joi.boolean().required(),
   currentNode: [Joi.string().required().allow(''), Joi.string().required().allow(null)],
-  filters: Joi.object({
-    attributes: Joi.array().required(),
-    types: Joi.object().required(),
-  }),
+  filters: Joi.object().required(),
   forceChargeStrength: Joi.number().required(),
   forceGravityX: Joi.number().required(),
   forceGravityY: Joi.number().required(),
@@ -36,16 +33,19 @@ const userStateResponse = Joi.object({
   traverseDepth: Joi.number().required(),
 });
 
+const linksResponse = Joi.object();
+
+const nodesResponse = Joi.object();
+
 const createViewRequest = Joi.object({
   description: Joi.string().allow(''),
+  links: linksResponse,
   name: Joi.string().required(),
+  nodes: nodesResponse.required(),
   userState: userStateResponse.required(),
 });
 
-const getViewResponse = Joi.object({
-  description: Joi.string().required().allow(''),
-  name: Joi.string().required(),
-  userState: userStateResponse.required(),
+const getViewResponse = createViewRequest.keys({
   url: Joi.string().uri().required(),
 });
 
@@ -112,7 +112,9 @@ const getViewHandler = (request, reply) => {
       const viewUrl = `/twiglets/${request.params.twigletName}/views/${request.params.viewName}`;
       const viewResponse = {
         description: view.description,
+        links: view.links,
         name: view.name,
+        nodes: view.nodes,
         userState: view.userState,
         url: request.buildUrl(viewUrl)
       };
@@ -143,12 +145,7 @@ const postViewsHandler = (request, reply) => {
     })
     .catch(error => {
       if (error.status === 404) {
-        const viewToCreate = {
-          description: request.payload.description,
-          name: request.payload.name,
-          userState: request.payload.userState,
-        };
-        doc.data.push(viewToCreate);
+        doc.data.push(request.payload);
         return Promise.all([
           db.put(doc),
           Changelog.addCommitMessage(twigletId,
@@ -164,6 +161,8 @@ const postViewsHandler = (request, reply) => {
       const viewResponse = {
         description: newView.description,
         name: newView.name,
+        links: newView.links,
+        nodes: newView.nodes,
         userState: newView.userState,
         url: request.buildUrl(viewUrl)
       };
@@ -183,7 +182,6 @@ const postViewsHandler = (request, reply) => {
 const putViewHandler = (request, reply) => {
   let db;
   let twigletId;
-  let updatedView;
   getTwigletInfoByName(request.params.twigletName)
   .then(twigletInfo => {
     twigletId = twigletInfo._id;
@@ -192,12 +190,7 @@ const putViewHandler = (request, reply) => {
   })
   .then((doc) => {
     const viewIndex = doc.data.findIndex(view => view.name === request.params.viewName);
-    updatedView = {
-      description: request.payload.description,
-      name: request.payload.name,
-      userState: request.payload.userState
-    };
-    doc.data[viewIndex] = updatedView;
+    doc.data[viewIndex] = request.payload;
     if (request.payload.name === request.params.viewName) {
       return Promise.all([
         db.put(doc),
@@ -218,7 +211,9 @@ const putViewHandler = (request, reply) => {
     const viewUrl = `/twiglets/${request.params.twigletName}/views/${request.payload.name}`;
     const viewResponse = {
       description: newView.description,
+      links: newView.links,
       name: newView.name,
+      nodes: newView.nodes,
       userState: newView.userState,
       url: request.buildUrl(viewUrl)
     };
