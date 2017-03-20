@@ -16,6 +16,8 @@ function getViewResults () {
     data: [
       {
         description: 'description of view',
+        links: {},
+        nodes: {},
         name: 'view name',
         userState: {
           autoConnectivity: 'in',
@@ -176,6 +178,8 @@ describe('Twiglet::Views', () => {
         },
         payload: {
           description: 'view description',
+          links: {},
+          nodes: {},
           name: 'test view',
           userState: {
             autoConnectivity: 'in',
@@ -273,6 +277,8 @@ describe('Twiglet::Views', () => {
         },
         payload: {
           description: 'view description',
+          links: {},
+          nodes: {},
           name: 'new view name',
           userState: {
             autoConnectivity: 'in',
