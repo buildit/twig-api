@@ -13,6 +13,7 @@ const createTwigletRequest = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required().allow(''),
   model: Joi.string().required(),
+  json: Joi.string().allow(''),
   cloneTwiglet: Joi.string().allow(''),
   twiglet: Joi.string(), // twiglet to copy from...could be url instead?
   googlesheet: Joi.string().uri().allow(''),
@@ -161,6 +162,15 @@ const getTwigletHandler = (request, reply) =>
     });
 
 const createTwigletHandler = (request, reply) => {
+  let jsonTwiglet;
+  if (request.payload.json !== '') {
+    try {
+      jsonTwiglet = JSON.parse(request.payload.json);
+    }
+    catch (error) {
+      return reply(Boom.badData('JSON file not parseable'));
+    }
+  }
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({ include_docs: true })
   .then(docs => {
@@ -173,8 +183,44 @@ const createTwigletHandler = (request, reply) => {
     .then(twigletInfo => {
       const dbString = config.getTenantDatabaseString(twigletInfo.id);
       const createdDb = new PouchDB(dbString);
-      if (request.payload.cloneTwiglet === 'N/A' || !request.payload.cloneTwiglet) {
-        return Model.getModel(request.payload.model)
+      if (jsonTwiglet) {
+        return Promise.all([
+          createdDb.bulkDocs([
+            { _id: 'model', data: jsonTwiglet.model },
+            { _id: 'nodes', data: jsonTwiglet.nodes },
+            { _id: 'links', data: jsonTwiglet.links },
+            { _id: 'views', data: jsonTwiglet.views },
+          ]),
+          Changelog.addCommitMessage(twigletInfo.id,
+            request.payload.commitMessage,
+            request.auth.credentials.user.name),
+        ]);
+      }
+      if (request.payload.cloneTwiglet && request.payload.cloneTwiglet !== 'N/A') {
+        return getTwigletInfoByName(request.payload.cloneTwiglet)
+        .then(twigletToBeClonedInfo => {
+          const cloneString = config.getTenantDatabaseString(twigletToBeClonedInfo.twigId);
+          const clonedDb = new PouchDB(cloneString, { skip_setup: true });
+          return clonedDb.allDocs({
+            include_docs: true,
+            keys: ['links', 'model', 'nodes', 'views']
+          })
+          .then(twigletDocs =>
+            Promise.all([
+              createdDb.bulkDocs([
+                { _id: 'links', data: twigletDocs.rows[0].doc.data },
+                { _id: 'model', data: twigletDocs.rows[1].doc.data },
+                { _id: 'nodes', data: twigletDocs.rows[2].doc.data },
+                { _id: 'views', data: twigletDocs.rows[3].doc.data },
+              ]),
+              Changelog.addCommitMessage(twigletInfo.id,
+                request.payload.commitMessage,
+                request.auth.credentials.user.name),
+            ])
+          );
+        });
+      }
+      return Model.getModel(request.payload.model)
         .then(model =>
           Promise.all([
             createdDb.bulkDocs([
@@ -188,29 +234,6 @@ const createTwigletHandler = (request, reply) => {
               request.auth.credentials.user.name),
           ])
         );
-      }
-      return getTwigletInfoByName(request.payload.cloneTwiglet)
-      .then(twigletToBeClonedInfo => {
-        const cloneString = config.getTenantDatabaseString(twigletToBeClonedInfo.twigId);
-        const clonedDb = new PouchDB(cloneString, { skip_setup: true });
-        return clonedDb.allDocs({
-          include_docs: true,
-          keys: ['links', 'model', 'nodes', 'views']
-        })
-        .then(twigletDocs =>
-          Promise.all([
-            createdDb.bulkDocs([
-              { _id: 'links', data: twigletDocs.rows[0].doc.data },
-              { _id: 'model', data: twigletDocs.rows[1].doc.data },
-              { _id: 'nodes', data: twigletDocs.rows[2].doc.data },
-              { _id: 'views', data: twigletDocs.rows[3].doc.data },
-            ]),
-            Changelog.addCommitMessage(twigletInfo.id,
-              request.payload.commitMessage,
-              request.auth.credentials.user.name),
-          ])
-        );
-      });
     })
     .then(() =>
       getTwiglet(request.payload.name, request.buildUrl)
@@ -220,6 +243,7 @@ const createTwigletHandler = (request, reply) => {
     });
   })
   .catch((error) => {
+    console.log('error?', error);
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));
   });
