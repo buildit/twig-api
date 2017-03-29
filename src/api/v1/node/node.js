@@ -212,43 +212,28 @@ module.exports.nodeRollupView = (request, reply) => {
   return this.nodeRollupViewDoesNotExists(twig)
     .then((viewDoesNotExists) => {
       if (viewDoesNotExists) {
-        console.log('here1');
         const mapFunc = this.buildMapFunc();
-        console.log('here2');
         const reduceFunc = this.buildReduceFunc();
-        console.log('here3');
         const viewJson = this.buildViewJson(mapFunc, reduceFunc);
-        console.log('here4');
 
         return this.publishView(twig, viewJson)
           .then(() => {
-            console.log('here5');
             logger.debug('Created node rolled up view.');
-            console.log('here6');
           });
       }
-
       return {};
     })
     .then(() => {
       logger.debug('Fetching view data...');
-      console.log('here7');
       return this.nodeRollupViewData(twig)
         .then((data) => {
-          console.log('here8');
           logger.debug(`Found view data: ${JSON.stringify(data)}`);
-          console.log('here9');
           return reply(data);
         });
     })
     .catch((error) => {
-      console.log('here10');
       logger.error(`Error getting node rolled up data: ${JSON.stringify(error)}`);
-      console.log('here11');
       return reply(Boom.wrap(error, error.statusCode, error.message));
-    })
-    .catch((error) => {
-      console.log('Are there even more errors?', error);
     });
 };
 

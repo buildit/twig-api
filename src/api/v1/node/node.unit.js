@@ -365,7 +365,7 @@ describe('Node', () => {
         });
     });
 
-    it.only('Node Rolled Up View Data throws error', () => {
+    it('Node Rolled Up View Data throws error', () => {
       // setup
       const errorMessage = '...';
       const errorResponse = {
@@ -391,38 +391,15 @@ describe('Node', () => {
       // act
       return server.inject(req)
         .then((response) => {
-          console.log('heret1');
           // assert
           expect(nodeRollupViewDoesNotExists.calledOnce,
             'nodeRolledupViewDoesNotExist was not called just once.').to.be.true;
-          console.log('heret2');
           expect(publishView.calledOnce,
             'publishView was not called just once.').to.be.true;
-          console.log('heret3');
           expect(nodeRollupViewData.calledOnce,
             'nodeRollupViewData was not called just once.').to.be.true;
-          console.log('heret4');
           expect(response.statusCode).to.equal(500);
-          console.log('heret5');
           expect(response.result.statusCode).to.equal(500);
-          console.log('heret6');
-        })
-        .catch((response) => {
-          console.log('herec1');
-          // assert
-          expect(nodeRollupViewDoesNotExists.calledOnce,
-            'nodeRolledupViewDoesNotExist was not called just once.').to.be.true;
-          console.log('herec2');
-          expect(publishView.calledOnce,
-            'publishView was not called just once.').to.be.true;
-          console.log('herec3');
-          expect(nodeRollupViewData.calledOnce,
-            'nodeRollupViewData was not called just once.').to.be.true;
-          console.log('herec4');
-          expect(response.statusCode).to.equal(500);
-          console.log('herec5');
-          expect(response.result.statusCode).to.equal(500);
-          console.log('herec6');
         });
     });
   });
