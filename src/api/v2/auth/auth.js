@@ -83,12 +83,4 @@ module.exports.routes = [{
     auth: false,
     tags: ['api'],
   }
-},
-{
-  method: 'GET',
-  path: '/v2/checkAuth',
-  handler: (request, reply) => reply({ authenticated: true }).code(200),
-  config: {
-    tags: ['api'],
-  }
 }];

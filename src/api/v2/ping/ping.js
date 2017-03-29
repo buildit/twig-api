@@ -6,7 +6,8 @@ const version = require('../../../../package').version;
 const ping = (request, reply) =>
   reply({
     version,
-    config: ramda.omit('_secrets')(config)
+    config: ramda.omit('_secrets')(config),
+    authenticated: request.auth.credentials,
   });
 
 module.exports.routes = [
