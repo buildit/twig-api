@@ -19,6 +19,51 @@ const createTwigletRequest = Joi.object({
   commitMessage: Joi.string().required(),
 });
 
+const jsonTwigletRequest = Joi.object({
+  nodes: Joi.array().required(),
+  links: Joi.array().required(),
+  model: Joi.object({
+    entities: Joi.object().pattern(/[\S\s]*/, Joi.object({
+      type: Joi.string(),
+      color: Joi.string(),
+      size: [Joi.string().allow(''), Joi.number()],
+      class: Joi.string().required(),
+      image: Joi.string().required(),
+      attributes: Joi.array().items(Joi.object({
+        name: Joi.string().required(),
+        dataType: Joi.string().required(),
+        required: Joi.bool().required(),
+      })),
+    }).required()),
+  }).required(),
+  views: Joi.array(Joi.object({
+    links: Joi.object().required(),
+    name: Joi.string().required(),
+    nodes: Joi.object().required(),
+    userState: Joi.object({
+      autoConnectivity: Joi.string().required(),
+      autoScale: Joi.string().required(),
+      bidirectionalLinks: Joi.boolean().required(),
+      cascadingCollapse: Joi.boolean().required(),
+      currentNode: [Joi.string().required().allow(''), Joi.string().required().allow(null)],
+      filters: Joi.object().required(),
+      forceChargeStrength: Joi.number().required(),
+      forceGravityX: Joi.number().required(),
+      forceGravityY: Joi.number().required(),
+      forceLinkDistance: Joi.number().required(),
+      forceLinkStrength: Joi.number().required(),
+      forceVelocityDecay: Joi.number().required(),
+      linkType: Joi.string().required(),
+      nodeSizingAutomatic: Joi.boolean().required(),
+      scale: Joi.number().required(),
+      showLinkLabels: Joi.boolean().required(),
+      showNodeLabels: Joi.boolean().required(),
+      treeMode: Joi.boolean().required(),
+      traverseDepth: Joi.number().required(),
+    })
+  })).required()
+});
+
 const baseTwigletRequest = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required().allow(''),
@@ -34,8 +79,9 @@ const updateTwigletRequest = baseTwigletRequest.keys({
 
 const baseTwigletResponse = {
   url: Joi.string().uri().required(),
-  model_url: Joi.string().uri().required(),
   changelog_url: Joi.string().uri().required(),
+  json_url: Joi.string().uri().required(),
+  model_url: Joi.string().uri().required(),
   views_url: Joi.string().uri().required(),
 };
 
@@ -83,6 +129,7 @@ const getTwiglet = (name, urlBuilder) =>
       const modelUrl = urlBuilder(`/v2/twiglets/${name}/model`);
       const changelogUrl = urlBuilder(`/v2/twiglets/${name}/changelog`);
       const viewsUrl = urlBuilder(`/v2/twiglets/${name}/views`);
+      const jsonUrl = urlBuilder(`/v2/twiglets/${name}.json`);
       const twigletData = twigletDocs.rows.reduce((obj, row) => {
         obj[row.id] = row.doc;
         return obj;
@@ -100,6 +147,7 @@ const getTwiglet = (name, urlBuilder) =>
           model_url: modelUrl,
           changelog_url: changelogUrl,
           views_url: viewsUrl,
+          json_url: jsonUrl,
         });
     });
   });
@@ -191,6 +239,7 @@ const getTwigletsHandler = (request, reply) => {
             model_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}/model`),
             changelog_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}/changelog`),
             views_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}/views`),
+            json_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}.json`),
           })
       );
       return reply(twiglets);
@@ -282,6 +331,25 @@ const deleteTwigletHandler = (request, reply) => {
   });
 };
 
+const getTwigletJsonHandler = (request, reply) =>
+  getTwigletInfoByName(request.params.name)
+  .then(twigletInfo => {
+    const dbString = config.getTenantDatabaseString(twigletInfo.twigId);
+    const db = new PouchDB(dbString, { skip_setup: true });
+    return db.allDocs({
+      include_docs: true,
+      keys: ['nodes', 'links', 'model', 'views']
+    })
+    .then(twigletDocs => {
+      const twigletData = twigletDocs.rows.reduce((obj, row) => {
+        obj[row.id] = row.doc.data;
+        return obj;
+      }, {});
+      return reply(twigletData);
+    });
+  });
+
+
 module.exports = {
   getTwigletInfoByName,
   routes: [
@@ -314,6 +382,16 @@ module.exports = {
       config: {
         auth: { mode: 'optional' },
         response: { schema: getTwigletResponse },
+        tags: ['api'],
+      }
+    },
+    {
+      method: ['GET'],
+      path: '/v2/twiglets/{name}.json',
+      handler: getTwigletJsonHandler,
+      config: {
+        auth: { mode: 'optional' },
+        response: { schema: jsonTwigletRequest },
         tags: ['api'],
       }
     },
