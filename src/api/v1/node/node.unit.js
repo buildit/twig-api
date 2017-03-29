@@ -298,7 +298,8 @@ describe('Node', () => {
             'nodeRollupViewData was not called just once.').to.be.true;
           expect(response.result.rows.length).to.equal(1);
           expect(response.result.rows[0].key).to.equal('nodes');
-        });
+        })
+        .catch(error => console.error(error));
     });
 
     it('Node Rollup View Exists throws error', () => {
@@ -328,7 +329,8 @@ describe('Node', () => {
             'nodeRollupViewData was not called just once.').to.be.false;
           expect(response.statusCode).to.equal(500);
           expect(response.result.statusCode).to.equal(500);
-        });
+        })
+        .catch(error => console.error(error));
     });
 
     it('Publish View throws error', () => {
@@ -362,7 +364,8 @@ describe('Node', () => {
             'nodeRollupViewData was not called just once.').to.be.false;
           expect(response.statusCode).to.equal(500);
           expect(response.result.statusCode).to.equal(500);
-        });
+        })
+        .catch(error => console.error(error));
     });
 
     it('Node Rolled Up View Data throws error', () => {
@@ -400,7 +403,8 @@ describe('Node', () => {
             'nodeRollupViewData was not called just once.').to.be.true;
           expect(response.statusCode).to.equal(500);
           expect(response.result.statusCode).to.equal(500);
-        });
+        })
+        .catch(error => console.error(error));
     });
   });
 });
