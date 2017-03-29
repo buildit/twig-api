@@ -352,7 +352,7 @@ describe('Node', () => {
 
       // act
       return server.inject(req)
-        .then((response) => {
+        .catch((response) => {
           // assert
           expect(nodeRollupViewDoesNotExists.calledOnce,
             'nodeRolledupViewDoesNotExist was not called just once.').to.be.true;
@@ -390,7 +390,8 @@ describe('Node', () => {
 
       // act
       return server.inject(req)
-        .then((response) => {
+        .then(response => response)
+        .catch((response) => {
           console.log('heret1');
           // assert
           expect(nodeRollupViewDoesNotExists.calledOnce,
