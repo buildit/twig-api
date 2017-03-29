@@ -36,7 +36,7 @@ node {
         registry = "https://${registryBase}"
         appName = "twig-api"
         appUrl = "http://staging.twig-api.riglet"
-        slackChannel = "twig"
+        // slackChannel = "twig"
         gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
       }
 
