@@ -3,21 +3,13 @@ const Hapi = require('hapi');
 const cookieAuth = require('hapi-auth-cookie');
 const cls = require('continuation-local-storage');
 const logger = require('./log')('SERVER');
-const Ping = require('./api/ping');
-const Changelog = require('./api/twiglets/changelog');
-const Auth = require('./api/auth');
-const Node = require('./api/twiglets/node');
-const NavSettings = require('./api/twiglets/navsettings');
-const Twiglets = require('./api/twiglets');
-const Views = require('./api/twiglets/views');
-const Model = require('./api/twiglets/model');
-const Models = require('./api/models');
-const ModelsChangelog = require('./api/models/changelog');
 const Inert = require('inert');
 const Vision = require('vision');
 const HapiSwagger = require('hapi-swagger');
 const version = require('../package').version;
 const helpers = require('./server.helpers');
+const v1 = require('./api/v1');
+const v2 = require('./api/v2');
 
 const options = {
   info: {
@@ -80,16 +72,8 @@ server.register([cookieAuth, Inert, Vision,
     });
   });
 
-server.route(Ping.routes);
-server.route(Twiglets.routes);
-server.route(Changelog.routes);
-server.route(Auth.routes);
-server.route(Node.routes);
-server.route(NavSettings.routes);
-server.route(Views.routes);
-server.route(Models.routes);
-server.route(ModelsChangelog.routes);
-server.route(Model.routes);
+Reflect.ownKeys(v1).forEach(key => server.route(v1[key].routes));
+Reflect.ownKeys(v2).forEach(key => server.route(v2[key].routes));
 
 server.start(err => {
   if (err) {
