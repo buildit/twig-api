@@ -246,6 +246,9 @@ module.exports.nodeRollupView = (request, reply) => {
       logger.error(`Error getting node rolled up data: ${JSON.stringify(error)}`);
       console.log('here11');
       return reply(Boom.wrap(error, error.statusCode, error.message));
+    })
+    .catch((error) => {
+      console.log('Are there even more errors?', error);
     });
 };
 
