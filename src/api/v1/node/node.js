@@ -221,7 +221,6 @@ module.exports.nodeRollupView = (request, reply) => {
             logger.debug('Created node rolled up view.');
           });
       }
-
       return {};
     })
     .then(() => {
