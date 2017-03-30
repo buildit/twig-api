@@ -117,7 +117,7 @@ describe('POST /v2/twiglets', () => {
       updates._rev = (yield createTwiglet(baseTwiglet())).body._rev;
       updates.nodes = [{ a: 'node' }];
       updates.links = [{ a: 'link' }];
-      yield updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+      res = yield updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
       res = yield createTwiglet(cloneTwiglet());
       res = yield getEntireTwiglet(cloneTwiglet());
     });
@@ -143,6 +143,80 @@ describe('POST /v2/twiglets', () => {
     it('does not clone the name or description', () => {
       expect(res.name).to.equal('clone');
       expect(res.description).to.equal('This was cloned');
+    });
+  });
+
+  describe('(From JSON)', () => {
+    let res;
+
+    function jsonRepresentationOfTwiglet () {
+      return {
+        model: { entities: { }, },
+        nodes: [{ id: 'some node', }],
+        links: [{ id: 'some link', }],
+        views: [{
+          links: {},
+          name: 'some view',
+          nodes: {},
+          userState: {
+            autoConnectivity: 'some string',
+            autoScale: 'some string',
+            bidirectionalLinks: true,
+            cascadingCollapse: true,
+            currentNode: 'some string',
+            filters: { a: 'filter' },
+            forceChargeStrength: 10,
+            forceGravityX: 10,
+            forceGravityY: 10,
+            forceLinkDistance: 10,
+            forceLinkStrength: 10,
+            forceVelocityDecay: 10,
+            linkType: 'some string',
+            nodeSizingAutomatic: true,
+            scale: 10,
+            showLinkLabels: true,
+            showNodeLabels: true,
+            treeMode: true,
+            traverseDepth: 3,
+          }
+        }],
+      };
+    }
+
+    function jsonTwiglet () {
+      return {
+        cloneTwiglet: '',
+        commitMessage: 'cloned from BaseTwiglet',
+        description: 'This was cloned',
+        model: 'does not matter',
+        name: 'json',
+        json: JSON.stringify(jsonRepresentationOfTwiglet()),
+      };
+    }
+
+    before(function* foo () {
+      res = yield createTwiglet(jsonTwiglet());
+      res = yield getEntireTwiglet(jsonTwiglet());
+    });
+
+    after(function* foo () {
+      yield deleteTwiglet(jsonTwiglet());
+    });
+
+    it('correctly processes the nodes', () => {
+      expect(res.nodes).to.deep.equal(jsonRepresentationOfTwiglet().nodes);
+    });
+
+    it('correctly processes the links', () => {
+      expect(res.links).to.deep.equal(jsonRepresentationOfTwiglet().links);
+    });
+
+    it('correctly processes the model', () => {
+      expect(res.model.entities).to.deep.equal(jsonRepresentationOfTwiglet().model.entities);
+    });
+
+    it('correctly processes the views ', () => {
+      expect(res.view).to.deep.equal(jsonRepresentationOfTwiglet().view);
     });
   });
 
