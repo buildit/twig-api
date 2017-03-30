@@ -336,7 +336,7 @@ describe('/v2/twiglets', () => {
       };
     }
 
-    describe('successes', () => {
+    describe('successes - basic creation', () => {
       let put;
       let post;
       let twiglet;
@@ -372,6 +372,157 @@ describe('/v2/twiglets', () => {
           { name: 'some name', description: 'a description', _id: 'some id' }
         )
       );
+
+      it('logs the post to the commit log.', () =>
+        expect(put.getCall(0).args[0]).to.include.keys({ _id: 'changelog' })
+      );
+    });
+
+    describe('success - from JSON', () => {
+      function jsonTwiglet () {
+        return {
+          model: {
+            entities: {
+
+            }
+          },
+          nodes: [
+            {
+              id: 'some node',
+            }
+          ],
+          links: [{
+            id: 'some link'
+          }],
+          views: [{
+            links: {},
+            name: 'some view',
+            nodes: {},
+            userState: {
+              autoConnectivity: 'some string',
+              autoScale: 'some string',
+              bidirectionalLinks: true,
+              cascadingCollapse: true,
+              currentNode: 'some string',
+              filters: { a: 'filter' },
+              forceChargeStrength: 10,
+              forceGravityX: 10,
+              forceGravityY: 10,
+              forceLinkDistance: 10,
+              forceLinkStrength: 10,
+              forceVelocityDecay: 10,
+              linkType: 'some string',
+              nodeSizingAutomatic: true,
+              scale: 10,
+              showLinkLabels: true,
+              showNodeLabels: true,
+              treeMode: true,
+              traverseDepth: 3,
+            }
+          }],
+        };
+      }
+      let bulkDocs;
+      let twiglet;
+      let put;
+      let post;
+      beforeEach(function* foo () {
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [] });
+        allDocs.onSecondCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onThirdCall().resolves(twigletDocs());
+        post = sandbox.stub(PouchDb.prototype, 'post').resolves({
+          id: 'some id',
+        });
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletInfo());
+        bulkDocs = sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+        const jsonReq = req();
+        jsonReq.payload.json = JSON.stringify(jsonTwiglet());
+        twiglet = (yield server.inject(jsonReq)).result;
+      });
+
+      it('successfully creates the twiglet', () => {
+        expect(twiglet).to.include.keys({ name: 'Some Name' });
+      });
+
+      it('creates the twiglet in the twiglets list database', () =>
+        expect(post.getCall(0).args[0]).to.have.keys(
+          { name: 'some name', description: 'a description', _id: 'some id' }
+        )
+      );
+
+      it('pushes the json data to the bulkDocs call', () => {
+        const json = jsonTwiglet();
+        expect(bulkDocs.firstCall.args[0]).to.deep.equal([
+          { _id: 'model', data: json.model },
+          { _id: 'nodes', data: json.nodes },
+          { _id: 'links', data: json.links },
+          { _id: 'views', data: json.views },
+        ]);
+      });
+
+      it('logs the post to the commit log.', () =>
+        expect(put.getCall(0).args[0]).to.include.keys({ _id: 'changelog' })
+      );
+    });
+
+    describe('successes - cloning', () => {
+      let put;
+      let post;
+      let twiglet;
+      let bulkDocs;
+      function clone () {
+        return {
+          rows: [
+            { doc: { data: 'a link' } },
+            { doc: { data: 'a model' } },
+            { doc: { data: 'a node' } },
+            { doc: { data: 'a view' } },
+          ]
+        };
+      }
+      beforeEach(function* foo () {
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [] });
+        allDocs.onSecondCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onThirdCall().resolves(clone());
+        allDocs.onCall(3).resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(4).resolves(twigletDocs());
+        post = sandbox.stub(PouchDb.prototype, 'post').resolves({
+          id: 'some id',
+        });
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletInfo());
+        bulkDocs = sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+        const cloneReq = req();
+        cloneReq.payload.cloneTwiglet = 'Some Twiglet';
+        twiglet = (yield server.inject(cloneReq)).result;
+      });
+
+      it('returns the newly created twiglet', () =>
+        expect(twiglet).to.include.keys({ name: 'Some Name' })
+      );
+
+      it('creates the twiglet in the twiglets list database', () =>
+        expect(post.getCall(0).args[0]).to.have.keys(
+          { name: 'some name', description: 'a description', _id: 'some id' }
+        )
+      );
+
+      it('pushes the json data to the bulkDocs call', () => {
+        const clonedTwiglet = clone();
+        expect(bulkDocs.firstCall.args[0]).to.deep.equal([
+          { _id: 'links', data: clonedTwiglet.rows[0].doc.data },
+          { _id: 'model', data: clonedTwiglet.rows[1].doc.data },
+          { _id: 'nodes', data: clonedTwiglet.rows[2].doc.data },
+          { _id: 'views', data: clonedTwiglet.rows[3].doc.data },
+        ]);
+      });
 
       it('logs the post to the commit log.', () =>
         expect(put.getCall(0).args[0]).to.include.keys({ _id: 'changelog' })

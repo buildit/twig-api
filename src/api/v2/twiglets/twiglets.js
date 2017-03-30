@@ -163,7 +163,7 @@ const getTwigletHandler = (request, reply) =>
 
 const createTwigletHandler = (request, reply) => {
   let jsonTwiglet;
-  if (request.payload.json !== '') {
+  if (request.payload.json && request.payload.json !== '') {
     try {
       jsonTwiglet = JSON.parse(request.payload.json);
     }
