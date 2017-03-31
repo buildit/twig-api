@@ -44,10 +44,10 @@ function baseView () {
       bidirectionalLinks: true,
       cascadingCollapse: true,
       currentNode: null,
-      filters: {
+      filters: [{
         attributes: [],
         types: { }
-      },
+      }],
       forceChargeStrength: 0.1,
       forceGravityX: 0.1,
       forceGravityY: 1,
