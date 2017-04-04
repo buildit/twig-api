@@ -224,7 +224,7 @@ const createTwigletHandler = (request, reply) => {
         .then(model =>
           Promise.all([
             createdDb.bulkDocs([
-              { _id: 'model', data: model.data },
+              { _id: 'model', data: { entities: model.data.entities } },
               { _id: 'nodes', data: [] },
               { _id: 'links', data: [] },
               { _id: 'views', data: [] },
