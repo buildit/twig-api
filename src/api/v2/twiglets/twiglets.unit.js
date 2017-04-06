@@ -74,7 +74,7 @@ function twigletDocs () {
         }
       },
       {
-        id: 'views',
+        id: 'views_2',
         doc: {
           _rev: 'viewsRev',
           data: [
@@ -460,7 +460,7 @@ describe('/v2/twiglets', () => {
           { _id: 'model', data: json.model },
           { _id: 'nodes', data: json.nodes },
           { _id: 'links', data: json.links },
-          { _id: 'views', data: json.views },
+          { _id: 'views_2', data: json.views },
         ]);
       });
 
@@ -520,7 +520,7 @@ describe('/v2/twiglets', () => {
           { _id: 'links', data: clonedTwiglet.rows[0].doc.data },
           { _id: 'model', data: clonedTwiglet.rows[1].doc.data },
           { _id: 'nodes', data: clonedTwiglet.rows[2].doc.data },
-          { _id: 'views', data: clonedTwiglet.rows[3].doc.data },
+          { _id: 'views_2', data: clonedTwiglet.rows[3].doc.data },
         ]);
       });
 

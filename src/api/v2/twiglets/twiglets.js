@@ -136,7 +136,7 @@ const getTwiglet = (name, urlBuilder) =>
         return obj;
       }, {});
       return R.merge(
-        R.omit(['changelog', 'views'], twigletData),
+        R.omit(['changelog', 'views_2'], twigletData),
         {
           _rev: `${twigletInfo._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`,
           name: twigletInfo.name,
@@ -189,7 +189,7 @@ const createTwigletHandler = (request, reply) => {
             { _id: 'model', data: jsonTwiglet.model },
             { _id: 'nodes', data: jsonTwiglet.nodes },
             { _id: 'links', data: jsonTwiglet.links },
-            { _id: 'views', data: jsonTwiglet.views },
+            { _id: 'views_2', data: jsonTwiglet.views },
           ]),
           Changelog.addCommitMessage(twigletInfo.id,
             request.payload.commitMessage,
@@ -203,7 +203,7 @@ const createTwigletHandler = (request, reply) => {
           const clonedDb = new PouchDB(cloneString, { skip_setup: true });
           return clonedDb.allDocs({
             include_docs: true,
-            keys: ['links', 'model', 'nodes', 'views']
+            keys: ['links', 'model', 'nodes', 'views_2']
           })
           .then(twigletDocs =>
             Promise.all([
@@ -211,7 +211,7 @@ const createTwigletHandler = (request, reply) => {
                 { _id: 'links', data: twigletDocs.rows[0].doc.data },
                 { _id: 'model', data: twigletDocs.rows[1].doc.data },
                 { _id: 'nodes', data: twigletDocs.rows[2].doc.data },
-                { _id: 'views', data: twigletDocs.rows[3].doc.data },
+                { _id: 'views_2', data: twigletDocs.rows[3].doc.data },
               ]),
               Changelog.addCommitMessage(twigletInfo.id,
                 request.payload.commitMessage,
@@ -227,7 +227,7 @@ const createTwigletHandler = (request, reply) => {
               { _id: 'model', data: { entities: model.data.entities } },
               { _id: 'nodes', data: [] },
               { _id: 'links', data: [] },
-              { _id: 'views', data: [] },
+              { _id: 'views_2', data: [] },
             ]),
             Changelog.addCommitMessage(twigletInfo.id,
               request.payload.commitMessage,
@@ -362,7 +362,7 @@ const getTwigletJsonHandler = (request, reply) =>
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.allDocs({
       include_docs: true,
-      keys: ['nodes', 'links', 'model', 'views']
+      keys: ['nodes', 'links', 'model', 'views_2']
     })
     .then(twigletDocs => {
       const twigletData = twigletDocs.rows.reduce((obj, row) => {
