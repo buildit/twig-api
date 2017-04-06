@@ -5,7 +5,7 @@ const config = require('../../../config');
 
 const put = (request, reply) => {
   const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
-  db.get('views')
+  db.get('views_2')
   .then(doc => {
     const id = request.payload._viewId;
     const key = request.payload.key;

@@ -71,7 +71,7 @@ const getView = (name, viewName) => {
   return getTwigletInfoByName(twigletName)
   .then(twigletInfo => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-    return db.get('views');
+    return db.get('views_2');
   })
   .then(viewsRaw => {
     const viewArray = viewsRaw.data.filter(row => row.name === viewName);
@@ -88,7 +88,7 @@ const getViewsHandler = (request, reply) => {
   getTwigletInfoByName(request.params.twigletName)
   .then(twigletInfo => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-    return db.get('views');
+    return db.get('views_2');
   })
   .then((viewsRaw) => {
     const views = viewsRaw.data
@@ -133,7 +133,7 @@ const postViewsHandler = (request, reply) => {
   .then(twigletInfo => {
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-    return db.get('views');
+    return db.get('views_2');
   })
   .then((doc) => {
     const viewName = request.payload.name;
@@ -186,7 +186,7 @@ const putViewHandler = (request, reply) => {
   .then(twigletInfo => {
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
-    return db.get('views');
+    return db.get('views_2');
   })
   .then((doc) => {
     const viewIndex = doc.data.findIndex(view => view.name === request.params.viewName);
@@ -232,7 +232,7 @@ const deleteViewHandler = (request, reply) => {
   .then(twigletInfo => {
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
-    return db.get('views');
+    return db.get('views_2');
   })
   .then((doc) => {
     const viewIndex = doc.data.findIndex(view => view.name === request.params.viewName);
