@@ -369,6 +369,8 @@ const getTwigletJsonHandler = (request, reply) =>
         obj[row.id] = row.doc.data;
         return obj;
       }, {});
+      twigletData.views = twigletData.views_2;
+      delete twigletData.views_2;
       return reply(twigletData);
     });
   });
