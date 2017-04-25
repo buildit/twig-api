@@ -31,7 +31,9 @@ This will update package.json, commit the version update, git tag and push to ma
 ### Where is it deployed?
 ---
 In the Buildit Riglet:
+
 http://staging.twig-api.riglet
+
 http://twig-api.riglet
 
 ### Coding Standards
@@ -41,9 +43,6 @@ At the moment, still following the guidelines as found on [confluence](https://d
 ### How to contribute
 ---
 Create a branch, do your stuff, raise a PR
-
-### Changelog
----
 
 ### Team
 ---
