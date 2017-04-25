@@ -49,13 +49,20 @@ Create a branch, do your stuff, raise a PR
 ---
 
 Shahzain Badruddin
+
 Paul Karsten
+
 David Moss
+
 Andy Ochsner
+
 Andrew Urmston
+
 Hap Pearman
+
 Ben Hernandez
-Lizzie Stokes
+
+Lizzie Szoke
 
 ### License
 ---
