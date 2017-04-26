@@ -31,7 +31,9 @@ This will update package.json, commit the version update, git tag and push to ma
 ### Where is it deployed?
 ---
 In the Buildit Riglet:
+
 http://staging.twig-api.riglet
+
 http://twig-api.riglet
 
 ### Coding Standards
@@ -40,26 +42,30 @@ At the moment, still following the guidelines as found on [confluence](https://d
 
 ### Versioning
 ---
-The api is version via path http://example.com/v2/[route], etc
+The api is versioned via path http://example.com/v2/[route], etc
 
 ### How to contribute
 ---
 Create a branch, do your stuff, raise a PR
 
-### Changelog
----
-
 ### Team
 ---
 
 Shahzain Badruddin
+
 Paul Karsten
+
 David Moss
+
 Andy Ochsner
+
 Andrew Urmston
+
 Hap Pearman
+
 Ben Hernandez
-Lizzie Stokes
+
+Lizzie Szoke
 
 ### License
 ---
