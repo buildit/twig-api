@@ -10,14 +10,14 @@ The API will enable CRUD operations on the DB.
 ### Getting Started
 ---
 
-```
+```Shell
 npm i
 cp .env.example .env
 npm start
 ```
 
 To run tests (unit & e2e respectively)
-```
+```Shell
 npm test
 npm run test:e2e
 ```
@@ -37,6 +37,10 @@ http://twig-api.riglet
 ### Coding Standards
 ---
 At the moment, still following the guidelines as found on [confluence](https://digitalrig.atlassian.net/wiki/display/ENG/JavaScript).
+
+### Versioning
+---
+The api is version via path http://example.com/v2/[route], etc
 
 ### How to contribute
 ---
