@@ -85,11 +85,10 @@ function baseEvent () {
       }
     ],
     name: 'event name',
-    id: 'some id',
   };
 }
 
-describe.only('events', () => {
+describe('events', () => {
   describe('POST /twiglets/{twigletName}/events', () => {
     describe('success', () => {
       let res;
