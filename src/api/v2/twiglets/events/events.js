@@ -4,6 +4,7 @@ const Joi = require('joi');
 const PouchDb = require('pouchdb');
 const config = require('../../../../config');
 const logger = require('../../../../log')('EVENTS');
+const uuidV4 = require('uuid/v4');
 
 const getEventsResponse = Joi.array().items(Joi.object({
   description: Joi.string().required().allow(''),
@@ -11,16 +12,18 @@ const getEventsResponse = Joi.array().items(Joi.object({
   url: Joi.string().uri().required()
 }));
 
-const linksResponse = Joi.object({
-  id: Joi.string().required(),
-  source: Joi.string().required(),
-  target: Joi.string().required(),
-});
-
-const nodeAttributes = Joi.array().items(Joi.object({
+const attributes = Joi.array().items(Joi.object({
   key: Joi.string().required(),
   value: Joi.any(),
 }));
+
+const linksResponse = Joi.object({
+  association: Joi.string(),
+  id: Joi.string().required(),
+  source: Joi.string().required(),
+  target: Joi.string().required(),
+  attrs: attributes,
+});
 
 const nodesResponse = Joi.object({
   id: Joi.string().required(),
@@ -29,7 +32,7 @@ const nodesResponse = Joi.object({
   type: Joi.string().required(),
   x: Joi.number().required(),
   y: Joi.number().required(),
-  attrs: nodeAttributes
+  attrs: attributes
 });
 
 const createEventRequest = Joi.object({
@@ -90,7 +93,7 @@ const getEventsHandler = (request, reply) =>
       ({
         name: item.name,
         description: item.description,
-        url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/events/${item._id}`)
+        url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/events/${item.id}`)
       })
     );
     return reply(eventsArray);
@@ -129,25 +132,24 @@ const postEventsHandler = (request, reply) => {
     return db.get('events')
     .catch(error => {
       if (error.status === 404) {
-        db.put({
+        return db.put({
           _id: 'events',
           data: [],
         })
         .then(() => db.get('events'));
       }
-      else {
-        throw error;
-      }
+      throw error;
     });
   })
   .then((doc) => {
-    console.log(request.payload);
+    request.payload.id = uuidV4();
     doc.data.push(request.payload);
     return db.put(doc);
   })
-  .then(() => reply('OK').code(201))
+  .then(() => {
+    reply('OK').code(201);
+  })
   .catch(e => {
-    console.log('ERROR', e);
     logger.error(JSON.stringify(e));
     return reply(Boom.create(e.status || 500, e.message, e));
   });
