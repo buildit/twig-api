@@ -9,6 +9,7 @@ const uuidV4 = require('uuid/v4');
 const getEventsResponse = Joi.array().items(Joi.object({
   description: Joi.string().required().allow(''),
   name: Joi.string().required(),
+  id: Joi.string().required(),
   url: Joi.string().uri().required()
 }));
 
@@ -44,6 +45,7 @@ const createEventRequest = Joi.object({
 
 const getEventResponse = createEventRequest.keys({
   url: Joi.string().uri().required(),
+  id: Joi.string().required(),
 });
 
 const getTwigletInfoByName = (name) => {
@@ -91,6 +93,7 @@ const getEventsHandler = (request, reply) =>
     const eventsArray = events.data
     .map(item =>
       ({
+        id: item.id,
         name: item.name,
         description: item.description,
         url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/events/${item.id}`)
@@ -111,6 +114,7 @@ const getEventHandler = (request, reply) =>
   .then(event => {
     const eventUrl = `/v2/twiglets/${request.params.twigletName}/events/${request.params.eventId}`;
     const eventResponse = {
+      id: event.id,
       description: event.description,
       links: event.links,
       name: event.name,
