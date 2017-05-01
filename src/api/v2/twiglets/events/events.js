@@ -90,7 +90,7 @@ const getEventsHandler = (request, reply) =>
       ({
         name: item.name,
         description: item.description,
-        url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/events/${item.id}`)
+        url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/events/${item._id}`)
       })
     );
     return reply(eventsArray);
@@ -128,7 +128,7 @@ const postEventsHandler = (request, reply) => {
     db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('events')
     .catch(error => {
-      if (error.code === 404) {
+      if (error.status === 404) {
         db.put({
           _id: 'events',
           data: [],
@@ -141,11 +141,13 @@ const postEventsHandler = (request, reply) => {
     });
   })
   .then((doc) => {
+    console.log(request.payload);
     doc.data.push(request.payload);
     return db.put(doc);
   })
   .then(() => reply('OK').code(201))
   .catch(e => {
+    console.log('ERROR', e);
     logger.error(JSON.stringify(e));
     return reply(Boom.create(e.status || 500, e.message, e));
   });
@@ -203,7 +205,7 @@ module.exports.routes = [
       validate: {
         payload: createEventRequest,
       },
-      response: { schema: getEventResponse },
+      response: { schema: Joi.string() },
       tags: ['api'],
     }
   },
