@@ -114,6 +114,7 @@ const getEventHandler = (request, reply) =>
   .then(event => {
     const eventUrl = `/v2/twiglets/${request.params.twigletName}/events/${request.params.eventId}`;
     const eventResponse = {
+      id: event.id,
       description: event.description,
       links: event.links,
       name: event.name,

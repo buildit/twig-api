@@ -47,8 +47,8 @@ describe('/v2/Twiglet::Events', () => {
         expect(response.statusCode).to.equal(200);
       });
 
-      it('only returns 3 keys per event', () => {
-        expect(Reflect.ownKeys(response.result[0]).length).to.equal(3);
+      it('only returns 4 keys per event', () => {
+        expect(Reflect.ownKeys(response.result[0]).length).to.equal(4);
       });
 
       it('returns the url', () => {
