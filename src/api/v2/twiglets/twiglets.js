@@ -138,7 +138,7 @@ const getTwiglet = (name, urlBuilder) =>
         return obj;
       }, {});
       return R.merge(
-        R.omit(['changelog', 'views_2'], twigletData),
+        R.omit(['changelog', 'views_2', 'events'], twigletData),
         {
           _rev: `${twigletInfo._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`,
           name: twigletInfo.name,
@@ -246,7 +246,6 @@ const createTwigletHandler = (request, reply) => {
     });
   })
   .catch((error) => {
-    console.log('error?', error);
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));
   });

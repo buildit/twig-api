@@ -1,249 +1,235 @@
-// /* eslint func-names: 0 */
-// /* eslint no-unused-expressions: 0 */
-// 'use strict';
-// const chai = require('chai');
-// const chaiHttp = require('chai-http');
-// const chaiSubset = require('chai-subset');
-// const { authAgent, anonAgent, url } = require('../../../../../test/e2e');
-// const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
-// const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
+/* eslint func-names: 0 */
+/* eslint no-unused-expressions: 0 */
+'use strict';
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const chaiSubset = require('chai-subset');
+const { authAgent, anonAgent } = require('../../../../../test/e2e');
+const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
+const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
-// const expect = chai.expect;
-// chai.use(chaiHttp);
-// chai.use(chaiSubset);
+const expect = chai.expect;
+chai.use(chaiHttp);
+chai.use(chaiSubset);
 
-// function createView (twigletName, view) {
-//   return authAgent.post(`/v2/twiglets/${twigletName}/views`).send(view);
-// }
+function createEvent (twigletName, event) {
+  return authAgent.post(`/v2/twiglets/${twigletName}/events`).send(event);
+}
 
-// function updateView (twigletName, viewName, view) {
-//   return authAgent.put(`/v2/twiglets/${twigletName}/views/${viewName}`).send(view);
-// }
+function hitUrl (url, type = 'get', auth = false) {
+  let cleanedUrl = url;
+  if (!cleanedUrl.startsWith('/v2')) {
+    const index = cleanedUrl.indexOf('/v2');
+    cleanedUrl = cleanedUrl.substring(index);
+  }
+  if (auth) {
+    return authAgent[type](cleanedUrl);
+  }
+  return anonAgent[type](cleanedUrl);
+}
 
-// function getView (twigletName, viewName) {
-//   return anonAgent.get(`/v2/twiglets/${twigletName}/views/${viewName}`);
-// }
+function getEvents (twigletName) {
+  return anonAgent.get(`/v2/twiglets/${twigletName}/events`);
+}
 
-// function getViews (twigletName) {
-//   return anonAgent.get(`/v2/twiglets/${twigletName}/views`);
-// }
+function baseEvent () {
+  return {
+    description: 'description of event',
+    links: [
+      {
+        id: '26ce4b06-af0b-4c29-8368-631441915e67',
+        association: 'some name',
+        source: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
+        target: 'bb7d6af2-48ed-42f7-9fc1-705eb49b09bc',
+      },
+      {
+        id: '626158d4-56db-4bfa-822b-9aaf7b17e88f',
+        source: 'ab2752a2-cbc5-412d-87f8-fcc4d0000ee8',
+        target: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
+        attrs: [
+          { key: 'key1', value: 'value1' },
+          { key: 'key2', value: 'value2' }
+        ],
+      }
+    ],
+    nodes: [
+      {
+        id: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
+        location: '',
+        name: 'node 1',
+        type: 'ent1',
+        x: 100,
+        y: 200,
+        attrs: [],
+      },
+      {
+        id: 'bb7d6af2-48ed-42f7-9fc1-705eb49b09bc',
+        location: '',
+        name: 'node 2',
+        type: 'ent2',
+        x: 200,
+        y: 100,
+        attrs: [
+          { key: 'key1', value: 'value1' },
+          { key: 'key2', value: 'value2' }
+        ],
+      },
+      {
+        id: 'ab2752a2-cbc5-412d-87f8-fcc4d0000ee8',
+        location: '',
+        name: 'node 3',
+        type: 'ent3',
+        x: 1000,
+        y: 900,
+        attrs: [],
+      }
+    ],
+    name: 'event name',
+  };
+}
 
-// function deleteView (twigletName, viewName) {
-//   return authAgent.delete(`/v2/twiglets/${twigletName}/views/${viewName}`);
-// }
+describe('events', () => {
+  describe('POST /twiglets/{twigletName}/events', () => {
+    describe('success', () => {
+      let res;
 
-// function baseView () {
-//   return {
-//     description: 'description of view',
-//     links: {},
-//     nodes: {},
-//     name: 'view name',
-//     userState: {
-//       autoConnectivity: 'in',
-//       autoScale: 'linear',
-//       bidirectionalLinks: true,
-//       cascadingCollapse: true,
-//       currentNode: null,
-//       filters: [{
-//         attributes: [],
-//         types: { }
-//       }],
-//       forceChargeStrength: 0.1,
-//       forceGravityX: 0.1,
-//       forceGravityY: 1,
-//       forceLinkDistance: 20,
-//       forceLinkStrength: 0.5,
-//       forceVelocityDecay: 0.9,
-//       linkType: 'path',
-//       nodeSizingAutomatic: true,
-//       scale: 8,
-//       showLinkLabels: false,
-//       showNodeLabels: false,
-//       traverseDepth: 3,
-//       treeMode: false,
-//     }
-//   };
-// }
+      beforeEach(function* foo () {
+        yield createModel(baseModel());
+        yield createTwiglet(baseTwiglet());
+        res = yield createEvent(baseTwiglet().name, baseEvent());
+      });
 
-// describe('views', () => {
-//   describe('POST /twiglets/{twigletName}/views', () => {
-//     describe('success', () => {
-//       let res;
+      afterEach('Delete new twiglet', function* foo () {
+        yield deleteTwiglet(baseTwiglet());
+        yield deleteModel(baseModel());
+      });
 
-//       beforeEach(function* foo () {
-//         yield createModel(baseModel());
-//         yield createTwiglet(baseTwiglet());
-//         res = yield createView(baseTwiglet().name, baseView());
-//       });
+      it('returns 201', () => {
+        expect(res).to.have.status(201);
+      });
 
-//       afterEach('Delete new twiglet', function* foo () {
-//         yield deleteTwiglet(baseTwiglet());
-//         yield deleteModel(baseModel());
-//       });
+      it('expects "OK" back', () => {
+        expect(res.text).to.equal('OK');
+      });
+    });
+  });
 
-//       it('returns 201', () => {
-//         expect(res).to.have.status(201);
-//       });
+  describe('GET /twiglets/{twigletName}/events', () => {
+    describe('success', () => {
+      let res;
 
-//       it('has an entity response', () => {
-//         expect(res.body).to.contain.keys({
-//           name: baseView().name,
-//           url: `${url}/twiglets/${baseTwiglet().name}/views/${baseView().name}`
-//         });
-//       });
-//     });
-//   });
+      beforeEach(function* foo () {
+        yield createModel(baseModel());
+        yield createTwiglet(baseTwiglet());
+        res = yield createEvent(baseTwiglet().name, baseEvent());
+        res = yield getEvents(baseTwiglet().name);
+      });
 
-//   describe('GET /twiglets/{twigletName}/views', () => {
-//     describe('success', () => {
-//       let res;
-//       let createdView;
+      afterEach('Delete new twiglet', function* foo () {
+        yield deleteTwiglet(baseTwiglet());
+        yield deleteModel(baseModel());
+      });
 
-//       beforeEach(function* foo () {
-//         yield createModel(baseModel());
-//         yield createTwiglet(baseTwiglet());
-//         res = yield createView(baseTwiglet().name, baseView());
-//         createdView = res.body;
-//         res = yield getViews(baseTwiglet().name);
-//       });
+      it('returns 200 (OK)', () => {
+        expect(res.statusCode).to.equal(200);
+      });
 
-//       afterEach('Delete new twiglet', function* foo () {
-//         yield deleteTwiglet(baseTwiglet());
-//         yield deleteModel(baseModel());
-//       });
+      it('returns a list of events', () => {
+        expect(res.body.length).to.equal(1);
+      });
 
-//       it('returns 200 (OK)', () => {
-//         expect(res.statusCode).to.equal(200);
-//       });
+      it('returns the name', () => {
+        expect(res.body[0].name).to.equal(baseEvent().name);
+      });
 
-//       it('returns a list of views', () => {
-//         expect(res.body.length).to.equal(1);
-//       });
+      it('returns the description', () => {
+        expect(res.body[0].description).to.equal(baseEvent().description);
+      });
 
-//       it('returns a list including the newly created view', () => {
-//         expect(res.body[0].name).to.equal(createdView.name);
-//       });
-//     });
-//   });
+      it('has a url', () => {
+        expect(res.body[0].url).to.exist;
+      });
+    });
+  });
 
-//   describe('GET /twiglets/{twigletName}/views/{viewName}', () => {
-//     describe('success', () => {
-//       let res;
+  describe('GET /twiglets/{twigletName}/events/{eventId}', () => {
+    describe('success', () => {
+      let res;
+      let eventSnapshot;
 
-//       beforeEach(function* foo () {
-//         yield createModel(baseModel());
-//         yield createTwiglet(baseTwiglet());
-//         yield createView(baseTwiglet().name, baseView());
-//         res = yield getView(baseTwiglet().name, baseView().name);
-//       });
+      beforeEach(function* foo () {
+        yield createModel(baseModel());
+        yield createTwiglet(baseTwiglet());
+        yield createEvent(baseTwiglet().name, baseEvent());
+        eventSnapshot = (yield getEvents(baseTwiglet().name)).body[0];
+        res = yield hitUrl(eventSnapshot.url);
+      });
 
-//       afterEach('Delete new twiglet', function* foo () {
-//         yield deleteTwiglet(baseTwiglet());
-//         yield deleteModel(baseModel());
-//       });
+      afterEach('Delete new twiglet', function* foo () {
+        yield deleteTwiglet(baseTwiglet());
+        yield deleteModel(baseModel());
+      });
 
-//       it('returns 200 (OK)', () => {
-//         expect(res.statusCode).to.equal(200);
-//       });
+      it('returns 200 (OK)', () => {
+        expect(res.statusCode).to.equal(200);
+      });
 
-//       it('contains the view', () => {
-//         expect(res.body.description).to.equal(baseView().description);
-//       });
-//     });
+      it('returns the name', () => {
+        expect(res.body.name).to.equal(baseEvent().name);
+      });
 
-//     describe('(Error)', () => {
-//       let promise;
+      it('returns the description', () => {
+        expect(res.body.description).to.equal(baseEvent().description);
+      });
 
-//       before(() => {
-//         promise = getView(baseTwiglet().name, 'no name');
-//       });
+      it('returns the links', () => {
+        expect(res.body.nodes).to.deep.equal(baseEvent().nodes);
+      });
 
-//       it('returns 404', (done) => {
-//         promise.catch(res => {
-//           expect(res).to.have.status(404);
-//           done();
-//         });
-//       });
-//     });
-//   });
+      it('returns the nodes', () => {
+        expect(res.body.nodes).to.deep.equal(baseEvent().nodes);
+      });
 
-//   describe('PUT /twiglets/{twigletName}/views/{viewName}', () => {
-//     describe('success', () => {
-//       let res;
-//       let updates;
-//       const viewName = baseView().name;
+      it('returns the correct url', () => {
+        expect(res.body.url).to.equal(eventSnapshot.url);
+      });
+    });
+  });
 
-//       beforeEach(function* foo () {
-//         yield createModel(baseModel());
-//         yield createTwiglet(baseTwiglet());
-//         yield createView(baseTwiglet().name, baseView());
-//         updates = baseView();
-//         updates.name = 'a different name';
-//         res = yield updateView(baseTwiglet().name, viewName, updates);
-//       });
+  describe('DELETE /twiglets/{twigletName}/events/{eventId}', () => {
+    describe('success', () => {
+      let res;
+      let eventSnapshot;
 
-//       afterEach('Delete new twiglet', function* foo () {
-//         yield deleteTwiglet(baseTwiglet());
-//         yield deleteModel(baseModel());
-//       });
+      beforeEach(function* foo () {
+        yield createModel(baseModel());
+        yield createTwiglet(baseTwiglet());
+        yield createEvent(baseTwiglet().name, baseEvent());
+        eventSnapshot = (yield getEvents(baseTwiglet().name)).body[0];
+        res = yield hitUrl(eventSnapshot.url, 'delete', true);
+      });
 
-//       it('returns 200', () => {
-//         expect(res).to.have.status(200);
-//       });
+      afterEach('Delete new twiglet', function* foo () {
+        yield deleteTwiglet(baseTwiglet());
+        yield deleteModel(baseModel());
+      });
 
-//       it('contains the view', () => {
-//         expect(res.body.name).to.equal('a different name');
-//       });
-//     });
+      it('returns 204', () => {
+        expect(res).to.have.status(204);
+      });
 
-//     describe('(Error)', () => {
-//       let promise;
+      it('GET event returns 404', (done) => {
+        hitUrl(eventSnapshot.url)
+          .end((err, response) => {
+            expect(response).to.have.status(404);
+            done();
+          });
+      });
 
-//       before(() => {
-//         promise = getView(baseTwiglet().name, 'no name');
-//       });
-
-//       it('returns 404', (done) => {
-//         promise.catch(res => {
-//           expect(res).to.have.status(404);
-//           done();
-//         });
-//       });
-//     });
-//   });
-
-//   describe('DELETE /twiglets/{twigletName}/views/{viewName}', () => {
-//     describe('success', () => {
-//       let res;
-
-//       beforeEach(function* foo () {
-//         yield createModel(baseModel());
-//         yield createTwiglet(baseTwiglet());
-//         yield createView(baseTwiglet().name, baseView());
-//         res = yield deleteView(baseTwiglet().name, baseView().name);
-//       });
-
-//       afterEach('Delete new twiglet', function* foo () {
-//         yield deleteTwiglet(baseTwiglet());
-//         yield deleteModel(baseModel());
-//       });
-
-//       it('returns 204', () => {
-//         expect(res).to.have.status(204);
-//       });
-
-//       it('GET view returns 404', (done) => {
-//         getView(baseTwiglet().name, baseView().name)
-//           .end((err, response) => {
-//             expect(response).to.have.status(404);
-//             done();
-//           });
-//       });
-
-//       it('not included in the list of views', function* () {
-//         const views = yield getViews(baseTwiglet().name);
-//         expect(views.body).to.not.deep.contains(baseTwiglet());
-//       });
-//     });
-//   });
-// });
+      it('not included in the list of events', function* () {
+        const events = (yield getEvents(baseTwiglet().name)).body;
+        expect(events.length).to.equal(0);
+      });
+    });
+  });
+});
