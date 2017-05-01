@@ -75,9 +75,11 @@ const getView = (name, viewName) => {
     return db.get('views_2');
   })
   .then(viewsRaw => {
-    const viewArray = viewsRaw.data.filter(row => row.name === viewName);
-    if (viewArray.length) {
-      return viewArray[0];
+    if (viewsRaw.data) {
+      const viewArray = viewsRaw.data.filter(row => row.name === viewName);
+      if (viewArray.length) {
+        return viewArray[0];
+      }
     }
     const error = Error('Not Found');
     error.status = 404;
