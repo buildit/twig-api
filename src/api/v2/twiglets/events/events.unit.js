@@ -9,46 +9,9 @@
 // const twigletInfo = require('../twiglets.unit').twigletInfo;
 // const twigletDocs = require('../twiglets.unit').twigletDocs;
 
-// server.route(Views.routes);
+// server.route(Events.routes);
 
-// function getViewResults () {
-//   return {
-//     data: [
-//       {
-//         description: 'description of view',
-//         links: {},
-//         nodes: {},
-//         name: 'view name',
-//         userState: {
-//           autoConnectivity: 'in',
-//           autoScale: 'linear',
-//           bidirectionalLinks: true,
-//           cascadingCollapse: true,
-//           currentNode: null,
-//           filters: [{
-//             attributes: [],
-//             types: { }
-//           }],
-//           forceChargeStrength: 0.1,
-//           forceGravityX: 0.1,
-//           forceGravityY: 1,
-//           forceLinkDistance: 20,
-//           forceLinkStrength: 0.5,
-//           forceVelocityDecay: 0.9,
-//           linkType: 'path',
-//           nodeSizingAutomatic: true,
-//           scale: 8,
-//           showLinkLabels: false,
-//           showNodeLabels: false,
-//           traverseDepth: 3,
-//           treeMode: false,
-//         }
-//       }
-//     ]
-//   };
-// }
-
-// describe('/v2/Twiglet::Views', () => {
+// describe('/v2/Twiglet::Events', () => {
 //   let sandbox = sinon.sandbox.create();
 //   beforeEach(() => {
 //     sandbox = sinon.sandbox.create();
@@ -58,11 +21,11 @@
 //     sandbox.restore();
 //   });
 
-//   describe('getViewsHandler', () => {
+//   describe('getEventsHandler', () => {
 //     function req () {
 //       return {
 //         method: 'GET',
-//         url: '/v2/twiglets/Some%20Twiglet/views',
+//         url: '/v2/twiglets/Some%20Twiglet/events',
 //       };
 //     }
 
@@ -76,7 +39,7 @@
 
 
 //       beforeEach(function* foo () {
-//         sandbox.stub(PouchDb.prototype, 'get').resolves(getViewResults());
+//         sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
 //         response = yield server.inject(req());
 //       });
 
@@ -84,22 +47,27 @@
 //         expect(response.statusCode).to.equal(200);
 //       });
 
-//       it('only returns 2 keys', () => {
-//         expect(Reflect.ownKeys(response.result[0]).length).to.equal(2);
+//       it('only returns 3 keys per event', () => {
+//         expect(Reflect.ownKeys(response.result[0]).length).to.equal(3);
 //       });
 
 //       it('returns the url', () => {
-//         const viewUrl = '/twiglets/Some%20Twiglet/views/view%20name';
-//         expect(response.result[0].url).to.exist.and.endsWith(viewUrl);
+//         const eventUrl = '/twiglets/Some%20Twiglet/events/bd79213c-8e17-49bc-9fc2-392f3c5acd28';
+//         expect(response.result[0].url).to.exist.and.endsWith(eventUrl);
 //       });
 
-//       it('returns the views', () => {
-//         expect(response.result).to.have.length.of(1);
-//         expect(response.result[0].name).to.deep.equal(getViewResults().data[0].name);
+//       it('returns the events', () => {
+//         expect(response.result).to.have.length.of(2);
 //       });
 //     });
 
 //     describe('errors', () => {
+//       it('returns an empty array if there are no events on the twiglet yet', function* foo () {
+//         sandbox.stub(PouchDb.prototype, 'get').rejects({ status: 404 });
+//         const response = yield server.inject(req());
+//         expect(response.result).to.deep.equal([]);
+//       });
+
 //       it('relays errors', function* foo () {
 //         sandbox.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
 //         const response = yield server.inject(req());
@@ -115,10 +83,11 @@
 //   });
 
 //   describe('getViewHandler', () => {
+//     const event = twigletDocs().rows[4].doc.data[0];
 //     function req () {
 //       return {
 //         method: 'GET',
-//         url: '/v2/twiglets/Some%20Twiglet/views/view%20name',
+//         url: '/v2/twiglets/Some%20Twiglet/events/bd79213c-8e17-49bc-9fc2-392f3c5acd28',
 //       };
 //     }
 
@@ -131,7 +100,7 @@
 //       let response;
 
 //       beforeEach(function* foo () {
-//         sandbox.stub(PouchDb.prototype, 'get').resolves(getViewResults());
+//         sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
 //         response = yield server.inject(req());
 //       });
 
@@ -139,13 +108,26 @@
 //         expect(response.statusCode).to.equal(200);
 //       });
 
-//       it('returns the url', () => {
-//         const viewUrl = '/twiglets/Some%20Twiglet/views/view%20name';
-//         expect(response.result.url).to.exist.and.endsWith(viewUrl);
+//       it('returns the description', () => {
+//         expect(response.result.description)
+//           .to.exist.and.equal(event.description);
 //       });
 
-//       it('returns the correct userState settings', () => {
-//         expect(response.result.userState.showNodeLabels).to.equal(false);
+//       it('returns the links', () => {
+//         expect(response.result.links).to.exist.and.deep.equal(event.links);
+//       });
+
+//       it('returns the name', () => {
+//         expect(response.result.name).to.exist.and.equal(event.name);
+//       });
+
+//       it('returns the nodes', () => {
+//         expect(response.result.nodes).to.exist.and.deep.equal(event.nodes);
+//       });
+
+//       it('returns the url', () => {
+//         const viewUrl = '/twiglets/Some%20Twiglet/events/bd79213c-8e17-49bc-9fc2-392f3c5acd28';
+//         expect(response.result.url).to.exist.and.endsWith(viewUrl);
 //       });
 //     });
 
@@ -164,11 +146,13 @@
 //     });
 //   });
 
-//   describe('postViewsHandler', () => {
+//   describe.only('postViewsHandler', () => {
 //     function req () {
+//       const singleEvent = twigletDocs().rows[4].doc.data[0];
+//       console.log(singleEvent);
 //       return {
 //         method: 'POST',
-//         url: '/v2/twiglets/Some%20Twiglet/views',
+//         url: '/v2/twiglets/Some%20Twiglet/events',
 //         credentials: {
 //           id: 123,
 //           username: 'ben',
@@ -177,34 +161,10 @@
 //           },
 //         },
 //         payload: {
-//           description: 'view description',
-//           links: {},
-//           nodes: {},
-//           name: 'test view',
-//           userState: {
-//             autoConnectivity: 'in',
-//             autoScale: 'linear',
-//             bidirectionalLinks: true,
-//             cascadingCollapse: true,
-//             currentNode: null,
-//             filters: [{
-//               attributes: [],
-//               types: { }
-//             }],
-//             forceChargeStrength: 0.1,
-//             forceGravityX: 0.1,
-//             forceGravityY: 1,
-//             forceLinkDistance: 20,
-//             forceLinkStrength: 0.5,
-//             forceVelocityDecay: 0.9,
-//             linkType: 'path',
-//             nodeSizingAutomatic: true,
-//             scale: 8,
-//             showLinkLabels: false,
-//             showNodeLabels: false,
-//             traverseDepth: 3,
-//             treeMode: false,
-//           }
+//           description: 'some description',
+//           name: 'Ben got fired',
+//           links: singleEvent.links,
+//           nodes: singleEvent.nodes,
 //         }
 //       };
 //     }
@@ -213,29 +173,28 @@
 //       let response;
 //       let put;
 //       beforeEach(function* foo () {
-//         const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
-//         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-//         allDocs.onSecondCall().resolves(twigletDocs());
-//         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-//         allDocs.onCall(3).resolves(twigletDocs());
-//         const get = sandbox.stub(PouchDb.prototype, 'get');
-//         get.withArgs('changelog').rejects({ status: 404 });
-//         get.resolves(twigletDocs().rows[3].doc);
-//         sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
-//         put = sandbox.stub(PouchDb.prototype, 'put').resolves(getViewResults());
+//         sandbox.stub(PouchDb.prototype, 'allDocs')
+            // .resolves({ rows: [{ doc: (twigletInfo()) }] });
+//         sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
+//         put = sandbox.stub(PouchDb.prototype, 'put').resolves('');
 //         response = yield server.inject(req());
+//         console.log(response.result);
 //       });
 
 //       it('calls put', () => {
-//         expect(put.callCount).to.equal(2);
+//         expect(put.callCount).to.equal(1);
+//       });
+
+//       it('pushes the new event to the array', () => {
+//         expect(put.onFirstCall().args[0].data.length).to.equal(3);
 //       });
 
 //       it('returns CREATED', () => {
 //         expect(response.statusCode).to.equal(201);
 //       });
 
-//       it('returns the new view', () => {
-//         expect(response.result).to.include.keys({ name: 'test view' });
+//       it('returns OK', () => {
+//         expect(response.result).to.equal('OK');
 //       });
 //     });
 

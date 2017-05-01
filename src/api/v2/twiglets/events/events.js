@@ -4,6 +4,7 @@ const Joi = require('joi');
 const PouchDb = require('pouchdb');
 const config = require('../../../../config');
 const logger = require('../../../../log')('EVENTS');
+const uuidV4 = require('uuid/v4');
 
 const getEventsResponse = Joi.array().items(Joi.object({
   description: Joi.string().required().allow(''),
@@ -11,16 +12,18 @@ const getEventsResponse = Joi.array().items(Joi.object({
   url: Joi.string().uri().required()
 }));
 
-const linksResponse = Joi.object({
-  id: Joi.string().required(),
-  source: Joi.string().required(),
-  target: Joi.string().required(),
-});
-
-const nodeAttributes = Joi.array().items(Joi.object({
+const attributes = Joi.array().items(Joi.object({
   key: Joi.string().required(),
   value: Joi.any(),
 }));
+
+const linksResponse = Joi.object({
+  association: Joi.string(),
+  id: Joi.string().required(),
+  source: Joi.string().required(),
+  target: Joi.string().required(),
+  attrs: attributes,
+});
 
 const nodesResponse = Joi.object({
   id: Joi.string().required(),
@@ -29,7 +32,7 @@ const nodesResponse = Joi.object({
   type: Joi.string().required(),
   x: Joi.number().required(),
   y: Joi.number().required(),
-  attrs: nodeAttributes
+  attrs: attributes
 });
 
 const createEventRequest = Joi.object({
@@ -85,6 +88,7 @@ const getEventsHandler = (request, reply) =>
     return db.get('events');
   })
   .then((events) => {
+    console.log(events.data);
     const eventsArray = events.data
     .map(item =>
       ({
@@ -128,19 +132,18 @@ const postEventsHandler = (request, reply) => {
     db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('events')
     .catch(error => {
-      if (error.code === 404) {
-        db.put({
+      if (error.status === 404) {
+        return db.put({
           _id: 'events',
           data: [],
         })
         .then(() => db.get('events'));
       }
-      else {
-        throw error;
-      }
+      throw error;
     });
   })
   .then((doc) => {
+    request.payload.id = uuidV4();
     doc.data.push(request.payload);
     return db.put(doc);
   })
@@ -203,7 +206,7 @@ module.exports.routes = [
       validate: {
         payload: createEventRequest,
       },
-      response: { schema: getEventResponse },
+      response: { schema: Joi.string() },
       tags: ['api'],
     }
   },

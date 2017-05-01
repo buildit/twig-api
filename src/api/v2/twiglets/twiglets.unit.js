@@ -109,6 +109,75 @@ function twigletDocs () {
           ]
         }
       },
+      {
+        id: 'events',
+        doc: {
+          _rev: 'some rev',
+          data: [
+            {
+              id: 'bd79213c-8e17-49bc-9fc2-392f3c5acd28',
+              description: 'description of Event',
+              links: [
+                {
+                  id: '26ce4b06-af0b-4c29-8368-631441915e67',
+                  association: 'some name',
+                  source: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
+                  target: 'bb7d6af2-48ed-42f7-9fc1-705eb49b09bc',
+                },
+                {
+                  id: '626158d4-56db-4bfa-822b-9aaf7b17e88f',
+                  source: 'ab2752a2-cbc5-412d-87f8-fcc4d0000ee8',
+                  target: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
+                  attrs: [
+                    { key: 'key1', value: 'value1' },
+                    { key: 'key2', value: 'value2' }
+                  ],
+                }
+              ],
+              nodes: [
+                {
+                  id: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
+                  location: '',
+                  name: 'node 1',
+                  type: 'ent1',
+                  x: 100,
+                  y: 200,
+                  attrs: [],
+                },
+                {
+                  id: 'bb7d6af2-48ed-42f7-9fc1-705eb49b09bc',
+                  location: '',
+                  name: 'node 2',
+                  type: 'ent2',
+                  x: 200,
+                  y: 100,
+                  attrs: [
+                    { key: 'key1', value: 'value1' },
+                    { key: 'key2', value: 'value2' }
+                  ],
+                },
+                {
+                  id: 'ab2752a2-cbc5-412d-87f8-fcc4d0000ee8',
+                  location: '',
+                  name: 'node 3',
+                  type: 'ent3',
+                  x: 1000,
+                  y: 900,
+                  attrs: [],
+                }
+              ],
+              name: 'event name',
+            },
+            {
+              id: '6fe3d7f2-240b-40b1-a689-cbf9bc2fb9e8',
+              description: 'another event',
+              links: [],
+              nodes: [],
+              name: 'event 2',
+            },
+          ]
+        }
+      }
     ]
   };
 }
