@@ -82,7 +82,7 @@ describe('/v2/Twiglet::Events', () => {
     });
   });
 
-  describe('getViewHandler', () => {
+  describe('getEventHandler', () => {
     const event = twigletDocs().rows[4].doc.data[0];
     function req () {
       return {
