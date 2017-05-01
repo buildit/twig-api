@@ -310,6 +310,7 @@ describe('/v2/twiglets', () => {
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         twiglet = (yield server.inject(req)).result;
+        console.log(twiglet);
       });
 
       it('returns the name and description', () =>

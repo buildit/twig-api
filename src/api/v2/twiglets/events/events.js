@@ -88,7 +88,6 @@ const getEventsHandler = (request, reply) =>
     return db.get('events');
   })
   .then((events) => {
-    console.log(events.data);
     const eventsArray = events.data
     .map(item =>
       ({

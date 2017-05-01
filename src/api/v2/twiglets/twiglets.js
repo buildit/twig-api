@@ -138,7 +138,7 @@ const getTwiglet = (name, urlBuilder) =>
         return obj;
       }, {});
       return R.merge(
-        R.omit(['changelog', 'views_2'], twigletData),
+        R.omit(['changelog', 'views_2', 'events'], twigletData),
         {
           _rev: `${twigletInfo._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`,
           name: twigletInfo.name,
