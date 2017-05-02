@@ -85,6 +85,7 @@ const baseTwigletResponse = {
   json_url: Joi.string().uri().required(),
   model_url: Joi.string().uri().required(),
   views_url: Joi.string().uri().required(),
+  sequences_url: Joi.string().uri().required(),
 };
 
 const getTwigletResponse = updateTwigletRequest.keys(baseTwigletResponse).keys({
@@ -132,13 +133,14 @@ const getTwiglet = (name, urlBuilder) =>
       const modelUrl = urlBuilder(`/v2/twiglets/${name}/model`);
       const changelogUrl = urlBuilder(`/v2/twiglets/${name}/changelog`);
       const viewsUrl = urlBuilder(`/v2/twiglets/${name}/views`);
+      const sequencesUrl = urlBuilder(`/v2/twiglets/${name}/sequences`);
       const jsonUrl = urlBuilder(`/v2/twiglets/${name}.json`);
       const twigletData = twigletDocs.rows.reduce((obj, row) => {
         obj[row.id] = row.doc;
         return obj;
       }, {});
       return R.merge(
-        R.omit(['changelog', 'views_2', 'events'], twigletData),
+        R.omit(['changelog', 'views_2', 'events', 'sequences'], twigletData),
         {
           _rev: `${twigletInfo._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`,
           name: twigletInfo.name,
@@ -152,6 +154,7 @@ const getTwiglet = (name, urlBuilder) =>
           views_url: viewsUrl,
           json_url: jsonUrl,
           events_url: eventsUrl,
+          sequences_url: sequencesUrl
         });
     });
   });
@@ -267,6 +270,7 @@ const getTwigletsHandler = (request, reply) => {
             views_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}/views`),
             json_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}.json`),
             events_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}/events`),
+            sequences_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}/sequences`),
           })
       );
       return reply(twiglets);

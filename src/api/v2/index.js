@@ -8,6 +8,7 @@ const twigletsChangelog = require('./twiglets/changelog');
 const twigletsModel = require('./twiglets/model');
 const twigletsViews = require('./twiglets/views');
 const twigletEvents = require('./twiglets/events');
+const twigletSequences = require('./twiglets/sequences');
 
 module.exports = {
   auth,
@@ -19,4 +20,5 @@ module.exports = {
   twigletsModel,
   twigletsViews,
   twigletEvents,
+  twigletSequences
 };
