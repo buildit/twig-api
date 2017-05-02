@@ -15,6 +15,7 @@ const getSequenceResponse = Joi.object({
 });
 
 const getSequencesResponse = Joi.array().items(Joi.object({
+  events: Joi.array().required(),
   name: Joi.string().required(),
   id: Joi.string().required(),
   url: Joi.string().uri().required(),
@@ -71,6 +72,7 @@ const getSequencesHandler = (request, reply) =>
     const sequencesArray = sequences.data
     .map(item =>
       ({
+        events: item.events,
         id: item.id,
         name: item.name,
         url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/sequences/${item.id}`)
