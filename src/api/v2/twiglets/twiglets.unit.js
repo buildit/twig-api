@@ -177,6 +177,32 @@ function twigletDocs () {
             },
           ]
         }
+      },
+      {
+        id: 'sequences',
+        doc: {
+          _rev: 'some rev',
+          data: [
+            {
+              id: '75c4dc47-4131-4503-aa82-2c09ead3f357',
+              name: 'sequence 1',
+              description: 'description of sequence',
+              events: [
+                'f6b49795-0418-4ebd-ae52-adeb96885119',
+                '1ff70005-08d6-4131-a8c9-e08f276a975b'
+              ]
+            },
+            {
+              id: 'ae2c4536-e0bb-43ed-a7c5-18cb23315a50',
+              name: 'sequence 2',
+              events: [
+                'f6b49795-0418-4ebd-ae52-adeb96885119',
+                '1ff70005-08d6-4131-a8c9-e08f276a975b',
+                '2a0e95d9-91c5-4a64-b283-bd94195a8ef6'
+              ]
+            }
+          ]
+        }
       }
     ]
   };

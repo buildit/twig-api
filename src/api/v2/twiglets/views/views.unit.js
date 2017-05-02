@@ -332,7 +332,7 @@ describe('/v2/Twiglet::Views', () => {
         expect(response.statusCode).to.equal(200);
       });
 
-      it('returns the new view', () => {
+      it('returns the updated view', () => {
         expect(response.result).to.include.keys({ name: 'new view name' });
       });
     });

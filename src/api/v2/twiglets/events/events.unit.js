@@ -37,7 +37,6 @@ describe('/v2/Twiglet::Events', () => {
     describe('success', () => {
       let response;
 
-
       beforeEach(function* foo () {
         sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
         response = yield server.inject(req());
@@ -126,8 +125,8 @@ describe('/v2/Twiglet::Events', () => {
       });
 
       it('returns the url', () => {
-        const viewUrl = '/twiglets/Some%20Twiglet/events/bd79213c-8e17-49bc-9fc2-392f3c5acd28';
-        expect(response.result.url).to.exist.and.endsWith(viewUrl);
+        const eventUrl = '/twiglets/Some%20Twiglet/events/bd79213c-8e17-49bc-9fc2-392f3c5acd28';
+        expect(response.result.url).to.exist.and.endsWith(eventUrl);
       });
     });
 
@@ -146,7 +145,7 @@ describe('/v2/Twiglet::Events', () => {
     });
   });
 
-  describe('postViewsHandler', () => {
+  describe('postEventsHandler', () => {
     function req () {
       const singleEvent = twigletDocs().rows[4].doc.data[0];
       return {
