@@ -85,7 +85,6 @@ function baseEvent () {
       }
     ],
     name: 'event name',
-    id: 'some id',
   };
 }
 
