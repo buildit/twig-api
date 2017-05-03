@@ -8,6 +8,7 @@ const config = require('../../../config');
 const logger = require('../../../log')('TWIGLETS');
 const Changelog = require('./changelog');
 const Model = require('../models/');
+const { linksResponse, nodesResponse } = require('./events');
 
 const createTwigletRequest = Joi.object({
   name: Joi.string().required(),
@@ -62,7 +63,20 @@ const jsonTwigletRequest = Joi.object({
       treeMode: Joi.boolean().required(),
       traverseDepth: Joi.number().required(),
     })
-  })).required()
+  })).required(),
+  events: Joi.array(Joi.object({
+    description: Joi.string().required().allow(''),
+    links: Joi.array(linksResponse).required(),
+    name: Joi.string().required(),
+    nodes: Joi.array(nodesResponse).required(),
+    id: Joi.string().required(),
+  })),
+  sequences: Joi.array(Joi.object({
+    description: Joi.string().allow(''),
+    events: Joi.array().required(),
+    id: Joi.string().required(),
+    name: Joi.string().required(),
+  })),
 });
 
 const baseTwigletRequest = Joi.object({
@@ -196,6 +210,8 @@ const createTwigletHandler = (request, reply) => {
             { _id: 'nodes', data: jsonTwiglet.nodes },
             { _id: 'links', data: jsonTwiglet.links },
             { _id: 'views_2', data: jsonTwiglet.views },
+            { _id: 'events', data: jsonTwiglet.events },
+            { _id: 'sequences', data: jsonTwiglet.sequences },
           ]),
           Changelog.addCommitMessage(twigletInfo.id,
             request.payload.commitMessage,
@@ -209,7 +225,7 @@ const createTwigletHandler = (request, reply) => {
           const clonedDb = new PouchDB(cloneString, { skip_setup: true });
           return clonedDb.allDocs({
             include_docs: true,
-            keys: ['links', 'model', 'nodes', 'views_2']
+            keys: ['links', 'model', 'nodes', 'views_2', 'events', 'sequences']
           })
           .then(twigletDocs =>
             Promise.all([
@@ -218,6 +234,8 @@ const createTwigletHandler = (request, reply) => {
                 { _id: 'model', data: twigletDocs.rows[1].doc.data },
                 { _id: 'nodes', data: twigletDocs.rows[2].doc.data },
                 { _id: 'views_2', data: twigletDocs.rows[3].doc.data },
+                { _id: 'events', data: twigletDocs.rows[4].doc.data },
+                { _id: 'sequences', data: twigletDocs.rows[5].doc.data },
               ]),
               Changelog.addCommitMessage(twigletInfo.id,
                 request.payload.commitMessage,
@@ -234,6 +252,8 @@ const createTwigletHandler = (request, reply) => {
               { _id: 'nodes', data: [] },
               { _id: 'links', data: [] },
               { _id: 'views_2', data: [] },
+              { _id: 'events', data: [] },
+              { _id: 'sequences', data: [] },
             ]),
             Changelog.addCommitMessage(twigletInfo.id,
               request.payload.commitMessage,
@@ -369,7 +389,7 @@ const getTwigletJsonHandler = (request, reply) =>
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.allDocs({
       include_docs: true,
-      keys: ['nodes', 'links', 'model', 'views_2']
+      keys: ['nodes', 'links', 'model', 'views_2', 'events', 'sequences']
     })
     .then(twigletDocs => {
       const twigletData = twigletDocs.rows.reduce((obj, row) => {

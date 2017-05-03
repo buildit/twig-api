@@ -515,6 +515,23 @@ describe('/v2/twiglets', () => {
               traverseDepth: 3,
             }
           }],
+          events: [
+            {
+              description: 'some event description',
+              links: [],
+              name: 'some event',
+              nodes: [],
+              id: 'some event id'
+            }
+          ],
+          sequences: [
+            {
+              description: 'some event description',
+              events: ['a', 'b'],
+              id: 'some sequence id',
+              name: 'some sequence name',
+            }
+          ],
         };
       }
       let bulkDocs;
@@ -556,6 +573,8 @@ describe('/v2/twiglets', () => {
           { _id: 'nodes', data: json.nodes },
           { _id: 'links', data: json.links },
           { _id: 'views_2', data: json.views },
+          { _id: 'events', data: json.events },
+          { _id: 'sequences', data: json.sequences },
         ]);
       });
 
@@ -576,6 +595,8 @@ describe('/v2/twiglets', () => {
             { doc: { data: 'a model' } },
             { doc: { data: 'a node' } },
             { doc: { data: 'a view' } },
+            { doc: { data: 'an event' } },
+            { doc: { data: 'a sequence' } },
           ]
         };
       }
@@ -609,13 +630,15 @@ describe('/v2/twiglets', () => {
         )
       );
 
-      it('pushes the json data to the bulkDocs call', () => {
+      it('pushes the cloned data to the bulkDocs call', () => {
         const clonedTwiglet = clone();
         expect(bulkDocs.firstCall.args[0]).to.deep.equal([
           { _id: 'links', data: clonedTwiglet.rows[0].doc.data },
           { _id: 'model', data: clonedTwiglet.rows[1].doc.data },
           { _id: 'nodes', data: clonedTwiglet.rows[2].doc.data },
           { _id: 'views_2', data: clonedTwiglet.rows[3].doc.data },
+          { _id: 'events', data: clonedTwiglet.rows[4].doc.data },
+          { _id: 'sequences', data: clonedTwiglet.rows[5].doc.data },
         ]);
       });
 

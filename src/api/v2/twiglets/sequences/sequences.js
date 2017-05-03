@@ -15,7 +15,7 @@ const getSequenceResponse = Joi.object({
 });
 
 const getSequencesResponse = Joi.array().items(Joi.object({
-  events: Joi.array().required(),
+  events: Joi.array(Joi.string()).required(),
   name: Joi.string().required(),
   id: Joi.string().required(),
   url: Joi.string().uri().required(),

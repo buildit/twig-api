@@ -182,45 +182,49 @@ const deleteEventHandler = (request, reply) => {
   });
 };
 
-module.exports.routes = [
-  {
-    method: ['GET'],
-    path: '/v2/twiglets/{twigletName}/events',
-    handler: getEventsHandler,
-    config: {
-      auth: { mode: 'optional' },
-      response: { schema: getEventsResponse },
-      tags: ['api'],
+module.exports = {
+  linksResponse,
+  nodesResponse,
+  routes: [
+    {
+      method: ['GET'],
+      path: '/v2/twiglets/{twigletName}/events',
+      handler: getEventsHandler,
+      config: {
+        auth: { mode: 'optional' },
+        response: { schema: getEventsResponse },
+        tags: ['api'],
+      }
+    },
+    {
+      method: ['GET'],
+      path: '/v2/twiglets/{twigletName}/events/{eventId}',
+      handler: getEventHandler,
+      config: {
+        auth: { mode: 'optional' },
+        response: { schema: getEventResponse },
+        tags: ['api'],
+      }
+    },
+    {
+      method: ['POST'],
+      path: '/v2/twiglets/{twigletName}/events',
+      handler: postEventsHandler,
+      config: {
+        validate: {
+          payload: createEventRequest,
+        },
+        response: { schema: Joi.string() },
+        tags: ['api'],
+      }
+    },
+    {
+      method: ['DELETE'],
+      path: '/v2/twiglets/{twigletName}/events/{eventId}',
+      handler: deleteEventHandler,
+      config: {
+        tags: ['api']
+      }
     }
-  },
-  {
-    method: ['GET'],
-    path: '/v2/twiglets/{twigletName}/events/{eventId}',
-    handler: getEventHandler,
-    config: {
-      auth: { mode: 'optional' },
-      response: { schema: getEventResponse },
-      tags: ['api'],
-    }
-  },
-  {
-    method: ['POST'],
-    path: '/v2/twiglets/{twigletName}/events',
-    handler: postEventsHandler,
-    config: {
-      validate: {
-        payload: createEventRequest,
-      },
-      response: { schema: Joi.string() },
-      tags: ['api'],
-    }
-  },
-  {
-    method: ['DELETE'],
-    path: '/v2/twiglets/{twigletName}/events/{eventId}',
-    handler: deleteEventHandler,
-    config: {
-      tags: ['api']
-    }
-  }
-];
+  ],
+};
