@@ -44,7 +44,32 @@ describe('/v2/twiglets/{name}/model', () => {
               class: 'still do not know',
               image: 'E'
             }
-          }
+          },
+          nameChanges: [],
+        });
+        expect(res).to.have.status(200);
+      });
+
+      it('updates a model (without nameChanges coming in', function* () {
+        const res = yield authAgent.put(`/v2/twiglets/${baseTwiglet().name}/model`)
+        .send({
+          _rev,
+          entities: {
+            some: {
+              type: 'some',
+              color: '#008800',
+              size: '40',
+              class: 'idk',
+              image: 'S'
+            },
+            entity: {
+              type: 'entity',
+              color: '#880000',
+              size: '30',
+              class: 'still do not know',
+              image: 'E'
+            }
+          },
         });
         expect(res).to.have.status(200);
       });
@@ -54,7 +79,8 @@ describe('/v2/twiglets/{name}/model', () => {
       it('Twiglet does not exist -> 404', (done) => {
         authAgent.put(`/v2/twiglets/${baseTwiglet().name}/model`)
           .send({
-            entities: {}
+            entities: {},
+            nameChanges: [],
           })
           .end((err, res) => {
             expect(res).to.have.status(404);

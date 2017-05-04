@@ -6,6 +6,16 @@ const logger = require('../../../../log')('MODEL');
 const Joi = require('joi');
 const R = require('ramda');
 
+function updateNode (oldNameMap) {
+  return function map (node) {
+    const updatedNode = Object.assign({}, node);
+    if (oldNameMap[updatedNode.type]) {
+      updatedNode.type = oldNameMap[updatedNode.type];
+    }
+    return updatedNode;
+  };
+}
+
 const twigletModelBase = Joi.object({
   _rev: Joi.string(),
   entities: Joi.object().pattern(/[\S\s]*/, Joi.object({
@@ -20,6 +30,10 @@ const twigletModelBase = Joi.object({
       required: Joi.bool().required(),
     })),
   })),
+  nameChanges: Joi.array(Joi.object({
+    originalType: Joi.string(),
+    currentType: Joi.string(),
+  }))
 });
 
 const getTwigletInfoByName = (name) => {
@@ -58,6 +72,15 @@ const getModelHandler = (request, reply) => {
 };
 
 const putModelHandler = (request, reply) => {
+  let oldNameMap = {};
+  if (request.payload.nameChanges) {
+    oldNameMap = request.payload.nameChanges
+      .filter(nameMap => nameMap.originalType !== nameMap.currentType)
+      .reduce((object, nameMap) => {
+        object[nameMap.originalType] = nameMap.currentType;
+        return object;
+      }, {});
+  }
   getTwigletInfoByName(request.params.name)
     .then(twigletInfo => {
       const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
@@ -66,6 +89,30 @@ const putModelHandler = (request, reply) => {
         if (doc._rev === request.payload._rev) {
           doc.data = R.omit(['_rev', 'name'], request.payload);
           return db.put(doc)
+            .then(() => db.get('nodes'))
+            .catch(() => undefined)
+            .then(nodes => {
+              if (nodes) {
+                const updatedNodes = Object.assign({}, nodes);
+                updatedNodes.data = nodes.data.map(updateNode(oldNameMap));
+                return db.put(updatedNodes);
+              }
+              return undefined;
+            })
+            .then(() => db.get('events'))
+            .catch(() => undefined)
+            .then(events => {
+              if (events) {
+                const updatedEvents = Object.assign({}, events);
+                updatedEvents.data = updatedEvents.data.map(event => {
+                  const updatedEvent = Object.assign({}, event);
+                  updatedEvent.nodes = updatedEvent.nodes.map(updateNode(oldNameMap));
+                  return updatedEvent;
+                });
+                return db.put(updatedEvents);
+              }
+              return undefined;
+            })
             .then(() => doc);
         }
         const error = Error('Conflict, bad revision number');
