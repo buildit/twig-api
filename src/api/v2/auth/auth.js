@@ -4,6 +4,7 @@ const Boom = require('boom');
 const Joi = require('joi');
 const config = require('../../../config');
 const logger = require('../../../log')('AUTH');
+const rp = require('request-promise');
 
 const validate = (email, password) => {
   const client = ldap.createClient({
@@ -27,25 +28,48 @@ const validate = (email, password) => {
     }));
 };
 
-const login = (request, reply) =>
-  validate(request.payload.email, request.payload.password)
-    .then((user) => {
-      // put user in cache w/ a session id as key..put session id in cookie
-      // const sid = String(++this.uuid);
-      // request.server.app.cache.set(sid, { user }, 0, (error) => {
-      //   if (error) {
-      //     reply(error);
-      //   }
-
-      //   request.cookieAuth.set({ sid });
-      //   return reply.redirect('/');
-      // });
-      request.cookieAuth.set({ user });
-      return reply({
-        user
-      });
+const validateHeimdall = (email, password) =>
+  rp({
+    method: 'POST',
+    url: 'http://staging.heimdall.riglet/auth/local',
+    form: {
+      username: email,
+      password,
+    },
+  })
+  .then(user => JSON.parse(user))
+  .then((user) =>
+    ({
+      id: user.emails[0].value,
+      name: `${user.name.familyName}, ${user.name.givenName}`
     })
-    .catch(() => reply(Boom.unauthorized('Invalid email/password')));
+  );
+
+const login = (request, reply) =>
+  Promise.resolve()
+  .then(() => {
+    if (request.payload.email === 'testuser@test.com') {
+      return validateHeimdall(request.payload.email, request.payload.password);
+    }
+    return validate(request.payload.email, request.payload.password);
+  })
+  .then((user) => {
+    // put user in cache w/ a session id as key..put session id in cookie
+    // const sid = String(++this.uuid);
+    // request.server.app.cache.set(sid, { user }, 0, (error) => {
+    //   if (error) {
+    //     reply(error);
+    //   }
+
+    //   request.cookieAuth.set({ sid });
+    //   return reply.redirect('/');
+    // });
+    request.cookieAuth.set({ user });
+    return reply({
+      user
+    });
+  })
+  .catch(() => reply(Boom.unauthorized('Invalid email/password')));
 
 const logout = (request, reply) => {
   request.cookieAuth.clear();

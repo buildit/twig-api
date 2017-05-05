@@ -57,6 +57,8 @@
     "ldapjs": "^1.0.0",
     "pouchdb": "^6.0.7",
     "ramda": "^0.22.1",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.0",
     "restler": "^3.4.0",
     "uuid": "^3.0.1",
     "vision": "^4.1.1",
