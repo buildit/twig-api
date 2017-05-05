@@ -47,7 +47,7 @@ describe('/v2/Twiglet::Sequences', () => {
       });
 
       it('only returns 4 keys per event', () => {
-        expect(Reflect.ownKeys(response.result[0]).length).to.equal(4);
+        expect(Reflect.ownKeys(response.result[0]).length).to.equal(5);
       });
 
       it('returns the url', () => {
