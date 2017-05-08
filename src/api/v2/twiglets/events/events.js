@@ -5,11 +5,12 @@ const PouchDb = require('pouchdb');
 const config = require('../../../../config');
 const logger = require('../../../../log')('EVENTS');
 const uuidV4 = require('uuid/v4');
+const R = require('ramda');
 
 const getEventsResponse = Joi.array().items(Joi.object({
   description: Joi.string().required().allow(''),
-  name: Joi.string().required(),
   id: Joi.string().required(),
+  name: Joi.string().required(),
   url: Joi.string().uri().required()
 }));
 
@@ -19,31 +20,49 @@ const attributes = Joi.array().items(Joi.object({
 }));
 
 const linksResponse = Joi.object({
+  attrs: attributes,
   association: Joi.string(),
   id: Joi.string().required(),
   source: Joi.string().required(),
   target: Joi.string().required(),
-  attrs: attributes,
 });
 
-const nodesResponse = Joi.object({
+const node = Joi.object({
+  attrs: attributes,
   id: Joi.string().required(),
   location: Joi.string().required().allow(''),
   name: Joi.string().required(),
   type: Joi.string().required(),
   x: Joi.number().required(),
   y: Joi.number().required(),
-  attrs: attributes
 });
 
-const createEventRequest = Joi.object({
+const NodeImport = node.keys({
+  color: Joi.string(),
+  icon: Joi.string(),
+  image: Joi.string(),
+  size: Joi.number(),
+});
+
+const NodeExport = node.keys({
+  _color: Joi.string(),
+  _icon: Joi.string(),
+  _image: Joi.string(),
+  _size: Joi.number(),
+});
+
+const Event = Joi.object({
   description: Joi.string().allow(''),
   links: Joi.array().items(linksResponse),
   name: Joi.string().required(),
-  nodes: Joi.array().items(nodesResponse),
 });
 
-const getEventResponse = createEventRequest.keys({
+const createEventRequest = Event.keys({
+  nodes: Joi.array().items(NodeImport),
+});
+
+const getEventResponse = Event.keys({
+  nodes: Joi.array().items(NodeExport),
   url: Joi.string().uri().required(),
   id: Joi.string().required(),
 });
@@ -146,8 +165,23 @@ const postEventsHandler = (request, reply) => {
     });
   })
   .then((doc) => {
-    request.payload.id = uuidV4();
-    doc.data.push(request.payload);
+    const newEvent = R.merge({}, request.payload);
+    newEvent.nodes = newEvent.nodes.map(n => {
+      if (n.icon && n.image) {
+        const error = new Error('nodes cannot have both an image and icon');
+        error.status = 400;
+        throw error;
+      }
+      const underscoreNames = {
+        _color: n.color,
+        _size: n.size,
+        _icon: n.icon,
+        _image: n.image,
+      };
+      return R.merge(R.omit(['color', 'size', 'icon', 'image'], n), underscoreNames);
+    });
+    newEvent.id = uuidV4();
+    doc.data.push(newEvent);
     return db.put(doc);
   })
   .then(() => {
@@ -184,7 +218,7 @@ const deleteEventHandler = (request, reply) => {
 
 module.exports = {
   linksResponse,
-  nodesResponse,
+  node,
   routes: [
     {
       method: ['GET'],
