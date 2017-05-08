@@ -15,6 +15,7 @@ const getSequenceResponse = Joi.object({
 });
 
 const getSequencesResponse = Joi.array().items(Joi.object({
+  description: Joi.string().allow(''),
   events: Joi.array(Joi.string()).required(),
   name: Joi.string().required(),
   id: Joi.string().required(),
@@ -72,6 +73,7 @@ const getSequencesHandler = (request, reply) =>
     const sequencesArray = sequences.data
     .map(item =>
       ({
+        description: item.description,
         events: item.events,
         id: item.id,
         name: item.name,
