@@ -8,7 +8,6 @@ const Events = require('./events');
 const server = require('../../../../../test/unit/test-server');
 const twigletInfo = require('../twiglets.unit').twigletInfo;
 const twigletDocs = require('../twiglets.unit').twigletDocs;
-const R = require('ramda');
 
 server.route(Events.routes);
 
@@ -148,7 +147,6 @@ describe('/v2/Twiglet::Events', () => {
 
   describe('postEventsHandler', () => {
     function req () {
-      const singleEvent = twigletDocs().rows[4].doc.data[0];
       return {
         method: 'POST',
         url: '/v2/twiglets/Some%20Twiglet/events',
@@ -162,8 +160,6 @@ describe('/v2/Twiglet::Events', () => {
         payload: {
           description: 'some description',
           name: 'Ben got fired',
-          links: singleEvent.links,
-          nodes: singleEvent.nodes,
         }
       };
     }
@@ -172,7 +168,22 @@ describe('/v2/Twiglet::Events', () => {
       let response;
       let put;
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves({
+          rows: [
+            {
+              doc: {
+                data: [],
+              }
+            },
+            {
+              doc: {
+                data: [],
+              }
+            }
+          ]
+        });
         sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
         put = sandbox.stub(PouchDb.prototype, 'put').resolves('');
         response = yield server.inject(req());
@@ -195,80 +206,26 @@ describe('/v2/Twiglet::Events', () => {
       });
     });
 
-    describe('overwrite node display keys', () => {
-      let put;
-
-      function nodeRequest (displayKeys) {
-        return {
-          method: 'POST',
-          url: '/v2/twiglets/Some%20Twiglet/events',
-          credentials: {
-            id: 123,
-            username: 'ben',
-            user: {
-              name: 'Ben Hernandez',
-            },
-          },
-          payload: {
-            description: 'some description',
-            name: 'Ben got fired',
-            links: [
-              {
-                id: '26ce4b06-af0b-4c29-8368-631441915e67',
-                source: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
-                target: 'bb7d6af2-48ed-42f7-9fc1-705eb49b09bc',
-              },
-            ],
-            nodes: [R.merge({
-              id: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
-              location: '',
-              name: 'node 1',
-              type: 'ent1',
-              x: 100,
-              y: 200,
-              attrs: [],
-            }, displayKeys)],
-          }
-        };
-      }
-
-      beforeEach(() => {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
-        sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
-        put = sandbox.stub(PouchDb.prototype, 'put').resolves('');
-      });
-
-      it('renames color to _color on the node', function* foo () {
-        yield server.inject(nodeRequest({ color: '#cc00cc' }));
-        expect(put.firstCall.args[0].data[2].nodes[0]._color).to.equal('#cc00cc');
-      });
-
-      it('renames size to _size on the node', function* foo () {
-        yield server.inject(nodeRequest({ size: 20 }));
-        expect(put.firstCall.args[0].data[2].nodes[0]._size).to.equal(20);
-      });
-
-      it('renames icon to _icon on the node', function* foo () {
-        yield server.inject(nodeRequest({ icon: 'bath' }));
-        expect(put.firstCall.args[0].data[2].nodes[0]._icon).to.equal('bath');
-      });
-
-      it('renames image to _image on the node', function* foo () {
-        yield server.inject(nodeRequest({ image: '538' }));
-        expect(put.firstCall.args[0].data[2].nodes[0]._image).to.equal('538');
-      });
-
-      it('throws an error if both and icon and image are sent in', function* foo () {
-        const response = yield server.inject(nodeRequest({ icon: 'bath', image: '538' }));
-        expect(response.statusCode).to.equal(400);
-      });
-    });
-
     describe('there is no events table on the twiglet', () => {
       let response;
       let put;
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves({
+          rows: [
+            {
+              doc: {
+                data: [],
+              }
+            },
+            {
+              doc: {
+                data: [],
+              }
+            }
+          ]
+        });
         const get = sandbox.stub(PouchDb.prototype, 'get')
             .resolves(twigletDocs().rows[4].doc);
         get.onFirstCall().rejects({ status: 404 });
@@ -295,7 +252,22 @@ describe('/v2/Twiglet::Events', () => {
 
     describe('errors', () => {
       beforeEach(() => {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves({
+          rows: [
+            {
+              doc: {
+                data: [],
+              }
+            },
+            {
+              doc: {
+                data: [],
+              }
+            }
+          ]
+        });
         sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
       });
 

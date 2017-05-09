@@ -14,12 +14,17 @@ const getEventsResponse = Joi.array().items(Joi.object({
   url: Joi.string().uri().required()
 }));
 
+const Event = Joi.object({
+  description: Joi.string().allow(''),
+  name: Joi.string().required(),
+});
+
 const attributes = Joi.array().items(Joi.object({
   key: Joi.string().required(),
   value: Joi.any(),
 }));
 
-const linksResponse = Joi.object({
+const Link = Joi.object({
   attrs: attributes,
   association: Joi.string(),
   id: Joi.string().required(),
@@ -27,42 +32,23 @@ const linksResponse = Joi.object({
   target: Joi.string().required(),
 });
 
-const node = Joi.object({
+const Node = Joi.object({
   attrs: attributes,
   id: Joi.string().required(),
   location: Joi.string().required().allow(''),
   name: Joi.string().required(),
   type: Joi.string().required(),
-  x: Joi.number().required(),
-  y: Joi.number().required(),
-});
-
-const NodeImport = node.keys({
-  color: Joi.string(),
-  icon: Joi.string(),
-  image: Joi.string(),
-  size: Joi.number(),
-});
-
-const NodeExport = node.keys({
+  x: Joi.number(),
+  y: Joi.number(),
   _color: Joi.string(),
   _icon: Joi.string(),
   _image: Joi.string(),
   _size: Joi.number(),
 });
 
-const Event = Joi.object({
-  description: Joi.string().allow(''),
-  links: Joi.array().items(linksResponse),
-  name: Joi.string().required(),
-});
-
-const createEventRequest = Event.keys({
-  nodes: Joi.array().items(NodeImport),
-});
-
 const getEventResponse = Event.keys({
-  nodes: Joi.array().items(NodeExport),
+  links: Joi.array().items(Link),
+  nodes: Joi.array().items(Node),
   url: Joi.string().uri().required(),
   id: Joi.string().required(),
 });
@@ -166,23 +152,28 @@ const postEventsHandler = (request, reply) => {
   })
   .then((doc) => {
     const newEvent = R.merge({}, request.payload);
-    newEvent.nodes = newEvent.nodes.map(n => {
-      if (n.icon && n.image) {
-        const error = new Error('nodes cannot have both an image and icon');
-        error.status = 400;
-        throw error;
-      }
-      const underscoreNames = {
-        _color: n.color,
-        _size: n.size,
-        _icon: n.icon,
-        _image: n.image,
-      };
-      return R.merge(R.omit(['color', 'size', 'icon', 'image'], n), underscoreNames);
+    return db.allDocs({
+      include_docs: true,
+      keys: ['nodes', 'links']
+    })
+    .then((twigletDocs) => {
+      const nodeKeysToKeep = [
+        'attrs',
+        'id',
+        'location',
+        'name',
+        'type',
+        'x',
+        'y',
+        '_color',
+        '_size'
+      ];
+      newEvent.id = uuidV4();
+      newEvent.nodes = twigletDocs.rows[0].doc.data.map(n => R.pick(nodeKeysToKeep, n));
+      newEvent.links = twigletDocs.rows[1].doc.data;
+      doc.data.push(newEvent);
+      return db.put(doc);
     });
-    newEvent.id = uuidV4();
-    doc.data.push(newEvent);
-    return db.put(doc);
   })
   .then(() => {
     reply('OK').code(201);
@@ -217,8 +208,6 @@ const deleteEventHandler = (request, reply) => {
 };
 
 module.exports = {
-  linksResponse,
-  node,
   routes: [
     {
       method: ['GET'],
@@ -246,7 +235,7 @@ module.exports = {
       handler: postEventsHandler,
       config: {
         validate: {
-          payload: createEventRequest,
+          payload: Event,
         },
         response: { schema: Joi.string() },
         tags: ['api'],

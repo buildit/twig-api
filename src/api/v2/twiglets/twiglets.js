@@ -79,6 +79,31 @@ const jsonTwigletRequest = Joi.object({
   })),
 });
 
+const attributes = Joi.array().items(Joi.object({
+  key: Joi.string().required(),
+  value: Joi.any(),
+}));
+
+const Link = Joi.object({
+  attrs: attributes.description('non-graphical attributes such as phone number'),
+  association: Joi.string().description('the name of the link'),
+  id: Joi.string().required().description('an id, use UUIDv4, etc to generate'),
+  source: Joi.string().required().description('the id of the source node'),
+  target: Joi.string().required().description('the id of the target node'),
+}).label('Link');
+
+const Node = Joi.object({
+  attrs: attributes.description('non-graphical attributes such as phone number'),
+  id: Joi.string().required().description('an id, use UUIDv4, etc to generate'),
+  location: Joi.string().required().allow('').description('physical location, eg Denver, CO, USA'),
+  name: Joi.string().required().description('the name of the node'),
+  type: Joi.string().required().description('the model type of the node'),
+  x: Joi.number().description('the horizontal position of the node'),
+  y: Joi.number().description('the vertical position of the node'),
+  _color: Joi.string().description('overrides the model color of the node'),
+  _size: Joi.number().description('overrides the model size of the node'),
+}).label('Node');
+
 const baseTwigletRequest = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required().allow(''),
@@ -86,8 +111,8 @@ const baseTwigletRequest = Joi.object({
 
 const updateTwigletRequest = baseTwigletRequest.keys({
   _rev: Joi.string().required(),
-  nodes: Joi.array().required(),
-  links: Joi.array().required(),
+  nodes: Joi.array().required(Node),
+  links: Joi.array().required(Link),
   commitMessage: Joi.string().required(),
   doReplacement: Joi.boolean(),
 });
