@@ -198,6 +198,13 @@ const getTwiglet = (name, urlBuilder) =>
         '_color',
         '_size',
       ];
+      const linkKeysToPick = [
+        'atts',
+        'association',
+        'id',
+        'source',
+        'target',
+      ];
       return R.merge(
         R.omit(['changelog', 'views_2', 'events', 'sequences'], twigletData),
         {
@@ -206,7 +213,7 @@ const getTwiglet = (name, urlBuilder) =>
           description: twigletInfo.description,
           latestCommit: twigletData.changelog.data[0],
           nodes: twigletData.nodes.data.map(n => R.pick(nodeKeysToPick, n)),
-          links: twigletData.links.data,
+          links: twigletData.links.data.map(l => R.pick(linkKeysToPick, l)),
           url,
           model_url: modelUrl,
           changelog_url: changelogUrl,
