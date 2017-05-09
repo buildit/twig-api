@@ -36,7 +36,7 @@ const Link = Joi.object({
 const Node = Joi.object({
   attrs: attributes.description('non-graphical attributes such as phone number'),
   id: Joi.string().required().description('an id, use UUIDv4, etc to generate'),
-  location: Joi.string().allow('').description('physical location, eg Denver, CO, USA'),
+  location: Joi.string().allow('').allow(null).description('physical location, eg Denver, CO, USA'),
   name: Joi.string().required().description('the name of the node'),
   type: Joi.string().required().description('the model type of the node'),
   x: Joi.number().description('the horizontal position of the node'),
