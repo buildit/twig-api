@@ -20,6 +20,10 @@ function updateTwiglet (name, twiglet) {
   return authAgent.put(`/v2/twiglets/${name}`).send(twiglet);
 }
 
+function patchTwiglet (name, twiglet) {
+  return authAgent.patch(`/v2/twiglets/${name}`).send(twiglet);
+}
+
 function getTwiglet ({ name }) {
   return anonAgent.get(`/v2/twiglets/${name}`);
 }
@@ -444,6 +448,111 @@ describe('PUT /v2/twiglets/{name}', () => {
     after(function* foo () {
       yield deleteModel(baseModel());
       yield deleteTwiglet({ name: 'a different name' });
+    });
+  });
+
+  describe('(Error)', () => {
+    let promise;
+
+    before(() => {
+      promise = getTwiglet({ name: 'non-existant-name' });
+    });
+
+    it('returns 404', (done) => {
+      promise.catch(res => {
+        expect(res).to.have.status(404);
+        done();
+      });
+    });
+  });
+});
+
+describe('PATCH /v2/twiglets/{name}', () => {
+  describe('(Successful)', () => {
+    let res;
+    let updates;
+
+    beforeEach(function* () {
+      yield createModel(baseModel());
+      updates = baseTwiglet();
+      delete updates.model;
+      updates._rev = (yield createTwiglet(baseTwiglet())).body._rev;
+      updates.name = 'a different name';
+      updates.description = 'a different description';
+      updates.nodes = [
+        {
+          id: 'node 1',
+          name: 'node 1',
+          type: 'ent1'
+        },
+        {
+          id: 'node 2',
+          name: 'node 2',
+          type: 'ent2'
+        }
+      ];
+      updates.links = [
+        {
+          id: 'link 1',
+          source: 'node 1',
+          target: 'node 2',
+        },
+        {
+          id: 'link 2',
+          source: 'node 2',
+          target: 'node 1',
+        }
+      ];
+      updates.commitMessage = 'this was totally updated!';
+    });
+
+    it('returns 200', function* foo () {
+      res = yield patchTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+      expect(res).to.have.status(200);
+    });
+
+    it('contains the twiglet', function* foo () {
+      res = yield patchTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+      expect(res.body).to.containSubset(R.omit(['_rev', 'commitMessage'], updates));
+      expect(res.body).to.include.keys('_rev', 'url', 'model_url', 'changelog_url',
+        'views_url', 'latestCommit');
+    });
+
+    it('can update only the name', function* foo () {
+      delete updates.description;
+      delete updates.nodes;
+      delete updates.links;
+      res = yield patchTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+      expect(res.body.name).to.equal('a different name');
+    });
+
+    it('can update only the description', function* foo () {
+      delete updates.description;
+      delete updates.nodes;
+      delete updates.links;
+      res = yield patchTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+      expect(res.body.description).to.equal('foo bar baz');
+    });
+
+    it('can update only the nodes', function* foo () {
+      delete updates.description;
+      delete updates.name;
+      delete updates.links;
+      res = yield patchTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+      expect(res.body.nodes.length).to.equal(2);
+    });
+
+    it('can update only the links', function* foo () {
+      delete updates.description;
+      delete updates.name;
+      delete updates.nodes;
+      res = yield patchTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+      expect(res.body.links.length).to.equal(2);
+    });
+
+    afterEach(function* foo () {
+      yield deleteModel(baseModel());
+      yield deleteTwiglet({ name: res.body.name });
     });
   });
 

@@ -854,6 +854,237 @@ describe('/v2/twiglets', () => {
     });
   });
 
+  describe('patchTwigletHandler', () => {
+    function req () {
+      return {
+        method: 'PATCH',
+        url: '/v2/twiglets/Some%20Twiglet',
+        credentials: {
+          id: 123,
+          username: 'ben',
+          user: {
+            name: 'Ben Hernandez',
+          },
+        },
+        payload: {
+          name: 'Some new name',
+          description: 'Some new description',
+          _rev: 'infoRev:nodeRev:linkRev',
+          nodes: [
+            {
+              id: 'some new node id',
+              name: 'node 1',
+              type: 'ent1'
+            },
+            {
+              id: 'some other new node id',
+              name: 'node 2',
+              type: 'ent2'
+            }
+          ],
+          links: [
+            {
+              id: 'some new link id',
+              source: 'some new node id',
+              target: 'some other new node id',
+            },
+            {
+              id: 'some other new node id',
+              source: 'some other new node id',
+              target: 'some new node id',
+            }
+          ],
+          commitMessage: 'an update'
+        },
+      };
+    }
+
+    describe('success', () => {
+      let put;
+      beforeEach(() => {
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves(twigletDocs());
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs());
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletInfo());
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+      });
+
+      describe('updating name only', () => {
+        beforeEach(function* foo () {
+          const request = req();
+          delete request.payload.description;
+          delete request.payload.links;
+          delete request.payload.nodes;
+          yield server.inject(request);
+        });
+
+        it('correctly updates the name', () => {
+          expect(put.getCall(0).args[0].name).to.deep.equal(req().payload.name);
+        });
+
+        it('keeps the original description', () => {
+          expect(put.getCall(0).args[0].description).to.deep.equal(twigletInfo().description);
+        });
+
+        it('keeps the original nodes', () => {
+          expect(put.getCall(1).args[0].data).to.deep.equal(twigletDocs().rows[0].doc.data);
+        });
+
+        it('keeps the original links', () => {
+          expect(put.getCall(2).args[0].data).to.deep.equal(twigletDocs().rows[1].doc.data);
+        });
+      });
+
+      describe('updating description only', () => {
+        beforeEach(function* foo () {
+          const request = req();
+          delete request.payload.name;
+          delete request.payload.links;
+          delete request.payload.nodes;
+          yield server.inject(request);
+        });
+
+        it('correctly updates the description', () => {
+          expect(put.getCall(0).args[0].description).to.deep.equal(req().payload.description);
+        });
+
+        it('keeps the original name', () => {
+          expect(put.getCall(0).args[0].name).to.deep.equal(twigletInfo().name);
+        });
+
+        it('keeps the original nodes', () => {
+          expect(put.getCall(1).args[0].data).to.deep.equal(twigletDocs().rows[0].doc.data);
+        });
+
+        it('keeps the original links', () => {
+          expect(put.getCall(2).args[0].data).to.deep.equal(twigletDocs().rows[1].doc.data);
+        });
+      });
+
+      describe('updating nodes only', () => {
+        beforeEach(function* foo () {
+          const request = req();
+          delete request.payload.name;
+          delete request.payload.links;
+          delete request.payload.description;
+          yield server.inject(request);
+        });
+
+        it('correctly updates the nodes', () => {
+          expect(put.getCall(1).args[0].data).to.deep.equal(req().payload.nodes);
+        });
+
+        it('keeps the original name', () => {
+          expect(put.getCall(0).args[0].name).to.deep.equal(twigletInfo().name);
+        });
+
+        it('keeps the original description', () => {
+          expect(put.getCall(0).args[0].description).to.deep.equal(twigletInfo().description);
+        });
+
+        it('keeps the original links', () => {
+          expect(put.getCall(2).args[0].data).to.deep.equal(twigletDocs().rows[1].doc.data);
+        });
+      });
+
+      describe('updating links only', () => {
+        beforeEach(function* foo () {
+          const request = req();
+          delete request.payload.name;
+          delete request.payload.nodes;
+          delete request.payload.description;
+          yield server.inject(request);
+        });
+
+        it('correctly updates the links', () => {
+          expect(put.getCall(2).args[0].data).to.deep.equal(req().payload.links);
+        });
+
+        it('keeps the original name', () => {
+          expect(put.getCall(0).args[0].name).to.deep.equal(twigletInfo().name);
+        });
+
+        it('keeps the original description', () => {
+          expect(put.getCall(0).args[0].description).to.deep.equal(twigletInfo().description);
+        });
+
+        it('keeps the original nodes', () => {
+          expect(put.getCall(1).args[0].data).to.deep.equal(twigletDocs().rows[0].doc.data);
+        });
+      });
+    });
+    describe('errors', () => {
+      let allDocs;
+      beforeEach(() => {
+        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves(twigletDocs());
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs());
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletInfo());
+        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+      });
+
+      it('fails immediately if the rev cannot be split into 3 parts', () => {
+        const request = req();
+        request.payload._rev = 'not splittable';
+        return server.inject(request)
+          .then(response => {
+            expect(response.statusCode).to.equal(400);
+          });
+      });
+
+      it('responds with a 404 the twiglet cannot be found', () => {
+        allDocs.onFirstCall().resolves({ rows: [] });
+        return server.inject(req())
+          .then(response => {
+            expect(response.statusCode).to.equal(404);
+          });
+      });
+
+      describe('_rev mistakes', () => {
+        const docs = twigletDocs();
+        docs.rows.pop();
+        it('breaks when the twigletInfo._rev is incorrect', () => {
+          const request = req();
+          request.payload._rev = 'INCORRECTinfoRev:nodeRev:linkRev';
+          return server.inject(request)
+            .then(response => {
+              expect(response.statusCode).to.equal(409);
+              expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
+            });
+        });
+
+        it('breaks when the twigletInfo._rev is incorrect', () => {
+          const request = req();
+          request.payload._rev = 'infoRev:INCORRECTnodeRev:linkRev';
+          return server.inject(request)
+            .then(response => {
+              expect(response.statusCode).to.equal(409);
+              expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
+            });
+        });
+
+        it('breaks when the twigletInfo._rev is incorrect', () => {
+          const request = req();
+          request.payload._rev = 'infoRev:nodeRev:INCORRECTlinkRev';
+          return server.inject(request)
+            .then(response => {
+              expect(response.statusCode).to.equal(409);
+              expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
+            });
+        });
+      });
+    });
+  });
+
   describe('deleteTwigletHandler', () => {
     function req () {
       return {

@@ -18,7 +18,7 @@ const createTwigletRequest = Joi.object({
   googlesheet: Joi.string().uri().allow('').description('google sheet to pull from')
     .disallow(),
   commitMessage: Joi.string().required().description('the initial commit message'),
-});
+}).label('Twiglet Creation Request');
 
 const attributes = Joi.array().items(Joi.object({
   key: Joi.string().required(),
@@ -110,11 +110,21 @@ const baseTwigletRequest = Joi.object({
 
 const updateTwigletRequest = baseTwigletRequest.keys({
   _rev: Joi.string().required(),
-  nodes: Joi.array().items(Node).required(),
-  links: Joi.array().items(Link).required(Link),
+  nodes: Joi.array().items(Node).required().label('Node[]'),
+  links: Joi.array().items(Link).required(Link).label('Link[]'),
   commitMessage: Joi.string().required(),
   doReplacement: Joi.boolean(),
-});
+}).label('Put Twiglet Request');
+
+const patchTwigletRequest = Joi.object({
+  name: Joi.string().description('overwrites the name of the twiglet'),
+  description: Joi.string().description('overwrites the twiglet description'),
+  _rev: Joi.string().required().description('the revision number for the document'),
+  nodes: Joi.array().items(Node).description('an array of nodes').label('Node[]'),
+  links: Joi.array().items(Link).description('an array of links').label('Link[]'),
+  commitMessage: Joi.string().required()
+    .description('the commit message associated with this update'),
+}).label('Twiglet Patch');
 
 const baseTwigletResponse = {
   url: Joi.string().uri().required(),
@@ -401,6 +411,71 @@ const putTwigletHandler = (request, reply) => {
   });
 };
 
+const patchTwigletHandler = (request, reply) => {
+  const _revs = request.payload._rev.split(':');
+  if (_revs.length !== 3) {
+    return reply(
+      Boom.badRequest('_rev must be in the form of twigletInfo._rev:nodes._rev:links._rev')
+    );
+  }
+  const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
+  return getTwigletInfoByName(request.params.name)
+  .then(twigletInfo => {
+    const dbString = config.getTenantDatabaseString(twigletInfo.twigId);
+    const db = new PouchDB(dbString, { skip_setup: true });
+    return db.allDocs({
+      include_docs: true,
+      keys: ['nodes', 'links']
+    })
+    .then(twigletDocs => {
+      const twigletData = twigletDocs.rows.reduce((obj, row) => {
+        obj[row.id] = row.doc;
+        return obj;
+      }, {});
+      if (twigletInfo._rev !== _revs[0]
+          || twigletData.nodes._rev !== _revs[1]
+          || twigletData.links._rev !== _revs[2]) {
+        return getTwiglet(request.params.name, request.buildUrl)
+        .then(twiglet => {
+          const error = Error('Your revision number is out of date');
+          error.status = 409;
+          error.twiglet = twiglet;
+          throw error;
+        });
+      }
+      twigletInfo.name = request.payload.name || twigletInfo.name;
+      twigletInfo.description = request.payload.description || twigletInfo.description;
+      const twigIdVar = twigletInfo.twigId;
+      delete twigletInfo.twigId;
+      twigletData.nodes.data = request.payload.nodes || twigletData.nodes.data;
+      twigletData.links.data = request.payload.links || twigletData.links.data;
+      return Promise.all([
+        twigletLookupDb.put(twigletInfo),
+        db.put(twigletData.nodes),
+        db.put(twigletData.links),
+        Changelog.addCommitMessage(
+          twigIdVar,
+          request.payload.commitMessage,
+          request.auth.credentials.user.name,
+          false
+        ),
+      ]);
+    });
+  })
+  .then(() =>
+    getTwiglet(request.payload.name || request.params.name, request.buildUrl)
+  )
+  .then((twiglet) => reply(twiglet).code(200))
+  .catch((error) => {
+    if (error.status !== 409) {
+      logger.error(JSON.stringify(error));
+    }
+    const boomError = Boom.create(error.status || 500, error.message);
+    boomError.output.payload.data = error.twiglet;
+    return reply(boomError);
+  });
+};
+
 const deleteTwigletHandler = (request, reply) => {
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   return getTwigletInfoByName(request.params.name)
@@ -490,6 +565,18 @@ module.exports = {
       config: {
         validate: {
           payload: updateTwigletRequest
+        },
+        response: { schema: getTwigletResponse },
+        tags: ['api'],
+      }
+    },
+    {
+      method: ['PATCH'],
+      path: '/v2/twiglets/{name}',
+      handler: patchTwigletHandler,
+      config: {
+        validate: {
+          payload: patchTwigletRequest
         },
         response: { schema: getTwigletResponse },
         tags: ['api'],
