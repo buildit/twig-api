@@ -115,8 +115,30 @@ describe('POST /v2/twiglets', () => {
       const updates = baseTwiglet();
       delete updates.model;
       updates._rev = (yield createTwiglet(baseTwiglet())).body._rev;
-      updates.nodes = [{ a: 'node' }];
-      updates.links = [{ a: 'link' }];
+      updates.nodes = [
+        {
+          id: 'node 1',
+          name: 'node 1',
+          type: 'ent1'
+        },
+        {
+          id: 'node 2',
+          name: 'node 2',
+          type: 'ent2'
+        }
+      ];
+      updates.links = [
+        {
+          id: 'link 1',
+          source: 'node 1',
+          target: 'node 2',
+        },
+        {
+          id: 'link 2',
+          source: 'node 2',
+          target: 'node 1',
+        }
+      ];
       res = yield updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
       res = yield createTwiglet(cloneTwiglet());
       res = yield getEntireTwiglet(cloneTwiglet());
@@ -129,11 +151,33 @@ describe('POST /v2/twiglets', () => {
     });
 
     it('correctly clones the nodes', () => {
-      expect(res.nodes).to.deep.equal([{ a: 'node' }]);
+      expect(res.nodes).to.deep.equal([
+        {
+          id: 'node 1',
+          name: 'node 1',
+          type: 'ent1'
+        },
+        {
+          id: 'node 2',
+          name: 'node 2',
+          type: 'ent2'
+        }
+      ]);
     });
 
     it('correctly clones the links', () => {
-      expect(res.links).to.deep.equal([{ a: 'link' }]);
+      expect(res.links).to.deep.equal([
+        {
+          id: 'link 1',
+          source: 'node 1',
+          target: 'node 2',
+        },
+        {
+          id: 'link 2',
+          source: 'node 2',
+          target: 'node 1',
+        }
+      ]);
     });
 
     it('correctly clones the model', () => {
@@ -152,8 +196,30 @@ describe('POST /v2/twiglets', () => {
     function jsonRepresentationOfTwiglet () {
       return {
         model: { entities: { }, },
-        nodes: [{ id: 'some node', }],
-        links: [{ id: 'some link', }],
+        nodes: [
+          {
+            id: 'node 1',
+            name: 'node 1',
+            type: 'ent1'
+          },
+          {
+            id: 'node 2',
+            name: 'node 2',
+            type: 'ent2'
+          }
+        ],
+        links: [
+          {
+            id: 'link 1',
+            source: 'node 1',
+            target: 'node 2',
+          },
+          {
+            id: 'link 2',
+            source: 'node 2',
+            target: 'node 1',
+          }
+        ],
         views: [{
           links: {},
           name: 'some view',
@@ -337,8 +403,30 @@ describe('PUT /v2/twiglets/{name}', () => {
       updates._rev = (yield createTwiglet(baseTwiglet())).body._rev;
       updates.name = 'a different name';
       updates.description = 'a different description';
-      updates.nodes = [{ a: 'node' }];
-      updates.links = [{ a: 'link' }];
+      updates.nodes = [
+        {
+          id: 'node 1',
+          name: 'node 1',
+          type: 'ent1'
+        },
+        {
+          id: 'node 2',
+          name: 'node 2',
+          type: 'ent2'
+        }
+      ];
+      updates.links = [
+        {
+          id: 'link 1',
+          source: 'node 1',
+          target: 'node 2',
+        },
+        {
+          id: 'link 2',
+          source: 'node 2',
+          target: 'node 1',
+        }
+      ];
       updates.commitMessage = 'this was totally updated!';
       res = yield updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
     });

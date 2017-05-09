@@ -15,8 +15,8 @@ const getEventsResponse = Joi.array().items(Joi.object({
 }));
 
 const Event = Joi.object({
-  description: Joi.string().allow(''),
-  name: Joi.string().required(),
+  description: Joi.string().allow('').description('a description of the event'),
+  name: Joi.string().required().description('the name of the event, eg "Ben got fired"'),
 });
 
 const attributes = Joi.array().items(Joi.object({

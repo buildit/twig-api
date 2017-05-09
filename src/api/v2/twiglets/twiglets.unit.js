@@ -30,9 +30,13 @@ function twigletDocs () {
           data: [
             {
               id: 'node 1',
+              name: 'node 1',
+              type: 'ent1'
             },
             {
               id: 'node 2',
+              name: 'node 2',
+              type: 'ent2'
             }
           ]
         }
@@ -717,8 +721,30 @@ describe('/v2/twiglets', () => {
           name: 'Some Twiglet',
           description: 'a descirption',
           _rev: 'infoRev:nodeRev:linkRev',
-          nodes: [{ a: 'node' }],
-          links: [{ a: 'link' }],
+          nodes: [
+            {
+              id: 'node 1',
+              name: 'node 1',
+              type: 'ent1'
+            },
+            {
+              id: 'node 2',
+              name: 'node 2',
+              type: 'ent2'
+            }
+          ],
+          links: [
+            {
+              id: 'link 1',
+              source: 'node 1',
+              target: 'node 2',
+            },
+            {
+              id: 'link 2',
+              source: 'node 2',
+              target: 'node 1',
+            }
+          ],
           commitMessage: 'an update'
         },
       };

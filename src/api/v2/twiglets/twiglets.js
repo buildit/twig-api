@@ -8,22 +8,46 @@ const config = require('../../../config');
 const logger = require('../../../log')('TWIGLETS');
 const Changelog = require('./changelog');
 const Model = require('../models/');
-const { linksResponse, nodesResponse } = require('./events');
 
 const createTwigletRequest = Joi.object({
-  name: Joi.string().required(),
-  description: Joi.string().required().allow(''),
-  model: Joi.string().required(),
-  json: Joi.string().allow(''),
-  cloneTwiglet: Joi.string().allow(''),
-  twiglet: Joi.string(), // twiglet to copy from...could be url instead?
-  googlesheet: Joi.string().uri().allow(''),
-  commitMessage: Joi.string().required(),
+  name: Joi.string().required().description('the name of the twiglet'),
+  description: Joi.string().required().allow('').description('a description of the twiglet'),
+  model: Joi.string().required().description('the model name to use'),
+  json: Joi.string().allow('').description('a json file to import the twiglet from'),
+  cloneTwiglet: Joi.string().allow('').description('twiglet name to copy from'),
+  googlesheet: Joi.string().uri().allow('').description('google sheet to pull from')
+    .disallow(),
+  commitMessage: Joi.string().required().description('the initial commit message'),
 });
 
+const attributes = Joi.array().items(Joi.object({
+  key: Joi.string().required(),
+  value: Joi.any(),
+}).label('attribute'));
+
+const Link = Joi.object({
+  attrs: attributes.description('non-graphical attributes such as phone number'),
+  association: Joi.string().description('the name of the link'),
+  id: Joi.string().required().description('an id, use UUIDv4, etc to generate'),
+  source: Joi.string().required().description('the id of the source node'),
+  target: Joi.string().required().description('the id of the target node'),
+}).label('Link');
+
+const Node = Joi.object({
+  attrs: attributes.description('non-graphical attributes such as phone number'),
+  id: Joi.string().required().description('an id, use UUIDv4, etc to generate'),
+  location: Joi.string().allow('').description('physical location, eg Denver, CO, USA'),
+  name: Joi.string().required().description('the name of the node'),
+  type: Joi.string().required().description('the model type of the node'),
+  x: Joi.number().description('the horizontal position of the node'),
+  y: Joi.number().description('the vertical position of the node'),
+  _color: Joi.string().description('overrides the model color of the node'),
+  _size: Joi.number().description('overrides the model size of the node'),
+}).label('Node');
+
 const jsonTwigletRequest = Joi.object({
-  nodes: Joi.array().required(),
-  links: Joi.array().required(),
+  nodes: Joi.array().items(Node).description('an array of nodes').required(),
+  links: Joi.array().items(Link).description('an array of links').required(),
   model: Joi.object({
     entities: Joi.object().pattern(/[\S\s]*/, Joi.object({
       type: Joi.string(),
@@ -35,7 +59,7 @@ const jsonTwigletRequest = Joi.object({
         name: Joi.string().required(),
         dataType: Joi.string().required(),
         required: Joi.bool().required(),
-      })),
+      })).description('the entities of the model'),
     }).required()),
   }).required(),
   views: Joi.array(Joi.object({
@@ -66,9 +90,9 @@ const jsonTwigletRequest = Joi.object({
   })).required(),
   events: Joi.array(Joi.object({
     description: Joi.string().required().allow(''),
-    links: Joi.array(linksResponse).required(),
+    links: Joi.array(Node).required(),
     name: Joi.string().required(),
-    nodes: Joi.array(nodesResponse).required(),
+    nodes: Joi.array(Link).required(),
     id: Joi.string().required(),
   })),
   sequences: Joi.array(Joi.object({
@@ -79,31 +103,6 @@ const jsonTwigletRequest = Joi.object({
   })),
 });
 
-const attributes = Joi.array().items(Joi.object({
-  key: Joi.string().required(),
-  value: Joi.any(),
-}));
-
-const Link = Joi.object({
-  attrs: attributes.description('non-graphical attributes such as phone number'),
-  association: Joi.string().description('the name of the link'),
-  id: Joi.string().required().description('an id, use UUIDv4, etc to generate'),
-  source: Joi.string().required().description('the id of the source node'),
-  target: Joi.string().required().description('the id of the target node'),
-}).label('Link');
-
-const Node = Joi.object({
-  attrs: attributes.description('non-graphical attributes such as phone number'),
-  id: Joi.string().required().description('an id, use UUIDv4, etc to generate'),
-  location: Joi.string().required().allow('').description('physical location, eg Denver, CO, USA'),
-  name: Joi.string().required().description('the name of the node'),
-  type: Joi.string().required().description('the model type of the node'),
-  x: Joi.number().description('the horizontal position of the node'),
-  y: Joi.number().description('the vertical position of the node'),
-  _color: Joi.string().description('overrides the model color of the node'),
-  _size: Joi.number().description('overrides the model size of the node'),
-}).label('Node');
-
 const baseTwigletRequest = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required().allow(''),
@@ -111,8 +110,8 @@ const baseTwigletRequest = Joi.object({
 
 const updateTwigletRequest = baseTwigletRequest.keys({
   _rev: Joi.string().required(),
-  nodes: Joi.array().required(Node),
-  links: Joi.array().required(Link),
+  nodes: Joi.array().items(Node).required(),
+  links: Joi.array().items(Link).required(Link),
   commitMessage: Joi.string().required(),
   doReplacement: Joi.boolean(),
 });
@@ -178,6 +177,17 @@ const getTwiglet = (name, urlBuilder) =>
         obj[row.id] = row.doc;
         return obj;
       }, {});
+      const nodeKeysToPick = [
+        'attrs',
+        'id',
+        'location',
+        'name',
+        'type',
+        'x',
+        'y',
+        '_color',
+        '_size',
+      ];
       return R.merge(
         R.omit(['changelog', 'views_2', 'events', 'sequences'], twigletData),
         {
@@ -185,7 +195,7 @@ const getTwiglet = (name, urlBuilder) =>
           name: twigletInfo.name,
           description: twigletInfo.description,
           latestCommit: twigletData.changelog.data[0],
-          nodes: twigletData.nodes.data,
+          nodes: twigletData.nodes.data.map(n => R.pick(nodeKeysToPick, n)),
           links: twigletData.links.data,
           url,
           model_url: modelUrl,
