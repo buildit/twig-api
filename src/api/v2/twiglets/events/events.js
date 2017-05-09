@@ -8,7 +8,7 @@ const uuidV4 = require('uuid/v4');
 const R = require('ramda');
 
 const getEventsResponse = Joi.array().items(Joi.object({
-  description: Joi.string().required().allow(''),
+  description: Joi.string().allow(''),
   id: Joi.string().required(),
   name: Joi.string().required(),
   url: Joi.string().uri().required()
@@ -35,7 +35,7 @@ const Link = Joi.object({
 const Node = Joi.object({
   attrs: attributes,
   id: Joi.string().required(),
-  location: Joi.string().required().allow('').allow(null),
+  location: Joi.string().allow('').allow(null),
   name: Joi.string().required(),
   type: Joi.string().required(),
   x: Joi.number(),
