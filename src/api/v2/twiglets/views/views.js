@@ -104,6 +104,9 @@ const getViewsHandler = (request, reply) => {
     return reply(views);
   })
   .catch((error) => {
+    if (error.status === 404) {
+      return reply([]).code(200);
+    }
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));
   });
@@ -136,7 +139,17 @@ const postViewsHandler = (request, reply) => {
   .then(twigletInfo => {
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-    return db.get('views_2');
+    return db.get('views_2')
+    .catch(error => {
+      if (error.status === 404) {
+        return db.put({
+          _id: 'views_2',
+          data: [],
+        })
+        .then(() => db.get('views_2'));
+      }
+      throw error;
+    });
   })
   .then((doc) => {
     const viewName = request.payload.name;
