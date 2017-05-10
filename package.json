@@ -42,6 +42,7 @@
     "nsp": "^2.6.1",
     "nyc": "^10.0.0",
     "pre-commit": "^1.1.3",
+    "pre-push": "^0.1.1",
     "sinon": "^1.17.6",
     "sinon-as-promised": "^4.0.2"
   },
@@ -69,5 +70,9 @@
     "lint",
     "validate",
     "security"
+  ],
+  "pre-push": [
+    "test:ci",
+    "test:e2e:ci"
   ]
 }
