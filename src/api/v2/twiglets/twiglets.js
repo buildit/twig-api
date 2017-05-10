@@ -212,7 +212,13 @@ const getTwiglet = (name, urlBuilder) =>
           name: twigletInfo.name,
           description: twigletInfo.description,
           latestCommit: twigletData.changelog.data[0],
-          nodes: twigletData.nodes.data.map(n => R.pick(nodeKeysToPick, n)),
+          nodes: twigletData.nodes.data.map(n => {
+            const node = R.pick(nodeKeysToPick, n);
+            if (node.attrs) {
+              node.attrs = node.attrs.filter(a => a.key);
+            }
+            return node;
+          }),
           links: twigletData.links.data.map(l => R.pick(linkKeysToPick, l)),
           url,
           model_url: modelUrl,
