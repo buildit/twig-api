@@ -118,7 +118,7 @@ const updateTwigletRequest = baseTwigletRequest.keys({
 
 const patchTwigletRequest = Joi.object({
   name: Joi.string().description('overwrites the name of the twiglet'),
-  description: Joi.string().description('overwrites the twiglet description'),
+  description: Joi.string().allow('').description('overwrites the twiglet description'),
   _rev: Joi.string().required().description('the revision number for the document'),
   nodes: Joi.array().items(Node).description('an array of nodes').label('Node[]'),
   links: Joi.array().items(Link).description('an array of links').label('Link[]'),
@@ -235,6 +235,7 @@ const getTwigletHandler = (request, reply) =>
   getTwiglet(request.params.name, request.buildUrl)
     .then((twiglet) => reply(twiglet))
     .catch((error) => {
+      console.log('error?', error);
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });
