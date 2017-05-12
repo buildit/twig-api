@@ -235,7 +235,6 @@ const getTwigletHandler = (request, reply) =>
   getTwiglet(request.params.name, request.buildUrl)
     .then((twiglet) => reply(twiglet))
     .catch((error) => {
-      console.log('error?', error);
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });
