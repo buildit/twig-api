@@ -14,6 +14,7 @@ const getViewsResponse = Joi.array().items(Joi.object({
 const userStateResponse = Joi.object({
   autoConnectivity: Joi.string().required(),
   autoScale: Joi.string().required(),
+  alphaTarget: Joi.string().optional().allow(''),
   bidirectionalLinks: Joi.boolean().required(),
   cascadingCollapse: Joi.boolean().required(),
   currentNode: [Joi.string().required().allow(''), Joi.string().required().allow(null)],
@@ -28,6 +29,7 @@ const userStateResponse = Joi.object({
   linkType: Joi.string().required(),
   nodeSizingAutomatic: Joi.boolean().required(),
   scale: Joi.number().required(),
+  separationDistance: Joi.number().optional().allow(''),
   showLinkLabels: Joi.boolean().required(),
   showNodeLabels: Joi.boolean().required(),
   treeMode: Joi.boolean().required(),
