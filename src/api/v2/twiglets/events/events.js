@@ -34,7 +34,7 @@ const Link = Joi.object({
 
 const Node = Joi.object({
   attrs: attributes,
-  id: Joi.string().required(),
+  id: [Joi.string().required(), Joi.number().required()],
   location: Joi.string().allow('').allow(null),
   name: Joi.string().required(),
   type: Joi.string().required(),

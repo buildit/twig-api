@@ -180,7 +180,6 @@ const putSequenceHandler = (request, reply) => {
     return reply(sequenceResponse).code(200);
   })
   .catch(e => {
-    console.log('ERROR ERROR ERROR');
     logger.error(JSON.stringify(e));
     return reply(Boom.create(e.status || 500, e.message, e));
   });

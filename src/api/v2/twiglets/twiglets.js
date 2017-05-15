@@ -35,7 +35,10 @@ const Link = Joi.object({
 
 const Node = Joi.object({
   attrs: attributes.description('non-graphical attributes such as phone number'),
-  id: Joi.string().required().description('an id, use UUIDv4, etc to generate'),
+  id: [
+    Joi.string().required().description('an id, use UUIDv4, etc to generate'),
+    Joi.number().required().description('an id, use UUIDv4, etc to generate'),
+  ],
   location: Joi.string().allow('').allow(null).description('physical location, eg Denver, CO, USA'),
   name: Joi.string().required().description('the name of the node'),
   type: Joi.string().required().description('the model type of the node'),
@@ -150,6 +153,17 @@ const getTwigletsResponse = Joi.array().required().items(
   baseTwigletRequest.keys(baseTwigletResponse).unknown()
 );
 
+function checkNodesAreInModel (model, nodes) {
+  (nodes || []).forEach(node => {
+    if (model.entities[node.type] === undefined) {
+      const error = new Error();
+      error.status = 400;
+      error.message = `node.type must be in entities, node.id: '${node.id}' fails`;
+      throw error;
+    }
+  });
+}
+
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({ include_docs: true })
@@ -262,6 +276,7 @@ const createTwigletHandler = (request, reply) => {
       const dbString = config.getTenantDatabaseString(twigletInfo.id);
       const createdDb = new PouchDB(dbString);
       if (jsonTwiglet) {
+        checkNodesAreInModel(jsonTwiglet.model, jsonTwiglet.nodes);
         return Promise.all([
           createdDb.bulkDocs([
             { _id: 'model', data: jsonTwiglet.model },
@@ -373,7 +388,7 @@ const putTwigletHandler = (request, reply) => {
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.allDocs({
       include_docs: true,
-      keys: ['nodes', 'links']
+      keys: ['nodes', 'links', 'model']
     })
     .then(twigletDocs => {
       const twigletData = twigletDocs.rows.reduce((obj, row) => {
@@ -391,6 +406,7 @@ const putTwigletHandler = (request, reply) => {
           throw error;
         });
       }
+      checkNodesAreInModel(twigletData.model.data, request.payload.nodes);
       twigletInfo.name = request.payload.name;
       twigletInfo.description = request.payload.description;
       const twigIdVar = twigletInfo.twigId;
@@ -438,7 +454,7 @@ const patchTwigletHandler = (request, reply) => {
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.allDocs({
       include_docs: true,
-      keys: ['nodes', 'links']
+      keys: ['nodes', 'links', 'model']
     })
     .then(twigletDocs => {
       const twigletData = twigletDocs.rows.reduce((obj, row) => {
@@ -455,6 +471,9 @@ const patchTwigletHandler = (request, reply) => {
           error.twiglet = twiglet;
           throw error;
         });
+      }
+      if (request.payload.nodes) {
+        checkNodesAreInModel(twigletData.model.data, request.payload.nodes);
       }
       twigletInfo.name = request.payload.name || twigletInfo.name;
       twigletInfo.description = request.payload.description || twigletInfo.description;
@@ -524,7 +543,6 @@ const getTwigletJsonHandler = (request, reply) =>
       return reply(twigletData);
     });
   });
-
 
 module.exports = {
   getTwigletInfoByName,

@@ -199,7 +199,18 @@ describe('POST /v2/twiglets', () => {
 
     function jsonRepresentationOfTwiglet () {
       return {
-        model: { entities: { }, },
+        model: {
+          entities: {
+            ent1: {
+              class: 'some class',
+              image: 'a',
+            },
+            ent2: {
+              class: 'second class',
+              image: 'b',
+            },
+          },
+        },
         nodes: [
           {
             id: 'node 1',
@@ -264,29 +275,52 @@ describe('POST /v2/twiglets', () => {
       };
     }
 
-    before(function* foo () {
-      res = yield createTwiglet(jsonTwiglet());
-      res = yield getEntireTwiglet(jsonTwiglet());
+    describe('success', () => {
+      before(function* foo () {
+        res = yield createTwiglet(jsonTwiglet());
+        res = yield getEntireTwiglet(jsonTwiglet());
+      });
+
+      after(function* foo () {
+        yield deleteTwiglet(jsonTwiglet());
+      });
+
+      it('correctly processes the nodes', () => {
+        expect(res.nodes).to.deep.equal(jsonRepresentationOfTwiglet().nodes);
+      });
+
+      it('correctly processes the links', () => {
+        expect(res.links).to.deep.equal(jsonRepresentationOfTwiglet().links);
+      });
+
+      it('correctly processes the model', () => {
+        expect(res.model.entities).to.deep.equal(jsonRepresentationOfTwiglet().model.entities);
+      });
+
+      it('correctly processes the views ', () => {
+        expect(res.view).to.deep.equal(jsonRepresentationOfTwiglet().view);
+      });
     });
 
-    after(function* foo () {
-      yield deleteTwiglet(jsonTwiglet());
-    });
+    describe('errors', () => {
+      after(function* foo () {
+        yield deleteTwiglet(jsonTwiglet());
+      });
 
-    it('correctly processes the nodes', () => {
-      expect(res.nodes).to.deep.equal(jsonRepresentationOfTwiglet().nodes);
-    });
-
-    it('correctly processes the links', () => {
-      expect(res.links).to.deep.equal(jsonRepresentationOfTwiglet().links);
-    });
-
-    it('correctly processes the model', () => {
-      expect(res.model.entities).to.deep.equal(jsonRepresentationOfTwiglet().model.entities);
-    });
-
-    it('correctly processes the views ', () => {
-      expect(res.view).to.deep.equal(jsonRepresentationOfTwiglet().view);
+      it('errors if the node.type is not in the entities', function* foo () {
+        try {
+          const illegalTwiglet = jsonRepresentationOfTwiglet();
+          illegalTwiglet.nodes[1].type = 'ent3';
+          const jsonRequest = jsonTwiglet();
+          jsonRequest.json = JSON.stringify(illegalTwiglet);
+          yield createTwiglet(jsonRequest);
+          expect(false).to.be.true; // should never be called.
+        }
+        catch (error) {
+          expect(error).to.have.status(400);
+          expect(error.response.body.message.includes('node 2')).to.equal(true);
+        }
+      });
     });
   });
 
@@ -452,17 +486,75 @@ describe('PUT /v2/twiglets/{name}', () => {
   });
 
   describe('(Error)', () => {
-    let promise;
-
-    before(() => {
-      promise = getTwiglet({ name: 'non-existant-name' });
+    let updates;
+    beforeEach(function* foo () {
+      updates = baseTwiglet();
+      delete updates.model;
+      updates._rev = 'whatever:whatever:whatever';
+      updates.name = 'a different name';
+      updates.description = 'a different description';
+      updates.nodes = [
+        {
+          id: 'node 1',
+          name: 'node 1',
+          type: 'ent1'
+        },
+        {
+          id: 'node 2',
+          name: 'node 2',
+          type: 'ent2'
+        }
+      ];
+      updates.links = [
+        {
+          id: 'link 1',
+          source: 'node 1',
+          target: 'node 2',
+        },
+        {
+          id: 'link 2',
+          source: 'node 2',
+          target: 'node 1',
+        }
+      ];
+      updates.commitMessage = 'this was totally updated!';
+      yield createModel(baseModel());
     });
 
-    it('returns 404', (done) => {
-      promise.catch(res => {
-        expect(res).to.have.status(404);
-        done();
-      });
+    afterEach(function* foo () {
+      yield deleteModel(baseModel());
+      try {
+        yield deleteTwiglet(baseTwiglet());
+      }
+      catch (error) {
+        if (error.status !== 404) {
+          throw error;
+        }
+      }
+    });
+
+    it('returns 404', function* foo () {
+      try {
+        yield updateTwiglet({ name: 'non-existant-name' }, updates);
+        expect(true).to.equal(false);
+      }
+      catch (error) {
+        expect(error).to.have.status(404);
+      }
+    });
+
+    it('fails if the node.type is not in the entities', function* foo () {
+      updates._rev = (yield createTwiglet(baseTwiglet())).body._rev;
+      updates.nodes[1].type = 'ent3';
+      updates.commitMessage = 'invalid nodes';
+      try {
+        yield updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+        expect(true).to.equal(false); // should never be called.
+      }
+      catch (error) {
+        expect(error).to.have.status(400);
+        expect(error.response.body.message.includes('node 2')).to.equal(true);
+      }
     });
   });
 });
@@ -557,17 +649,78 @@ describe('PATCH /v2/twiglets/{name}', () => {
   });
 
   describe('(Error)', () => {
-    let promise;
-
-    before(() => {
-      promise = getTwiglet({ name: 'non-existant-name' });
+    let updates;
+    beforeEach(function* foo () {
+      updates = baseTwiglet();
+      delete updates.model;
+      updates._rev = 'whatever:whatever:whatever';
+      updates.name = 'a different name';
+      updates.description = 'a different description';
+      updates.nodes = [
+        {
+          id: 'node 1',
+          name: 'node 1',
+          type: 'ent1'
+        },
+        {
+          id: 'node 2',
+          name: 'node 2',
+          type: 'ent2'
+        }
+      ];
+      updates.links = [
+        {
+          id: 'link 1',
+          source: 'node 1',
+          target: 'node 2',
+        },
+        {
+          id: 'link 2',
+          source: 'node 2',
+          target: 'node 1',
+        }
+      ];
+      updates.commitMessage = 'this was totally updated!';
+      yield createModel(baseModel());
     });
 
-    it('returns 404', (done) => {
-      promise.catch(res => {
-        expect(res).to.have.status(404);
-        done();
-      });
+    afterEach(function* foo () {
+      yield deleteModel(baseModel());
+      try {
+        yield deleteTwiglet(baseTwiglet());
+      }
+      catch (error) {
+        if (error.status !== 404) {
+          throw error;
+        }
+      }
+    });
+
+    it('returns 404', function* foo () {
+      try {
+        yield patchTwiglet({ name: 'non-existant-name' }, updates);
+        expect(true).to.equal(false);
+      }
+      catch (error) {
+        expect(error).to.have.status(404);
+      }
+    });
+
+    it('fails if the node.type is not in the entities', function* foo () {
+      updates._rev = (yield createTwiglet(baseTwiglet())).body._rev;
+      delete updates.description;
+      delete updates.name;
+      delete updates.links;
+      updates.nodes[1].type = 'ent3';
+      updates.commitMessage = 'invalid nodes';
+      try {
+        yield patchTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+        expect(true).to.equal(false); // should never be called.
+      }
+      catch (error) {
+        expect(error).to.have.status(400);
+        expect(error.response.body.message.includes('node 2')).to.equal(true);
+      }
     });
   });
 });

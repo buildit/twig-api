@@ -20,196 +20,210 @@ function twigletInfo () {
     description: 'The returning twiglet',
   };
 }
-function twigletDocs () {
-  return {
-    rows: [
-      {
-        id: 'nodes',
-        doc: {
-          _rev: 'nodeRev',
-          data: [
-            {
-              id: 'node 1',
-              name: 'node 1',
-              type: 'ent1'
-            },
-            {
-              id: 'node 2',
-              name: 'node 2',
-              type: 'ent2'
+function twigletDocs (keys) {
+  const rows = [
+    {
+      id: 'nodes',
+      doc: {
+        _rev: 'nodeRev',
+        data: [
+          {
+            id: 'node 1',
+            name: 'node 1',
+            type: 'ent1'
+          },
+          {
+            id: 'node 2',
+            name: 'node 2',
+            type: 'ent2'
+          }
+        ]
+      }
+    },
+    {
+      id: 'links',
+      doc: {
+        _rev: 'linkRev',
+        data: [
+          {
+            id: 'link 1',
+            source: 'node 1',
+            target: 'node 2',
+          },
+          {
+            id: 'link 2',
+            source: 'node 2',
+            target: 'node 1',
+          }
+        ]
+      }
+    },
+    {
+      id: 'changelog',
+      doc: {
+        _rev: 'changelogRev',
+        data: [
+          {
+            user: 'test@test.com',
+            message: 'this one should be returned',
+            timestamp: '2017-02-09T20:12:33.805Z'
+          },
+          {
+            user: 'test2@test.com',
+            message: 'older log, should not come through',
+            timestamp: '2017-02-07T20:12:33.805Z'
+          }
+        ]
+      }
+    },
+    {
+      id: 'views_2',
+      doc: {
+        _rev: 'viewsRev',
+        data: [
+          {
+            description: 'view description',
+            name: 'view name',
+            userState: {
+              autoConnectivity: 'in',
+              autoScale: 'linear',
+              bidirectionalLinks: true,
+              cascadingCollapse: true,
+              currentNode: null,
+              filters: {
+                attributes: [],
+                types: { }
+              },
+              forceChargeStrength: 0.1,
+              forceGravityX: 0.1,
+              forceGravityY: 1,
+              forceLinkDistance: 20,
+              forceLinkStrength: 0.5,
+              forceVelocityDecay: 0.9,
+              linkType: 'path',
+              nodeSizingAutomatic: true,
+              scale: 8,
+              showLinkLabels: false,
+              showNodeLabels: false,
+              traverseDepth: 3,
+              treeMode: false,
             }
-          ]
-        }
-      },
-      {
-        id: 'links',
-        doc: {
-          _rev: 'linkRev',
-          data: [
-            {
-              id: 'link 1',
-              source: 'node 1',
-              target: 'node 2',
-            },
-            {
-              id: 'link 2',
-              source: 'node 2',
-              target: 'node 1',
-            }
-          ]
-        }
-      },
-      {
-        id: 'changelog',
-        doc: {
-          _rev: 'changelogRev',
-          data: [
-            {
-              user: 'test@test.com',
-              message: 'this one should be returned',
-              timestamp: '2017-02-09T20:12:33.805Z'
-            },
-            {
-              user: 'test2@test.com',
-              message: 'older log, should not come through',
-              timestamp: '2017-02-07T20:12:33.805Z'
-            }
-          ]
-        }
-      },
-      {
-        id: 'views_2',
-        doc: {
-          _rev: 'viewsRev',
-          data: [
-            {
-              description: 'view description',
-              name: 'view name',
-              userState: {
-                autoConnectivity: 'in',
-                autoScale: 'linear',
-                bidirectionalLinks: true,
-                cascadingCollapse: true,
-                currentNode: null,
-                filters: {
-                  attributes: [],
-                  types: { }
-                },
-                forceChargeStrength: 0.1,
-                forceGravityX: 0.1,
-                forceGravityY: 1,
-                forceLinkDistance: 20,
-                forceLinkStrength: 0.5,
-                forceVelocityDecay: 0.9,
-                linkType: 'path',
-                nodeSizingAutomatic: true,
-                scale: 8,
-                showLinkLabels: false,
-                showNodeLabels: false,
-                traverseDepth: 3,
-                treeMode: false,
+          }
+        ]
+      }
+    },
+    {
+      id: 'events',
+      doc: {
+        _rev: 'some rev',
+        data: [
+          {
+            id: 'bd79213c-8e17-49bc-9fc2-392f3c5acd28',
+            description: 'description of Event',
+            links: [
+              {
+                id: '26ce4b06-af0b-4c29-8368-631441915e67',
+                association: 'some name',
+                source: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
+                target: 'bb7d6af2-48ed-42f7-9fc1-705eb49b09bc',
+              },
+              {
+                id: '626158d4-56db-4bfa-822b-9aaf7b17e88f',
+                source: 'ab2752a2-cbc5-412d-87f8-fcc4d0000ee8',
+                target: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
+                attrs: [
+                  { key: 'key1', value: 'value1' },
+                  { key: 'key2', value: 'value2' }
+                ],
               }
-            }
-          ]
-        }
-      },
-      {
-        id: 'events',
-        doc: {
-          _rev: 'some rev',
-          data: [
-            {
-              id: 'bd79213c-8e17-49bc-9fc2-392f3c5acd28',
-              description: 'description of Event',
-              links: [
-                {
-                  id: '26ce4b06-af0b-4c29-8368-631441915e67',
-                  association: 'some name',
-                  source: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
-                  target: 'bb7d6af2-48ed-42f7-9fc1-705eb49b09bc',
-                },
-                {
-                  id: '626158d4-56db-4bfa-822b-9aaf7b17e88f',
-                  source: 'ab2752a2-cbc5-412d-87f8-fcc4d0000ee8',
-                  target: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
-                  attrs: [
-                    { key: 'key1', value: 'value1' },
-                    { key: 'key2', value: 'value2' }
-                  ],
-                }
-              ],
-              nodes: [
-                {
-                  id: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
-                  location: '',
-                  name: 'node 1',
-                  type: 'ent1',
-                  x: 100,
-                  y: 200,
-                  attrs: [],
-                },
-                {
-                  id: 'bb7d6af2-48ed-42f7-9fc1-705eb49b09bc',
-                  location: '',
-                  name: 'node 2',
-                  type: 'ent2',
-                  x: 200,
-                  y: 100,
-                  attrs: [
-                    { key: 'key1', value: 'value1' },
-                    { key: 'key2', value: 'value2' }
-                  ],
-                },
-                {
-                  id: 'ab2752a2-cbc5-412d-87f8-fcc4d0000ee8',
-                  location: '',
-                  name: 'node 3',
-                  type: 'ent3',
-                  x: 1000,
-                  y: 900,
-                  attrs: [],
-                }
-              ],
-              name: 'event name',
-            },
-            {
-              id: '6fe3d7f2-240b-40b1-a689-cbf9bc2fb9e8',
-              description: 'another event',
-              links: [],
-              nodes: [],
-              name: 'event 2',
-            },
-          ]
-        }
-      },
-      {
-        id: 'sequences',
-        doc: {
-          _rev: 'some rev',
-          data: [
-            {
-              id: '75c4dc47-4131-4503-aa82-2c09ead3f357',
-              name: 'sequence 1',
-              description: 'description of sequence',
-              events: [
-                'f6b49795-0418-4ebd-ae52-adeb96885119',
-                '1ff70005-08d6-4131-a8c9-e08f276a975b'
-              ]
-            },
-            {
-              id: 'ae2c4536-e0bb-43ed-a7c5-18cb23315a50',
-              name: 'sequence 2',
-              events: [
-                'f6b49795-0418-4ebd-ae52-adeb96885119',
-                '1ff70005-08d6-4131-a8c9-e08f276a975b',
-                '2a0e95d9-91c5-4a64-b283-bd94195a8ef6'
-              ]
-            }
-          ]
+            ],
+            nodes: [
+              {
+                id: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
+                location: '',
+                name: 'node 1',
+                type: 'ent1',
+                x: 100,
+                y: 200,
+                attrs: [],
+              },
+              {
+                id: 'bb7d6af2-48ed-42f7-9fc1-705eb49b09bc',
+                location: '',
+                name: 'node 2',
+                type: 'ent2',
+                x: 200,
+                y: 100,
+                attrs: [
+                  { key: 'key1', value: 'value1' },
+                  { key: 'key2', value: 'value2' }
+                ],
+              },
+              {
+                id: 'ab2752a2-cbc5-412d-87f8-fcc4d0000ee8',
+                location: '',
+                name: 'node 3',
+                type: 'ent3',
+                x: 1000,
+                y: 900,
+                attrs: [],
+              }
+            ],
+            name: 'event name',
+          },
+          {
+            id: '6fe3d7f2-240b-40b1-a689-cbf9bc2fb9e8',
+            description: 'another event',
+            links: [],
+            nodes: [],
+            name: 'event 2',
+          },
+        ]
+      }
+    },
+    {
+      id: 'sequences',
+      doc: {
+        _rev: 'some rev',
+        data: [
+          {
+            id: '75c4dc47-4131-4503-aa82-2c09ead3f357',
+            name: 'sequence 1',
+            description: 'description of sequence',
+            events: [
+              'f6b49795-0418-4ebd-ae52-adeb96885119',
+              '1ff70005-08d6-4131-a8c9-e08f276a975b'
+            ]
+          },
+          {
+            id: 'ae2c4536-e0bb-43ed-a7c5-18cb23315a50',
+            name: 'sequence 2',
+            events: [
+              'f6b49795-0418-4ebd-ae52-adeb96885119',
+              '1ff70005-08d6-4131-a8c9-e08f276a975b',
+              '2a0e95d9-91c5-4a64-b283-bd94195a8ef6'
+            ]
+          }
+        ]
+      }
+    },
+    {
+      id: 'model',
+      doc: {
+        _rev: 'modelRev',
+        data: {
+          entities: {
+            ent1: {},
+            ent2: {},
+          }
         }
       }
-    ]
-  };
+    },
+  ];
+  if (!keys) {
+    return { rows };
+  }
+  return { rows: rows.filter(row => keys.includes(row.id)) };
 }
 
 describe('/v2/twiglets', () => {
@@ -338,7 +352,7 @@ describe('/v2/twiglets', () => {
       beforeEach(function* foo () {
         const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-        allDocs.onSecondCall().resolves(twigletDocs());
+        allDocs.onSecondCall().resolves(twigletDocs(['nodes', 'links', 'changelog']));
         twiglet = (yield server.inject(req)).result;
       });
 
@@ -450,7 +464,7 @@ describe('/v2/twiglets', () => {
           }
         }] });
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-        allDocs.onCall(3).resolves(twigletDocs());
+        allDocs.onCall(3).resolves(twigletDocs(['nodes', 'links', 'changelog']));
         post = sandbox.stub(PouchDb.prototype, 'post').resolves({
           id: 'some id',
         });
@@ -482,12 +496,18 @@ describe('/v2/twiglets', () => {
         return {
           model: {
             entities: {
-
+              ent1: {},
+              ent2: {}
             }
           },
           nodes: [
             {
               id: 'some node',
+              type: 'ent1',
+            },
+            {
+              id: 'some other node',
+              type: 'ent2',
             }
           ],
           links: [{
@@ -546,7 +566,7 @@ describe('/v2/twiglets', () => {
         const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [] });
         allDocs.onSecondCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-        allDocs.onThirdCall().resolves(twigletDocs());
+        allDocs.onThirdCall().resolves(twigletDocs(['nodes', 'links', 'changelog']));
         post = sandbox.stub(PouchDb.prototype, 'post').resolves({
           id: 'some id',
         });
@@ -610,7 +630,7 @@ describe('/v2/twiglets', () => {
         allDocs.onSecondCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onThirdCall().resolves(clone());
         allDocs.onCall(3).resolves({ rows: [{ doc: (twigletInfo()) }] });
-        allDocs.onCall(4).resolves(twigletDocs());
+        allDocs.onCall(4).resolves(twigletDocs(['nodes', 'links', 'changelog']));
         post = sandbox.stub(PouchDb.prototype, 'post').resolves({
           id: 'some id',
         });
@@ -757,7 +777,7 @@ describe('/v2/twiglets', () => {
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-        allDocs.onCall(3).resolves(twigletDocs());
+        allDocs.onCall(3).resolves(twigletDocs(['nodes', 'links', 'model']));
         const get = sandbox.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
@@ -799,6 +819,16 @@ describe('/v2/twiglets', () => {
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
         sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+      });
+
+      it('errors if the a node.type is not in the entities', () => {
+        const request = req();
+        request.payload.nodes[1].type = 'ent3';
+        server.inject(request).then(response => {
+          expect(response.statusCode).to.equal(400);
+          expect(response.message.includes('some other new node id')).to.be(true);
+        })
+        .catch(() => {});
       });
 
       it('fails immediately if the rev cannot be split into 3 parts', () => {
@@ -906,7 +936,7 @@ describe('/v2/twiglets', () => {
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-        allDocs.onCall(3).resolves(twigletDocs());
+        allDocs.onCall(3).resolves(twigletDocs(['nodes', 'links', 'changelog']));
         const get = sandbox.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
@@ -1030,6 +1060,19 @@ describe('/v2/twiglets', () => {
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
         sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+      });
+
+      it('errors if the a node.type is not in the entities', () => {
+        const request = req();
+        delete request.payload.name;
+        delete request.payload.links;
+        delete request.payload.description;
+        request.payload.nodes[1].type = 'ent3';
+        server.inject(request).then(response => {
+          expect(response.statusCode).to.equal(400);
+          expect(response.message.includes('some other new node id')).to.be(true);
+        })
+        .catch(() => {});
       });
 
       it('fails immediately if the rev cannot be split into 3 parts', () => {
