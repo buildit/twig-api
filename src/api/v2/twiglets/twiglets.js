@@ -214,12 +214,19 @@ const getTwiglet = (name, urlBuilder) =>
           latestCommit: twigletData.changelog.data[0],
           nodes: twigletData.nodes.data.map(n => {
             const node = R.pick(nodeKeysToPick, n);
+            node.id = escape(node.id);
+            node.id = node.id.replace(/%/g, '');
             if (node.attrs) {
               node.attrs = node.attrs.filter(a => a.key);
             }
             return node;
           }),
-          links: twigletData.links.data.map(l => R.pick(linkKeysToPick, l)),
+          links: twigletData.links.data.map(l => {
+            const link = R.pick(linkKeysToPick, l);
+            link.id = escape(link.id);
+            link.id = link.id.replace(/%/g, '');
+            return link;
+          }),
           url,
           model_url: modelUrl,
           changelog_url: changelogUrl,

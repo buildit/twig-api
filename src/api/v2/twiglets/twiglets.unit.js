@@ -29,12 +29,12 @@ function twigletDocs () {
           _rev: 'nodeRev',
           data: [
             {
-              id: 'node 1',
+              id: 'node1',
               name: 'node 1',
               type: 'ent1'
             },
             {
-              id: 'node 2',
+              id: 'node2',
               name: 'node 2',
               type: 'ent2'
             }
@@ -47,14 +47,14 @@ function twigletDocs () {
           _rev: 'linkRev',
           data: [
             {
-              id: 'link 1',
-              source: 'node 1',
-              target: 'node 2',
+              id: 'link1',
+              source: 'node1',
+              target: 'node2',
             },
             {
-              id: 'link 2',
-              source: 'node 2',
-              target: 'node 1',
+              id: 'link2',
+              source: 'node2',
+              target: 'node1',
             }
           ]
         }
@@ -723,12 +723,12 @@ describe('/v2/twiglets', () => {
           _rev: 'infoRev:nodeRev:linkRev',
           nodes: [
             {
-              id: 'node 1',
+              id: 'node1',
               name: 'node 1',
               type: 'ent1'
             },
             {
-              id: 'node 2',
+              id: 'node2',
               name: 'node 2',
               type: 'ent2'
             }
@@ -736,13 +736,13 @@ describe('/v2/twiglets', () => {
           links: [
             {
               id: 'link 1',
-              source: 'node 1',
-              target: 'node 2',
+              source: 'node1',
+              target: 'node2',
             },
             {
               id: 'link 2',
-              source: 'node 2',
-              target: 'node 1',
+              source: 'node2',
+              target: 'node1',
             }
           ],
           commitMessage: 'an update'

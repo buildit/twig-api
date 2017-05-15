@@ -121,26 +121,26 @@ describe('POST /v2/twiglets', () => {
       updates._rev = (yield createTwiglet(baseTwiglet())).body._rev;
       updates.nodes = [
         {
-          id: 'node 1',
+          id: 'node1',
           name: 'node 1',
           type: 'ent1'
         },
         {
-          id: 'node 2',
+          id: 'node2',
           name: 'node 2',
           type: 'ent2'
         }
       ];
       updates.links = [
         {
-          id: 'link 1',
-          source: 'node 1',
-          target: 'node 2',
+          id: 'link1',
+          source: 'node1',
+          target: 'node2',
         },
         {
-          id: 'link 2',
-          source: 'node 2',
-          target: 'node 1',
+          id: 'link2',
+          source: 'node2',
+          target: 'node1',
         }
       ];
       res = yield updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
@@ -157,12 +157,12 @@ describe('POST /v2/twiglets', () => {
     it('correctly clones the nodes', () => {
       expect(res.nodes).to.deep.equal([
         {
-          id: 'node 1',
+          id: 'node1',
           name: 'node 1',
           type: 'ent1'
         },
         {
-          id: 'node 2',
+          id: 'node2',
           name: 'node 2',
           type: 'ent2'
         }
@@ -172,14 +172,14 @@ describe('POST /v2/twiglets', () => {
     it('correctly clones the links', () => {
       expect(res.links).to.deep.equal([
         {
-          id: 'link 1',
-          source: 'node 1',
-          target: 'node 2',
+          id: 'link1',
+          source: 'node1',
+          target: 'node2',
         },
         {
-          id: 'link 2',
-          source: 'node 2',
-          target: 'node 1',
+          id: 'link2',
+          source: 'node2',
+          target: 'node1',
         }
       ]);
     });
@@ -202,26 +202,26 @@ describe('POST /v2/twiglets', () => {
         model: { entities: { }, },
         nodes: [
           {
-            id: 'node 1',
+            id: 'node1',
             name: 'node 1',
             type: 'ent1'
           },
           {
-            id: 'node 2',
+            id: 'node2',
             name: 'node 2',
             type: 'ent2'
           }
         ],
         links: [
           {
-            id: 'link 1',
-            source: 'node 1',
-            target: 'node 2',
+            id: 'link1',
+            source: 'node1',
+            target: 'node2',
           },
           {
-            id: 'link 2',
-            source: 'node 2',
-            target: 'node 1',
+            id: 'link2',
+            source: 'node2',
+            target: 'node1',
           }
         ],
         views: [{
@@ -409,26 +409,26 @@ describe('PUT /v2/twiglets/{name}', () => {
       updates.description = 'a different description';
       updates.nodes = [
         {
-          id: 'node 1',
+          id: 'node1',
           name: 'node 1',
           type: 'ent1'
         },
         {
-          id: 'node 2',
+          id: 'node2',
           name: 'node 2',
           type: 'ent2'
         }
       ];
       updates.links = [
         {
-          id: 'link 1',
-          source: 'node 1',
-          target: 'node 2',
+          id: 'link1',
+          source: 'node1',
+          target: 'node2',
         },
         {
-          id: 'link 2',
-          source: 'node 2',
-          target: 'node 1',
+          id: 'link2',
+          source: 'node2',
+          target: 'node1',
         }
       ];
       updates.commitMessage = 'this was totally updated!';
@@ -481,26 +481,26 @@ describe('PATCH /v2/twiglets/{name}', () => {
       updates.description = 'a different description';
       updates.nodes = [
         {
-          id: 'node 1',
+          id: 'node1',
           name: 'node 1',
           type: 'ent1'
         },
         {
-          id: 'node 2',
+          id: 'node2',
           name: 'node 2',
           type: 'ent2'
         }
       ];
       updates.links = [
         {
-          id: 'link 1',
-          source: 'node 1',
-          target: 'node 2',
+          id: 'link1',
+          source: 'node1',
+          target: 'node2',
         },
         {
-          id: 'link 2',
-          source: 'node 2',
-          target: 'node 1',
+          id: 'link2',
+          source: 'node2',
+          target: 'node1',
         }
       ];
       updates.commitMessage = 'this was totally updated!';
