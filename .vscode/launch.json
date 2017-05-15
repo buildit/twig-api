@@ -6,7 +6,8 @@
     "configurations": [
         {
             "name": "Debug unit tests",
-            "type": "node2",
+            "type": "node",
+            "protocol": "auto",
             "request": "launch",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}",
@@ -15,7 +16,8 @@
         },
         {
             "name": "Debug e2e tests",
-            "type": "node2",
+            "type": "node",
+            "protocol": "auto",
             "request": "launch",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}",
@@ -24,7 +26,8 @@
         },
         {
             "name": "Attach to NodeJS",
-            "type": "node2",
+            "type": "node",
+            "protocol": "auto",
             "request": "attach",
             "port": 9229,
             "restart": true
