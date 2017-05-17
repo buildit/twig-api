@@ -5,6 +5,7 @@ const Joi = require('joi');
 const config = require('../../../config');
 const logger = require('../../../log')('AUTH');
 const rp = require('request-promise');
+const jwt = require('jsonwebtoken');
 
 const validate = (email, password) => {
   const client = ldap.createClient({
@@ -26,6 +27,40 @@ const validate = (email, password) => {
         name: email
       });
     }));
+};
+
+const validateWiproJwt = (token) => {
+  const decodedJwt = jwt.decode(token, { complete: true });
+
+  function findKeyAsCert (keys, jwtKid) {
+    return `-----BEGIN CERTIFICATE-----
+${keys.keys.filter((key) => key.kid === jwtKid)[0].x5c[0]}
+-----END CERTIFICATE-----`;
+  }
+
+  return rp({
+    method: 'GET',
+    url: 'https://login.microsoftonline.com/wipro365.onmicrosoft.com/.well-known/openid-configuration'
+  })
+  .then(oidConfig => JSON.parse(oidConfig))
+  .then((oidConfig) => rp({ method: 'GET', url: oidConfig.jwks_uri }))
+  .then(keys => JSON.parse(keys))
+  .then(keys => {
+    const cert = findKeyAsCert(keys, decodedJwt.header.kid);
+    return new Promise((resolve, reject) => {
+      jwt.verify(token, cert, (err, verified) => {
+        if (err) {
+          reject(err);
+        }
+        else {
+          resolve({
+            id: verified.upn,
+            name: verified.name
+          });
+        }
+      });
+    });
+  });
 };
 
 const validateHeimdall = (email, password) =>
@@ -71,6 +106,20 @@ const login = (request, reply) =>
   })
   .catch(() => reply(Boom.unauthorized('Invalid email/password')));
 
+const validateJwt = (request, reply) => {
+  validateWiproJwt(request.payload.jwt)
+    .then((user) => {
+      request.cookieAuth.set({ user });
+      return reply({
+        user
+      });
+    })
+  .catch((err) => {
+    console.log(err);
+    reply(Boom.unauthorized('Authentication failed'));
+  });
+};
+
 const logout = (request, reply) => {
   request.cookieAuth.clear();
   return reply({}).code(204);
@@ -103,6 +152,15 @@ module.exports.routes = [{
   method: 'POST',
   path: '/v2/logout',
   handler: logout,
+  config: {
+    auth: false,
+    tags: ['api'],
+  }
+},
+{
+  method: 'POST',
+  path: '/v2/validateJwt',
+  handler: validateJwt,
   config: {
     auth: false,
     tags: ['api'],
