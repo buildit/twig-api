@@ -61,3 +61,29 @@ describe('/v2/login', () => {
         });
   });
 });
+
+// TODO
+// describe('/v2/validateWiproJwt', () => {
+//   let sandbox = sinon.sandbox.create();
+//   const req = {
+//     method: 'POST',
+//     url: '/v2/validateWiproJwt',
+//     payload: {
+//       token_id: 'some_giant_token_id'
+//     },
+//   };
+//
+//   beforeEach(() => {
+//     sandbox = sinon.sandbox.create();
+//   });
+//
+//   afterEach(() => {
+//     sandbox.restore();
+//   });
+//
+//   it('is valid code', () => {
+//   });
+//
+//   it('is invalid code', () => {
+//   });
+// });
