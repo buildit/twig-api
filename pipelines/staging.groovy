@@ -37,7 +37,7 @@ node {
         appName = "twig-api"
         appUrl = "http://staging.twig-api.riglet"
         slackChannel = "twig"
-        gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
+        gitUrl = "https://github.com/buildit/twig-api"
       }
 
       stage("Checkout") {
