@@ -3,6 +3,8 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const ldap = require('ldapjs');
+const rp = require('request-promise');
+const jwt = require('jsonwebtoken');
 const Auth = require('./auth');
 const server = require('../../../../test/unit/test-server');
 
@@ -63,27 +65,62 @@ describe('/v2/login', () => {
 });
 
 // TODO
-// describe('/v2/validateWiproJwt', () => {
-//   let sandbox = sinon.sandbox.create();
-//   const req = {
-//     method: 'POST',
-//     url: '/v2/validateWiproJwt',
-//     payload: {
-//       token_id: 'some_giant_token_id'
-//     },
-//   };
-//
-//   beforeEach(() => {
-//     sandbox = sinon.sandbox.create();
-//   });
-//
-//   afterEach(() => {
-//     sandbox.restore();
-//   });
-//
-//   it('is valid code', () => {
-//   });
-//
-//   it('is invalid code', () => {
-//   });
-// });
+describe('/v2/validateWiproJwt', () => {
+  const oidConfigResponse = { jwks_uri: 'some_uri' };
+
+  const jwkResponse = {
+    keys: [
+      { kid: 'z039zd...', x5c: ['MIIDB...'] },
+      { kid: '9FXDpb...', x5c: ['MIIDBT...'] }
+    ]
+  };
+
+  let sandbox = sinon.sandbox.create();
+  const req = {
+    method: 'POST',
+    url: '/v2/validateJwt',
+    payload: {
+      token: 'some_giant_encoded_jwt_token'
+    },
+  };
+
+  beforeEach(() => {
+    sandbox = sinon.sandbox.create();
+    sandbox.stub(jwt, 'decode').returns({ header: { kid: 'z039zd...' } });
+
+    const rpGet = sandbox.stub(rp, 'get');
+    rpGet.onFirstCall().resolves(JSON.stringify(oidConfigResponse));
+    rpGet.onSecondCall().resolves(JSON.stringify(jwkResponse));
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it('is valid token', () => {
+    // arrange
+    const jwtVerify = sandbox.stub(jwt, 'verify');
+    jwtVerify.callsArgWith(2, null, { upn: 'foo@bar.com', name: 'Foo Bar' });
+
+    // act
+    return server.inject(req)
+      .then((response) => {
+        expect(response.headers['set-cookie']).to.exist;
+        expect(response.result.user.name).to.eq('Foo Bar');
+        expect(response.result.user.id).to.eq('foo@bar.com');
+      });
+  });
+
+  it('is invalid token', () => {
+    // arrange
+    const jwtVerify = sandbox.stub(jwt, 'verify');
+    jwtVerify.callsArgWith(2, {}, null);
+
+    // act
+    return server.inject(req)
+      .then((response) => {
+        expect(response.headers['set-cookie']).to.not.exist;
+        expect(response.statusCode).to.equal(401);
+      });
+  });
+});
