@@ -30,6 +30,8 @@ const validate = (email, password) => {
 };
 
 const validateWiproJwt = (token) => {
+  const oidConfigUrl = 'https://login.microsoftonline.com/wipro365.onmicrosoft.com/.well-known/openid-configuration';
+
   const decodedJwt = jwt.decode(token, { complete: true });
 
   function findKeyAsCert (keys, jwtKid) {
@@ -38,12 +40,9 @@ ${keys.keys.filter((key) => key.kid === jwtKid)[0].x5c[0]}
 -----END CERTIFICATE-----`;
   }
 
-  return rp({
-    method: 'GET',
-    url: 'https://login.microsoftonline.com/wipro365.onmicrosoft.com/.well-known/openid-configuration'
-  })
+  return rp.get({ url: oidConfigUrl })
   .then(oidConfig => JSON.parse(oidConfig))
-  .then((oidConfig) => rp({ method: 'GET', url: oidConfig.jwks_uri }))
+  .then(oidConfig => rp.get({ url: oidConfig.jwks_uri }))
   .then(keys => JSON.parse(keys))
   .then(keys => {
     const cert = findKeyAsCert(keys, decodedJwt.header.kid);
