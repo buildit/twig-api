@@ -7,6 +7,22 @@ const logger = require('../../../log')('AUTH');
 const rp = require('request-promise');
 const jwt = require('jsonwebtoken');
 
+const oldVerify = jwt.verify;
+
+jwt.verify = (token, cert, callback) => {
+  if (callback) {
+    return oldVerify(token, cert, callback);
+  }
+  return new Promise((resolve, reject) => {
+    oldVerify(token, cert, (err, verified) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(verified);
+    });
+  });
+};
+
 const validate = (email, password) => {
   const client = ldap.createClient({
     url: config.LDAP_URL,
@@ -46,20 +62,12 @@ ${keys.keys.filter((key) => key.kid === jwtKid)[0].x5c[0]}
   .then(keys => JSON.parse(keys))
   .then(keys => {
     const cert = findKeyAsCert(keys, decodedJwt.header.kid);
-    return new Promise((resolve, reject) => {
-      jwt.verify(token, cert, (err, verified) => {
-        if (err) {
-          reject(err);
-        }
-        else {
-          resolve({
-            id: verified.upn,
-            name: verified.name
-          });
-        }
-      });
-    });
-  });
+    return jwt.verify(token, cert);
+  })
+  .then(verified => ({
+    id: verified.upn,
+    name: verified.name
+  }));
 };
 
 const validateHeimdall = (email, password) =>

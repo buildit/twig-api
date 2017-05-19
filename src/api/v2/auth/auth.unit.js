@@ -99,8 +99,7 @@ describe('/v2/validateWiproJwt', () => {
 
   it('is valid token', () => {
     // arrange
-    const jwtVerify = sandbox.stub(jwt, 'verify');
-    jwtVerify.callsArgWith(2, null, { upn: 'foo@bar.com', name: 'Foo Bar' });
+    sandbox.stub(jwt, 'verify').resolves({ upn: 'foo@bar.com', name: 'Foo Bar' });
 
     // act
     return server.inject(req)
@@ -113,8 +112,7 @@ describe('/v2/validateWiproJwt', () => {
 
   it('is invalid token', () => {
     // arrange
-    const jwtVerify = sandbox.stub(jwt, 'verify');
-    jwtVerify.callsArgWith(2, {}, null);
+    sandbox.stub(jwt, 'verify').rejects({});
 
     // act
     return server.inject(req)
