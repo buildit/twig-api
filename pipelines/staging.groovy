@@ -65,7 +65,7 @@ node {
         sh "npm run lint"
         sh "npm run validate"
         sh "npm run security"
-        sh "sonar-scanner -Dsonar.projectVersion=${version}"
+        sh "/usr/local/bin/sonar-scanner -Dsonar.projectVersion=${version}"
       }
 
       stage("Package") {
