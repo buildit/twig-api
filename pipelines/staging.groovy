@@ -2,7 +2,7 @@
 def LOADED = true
 
 node {
-  withEnv(["PATH+NODE=${tool name: 'latest', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'}/bin"]) {
+  withEnv(["PATH+NODE=${tool name: 'lts/boron', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'}/bin"]) {
     currentBuild.result = "SUCCESS"
 
     try {
