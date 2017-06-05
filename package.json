@@ -21,7 +21,7 @@
     "url": "git@bitbucket.org:digitalrigbitbucketteam/twig-api.git"
   },
   "engines": {
-    "node": ">=6.3.0"
+    "node": ">=6.10.0"
   },
   "bugs": "https://digitalrig.atlassian.net/projects/NETWRKDIAG",
   "license": "Apache-2.0",
