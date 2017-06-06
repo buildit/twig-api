@@ -1,3 +1,4 @@
+set -e
 function putS3
 {
   path=$1
@@ -10,7 +11,7 @@ function putS3
   string="PUT\n\n$content_type\n$date\n$acl\n/$bucket$aws_path$file"
   signature=$(echo -en "${string}" | openssl sha1 -hmac "${AWS_SECRET_KEY}" -binary | base64)
   echo "Uploading $file"
-  curl -X PUT -T "$path/$file" \
+  curl -f -X PUT -T "$path/$file" \
     -H "Host: $bucket.s3.amazonaws.com" \
     -H "Date: $date" \
     -H "Content-Type: $content_type" \
