@@ -19,7 +19,7 @@ function putS3
     "https://$bucket.s3.amazonaws.com$aws_path$file"
 }
 
-scp -r centos@couchdb.riglet:/usr/local/var/lib/couchdb ./backup
+scp -r centos@couchdb.riglet:/usr/local/var/lib/couchdb ./backups
 
 # aws s3 cp ./backups s3://twig-backups --recursive
 for file in ./backups/*; do
