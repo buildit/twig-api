@@ -1,8 +1,7 @@
 'use strict';
-const PouchDb = require('pouchdb');
+const DB = require('../../DAO');
 const Boom = require('boom');
 const Joi = require('joi');
-const config = require('../../../../config');
 const logger = require('../../../../log')('CHANGELOG');
 
 // probably want to return raw array rather than object (been flipping on this)
@@ -18,8 +17,8 @@ const getChangelogResponse = Joi.object({
 });
 
 const getTwigletInfoByName = (name) => {
-  const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
-  return twigletLookupDb.allDocs({ include_docs: true })
+  const twigletLookupDb = new DB('twiglets');
+  return twigletLookupDb.get()
   .then(twigletsRaw => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
@@ -36,7 +35,7 @@ const getTwigletInfoByName = (name) => {
 
 const addCommitMessage = (_id, commitMessage, user, replacement,
     timestamp = new Date().toISOString()) => {
-  const db = new PouchDb(config.getTenantDatabaseString(_id));
+  const db = new DB(_id);
   return db.get('changelog')
     .catch((error) => {
       if (error.status !== 404) {
@@ -66,7 +65,7 @@ const addCommitMessage = (_id, commitMessage, user, replacement,
 const getChangelogHandler = (request, reply) => {
   getTwigletInfoByName(request.params.name)
   .then(twigletInfo => {
-    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+    const db = new DB(twigletInfo._id, false);
     return db.get('changelog')
       .then((doc) => reply({ changelog: doc.data }))
       .catch((error) => {
