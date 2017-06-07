@@ -91,6 +91,7 @@ node {
         writeFile(file: tmpFile, text: ymlData)
 
         sh "convox login ${env.CONVOX_RACKNAME} --password ${env.CONVOX_PASSWORD}"
+        convoxInst.ensureApplicationCreated("${appName}-staging")
         sh "convox deploy --app ${appName}-staging --description '${tag}' --file ${tmpFile} --wait"
         // wait until the app is deployed
         convoxInst.waitUntilDeployed("${appName}-staging")

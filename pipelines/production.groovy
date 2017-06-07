@@ -52,6 +52,7 @@ node {
 
     stage("Deploy to production") {
       sh "convox login ${env.CONVOX_RACKNAME} --password ${env.CONVOX_PASSWORD}"
+      convoxInst.ensureApplicationCreated("${appName}")
       sh "convox deploy --app ${appName} --description '${tag}' --file ${tmpFile} --wait"
       sh "rm ${tmpFile}"
       // wait until the app is deployed
