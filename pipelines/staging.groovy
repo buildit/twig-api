@@ -95,13 +95,7 @@ node {
         // wait until the app is deployed
         convoxInst.waitUntilDeployed("${appName}-staging")
         convoxInst.ensureSecurityGroupSet("${appName}-staging", env.CONVOX_SECURITYGROUP)
-        // sh "convox ssl update node:443 acm-b53eb2937b23 --app ${appName}-staging"
-        sh "convox ssl --app ${appName}-staging"
-        def currentCert = shellInst.pipe("convox ssl --app ${appName}-staging | grep ${process}:${port} | cut -d ' ' -f3").trim()
-        sh "echo ${currentCert}"
-        if (currentCert != certificate) {
-            sh "convox ssl update ${process}:${port} ${certificate} --app ${appName}-staging"
-        }
+        convoxInst.ensureCertificateSet("${appName}-staging", "node", 443, "acm-b53eb2937b23")
       }
 
       stage("Run Functional Tests") {
