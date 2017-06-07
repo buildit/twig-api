@@ -58,6 +58,7 @@ node {
       convoxInst.waitUntilDeployed("${appName}")
       convoxInst.ensureSecurityGroupSet("${appName}", env.CONVOX_SECURITYGROUP)
       convoxInst.ensureCertificateSet("${appName}", "node", 443, "acm-b53eb2937b23")
+      convoxInst.ensureParameterSet("${appName}", "Internal", "No")
     }
   }
   catch (err) {
