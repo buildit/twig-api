@@ -56,6 +56,8 @@ node {
       // wait until the app is deployed
       convoxInst.waitUntilDeployed("${appName}")
       convoxInst.ensureSecurityGroupSet("${appName}", env.CONVOX_SECURITYGROUP)
+      sh "convox ssl update node:443 acm-b53eb2937b23 --app ${appName}"
+      convoxInst.waitUntilDeployed("${appName}")
     }
   }
   catch (err) {
