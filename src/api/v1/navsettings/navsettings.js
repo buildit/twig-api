@@ -5,7 +5,7 @@ const config = require('../../../config');
 
 const put = (request, reply) => {
   const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
-  db.get('views_2')
+  db.get('views')
   .then(doc => {
     const id = request.payload._viewId;
     const key = request.payload.key;
@@ -34,7 +34,7 @@ const put = (request, reply) => {
 
 module.exports.routes = [{
   method: ['PUT'],
-  path: '/twiglets/{name}/navsettings',
+  path: '/twiglets/{id}/navsettings',
   handler: put,
   config: {
     validate: {
