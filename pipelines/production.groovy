@@ -39,7 +39,8 @@ node {
       tmpFile = UUID.randomUUID().toString() + ".tmp"
 
       // select the tag
-      tag = uiInst.selectTag(ecrInst.imageTags(appName, env.AWS_REGION))
+      // tag = uiInst.selectTag(ecrInst.imageTags(appName, env.AWS_REGION))
+      tag = "latest"
     }
 
     stage("Write docker-compose") {
