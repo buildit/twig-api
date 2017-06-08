@@ -46,7 +46,7 @@ function stubModel () {
   };
 }
 
-describe('/v2/models/', () => {
+describe.only('/v2/models/', () => {
   let sandbox = sinon.sandbox.create();
   beforeEach(() => {
     sandbox = sinon.sandbox.create();

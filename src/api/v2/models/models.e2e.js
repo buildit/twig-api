@@ -85,7 +85,7 @@ function cloneModel () {
   };
 }
 
-describe('POST /v2/models', () => {
+describe.only('POST /v2/models', () => {
   describe('(Successful)', () => {
     let res;
 
@@ -140,8 +140,8 @@ describe('POST /v2/models', () => {
     });
 
     after(function* foo () {
-      yield deleteModel(cloneModel());
       yield deleteModel(baseModel());
+      yield deleteModel(cloneModel());
     });
 
     it('returns 201', () => {
