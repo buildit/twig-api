@@ -8,6 +8,7 @@ const config = {
   _secrets: {
     _db_url: process.env.TWIG_API_DB_URL,
     _tenant: process.env.TWIG_API_TENANT,
+    _database_type: process.env.TWIG_API_DB_TYPE
   },
   LDAP_URL: process.env.TWIG_API_LDAP_URL,
   LOG_CONSOLE: process.env.TWIG_API_LOG_CONSOLE === 'true',

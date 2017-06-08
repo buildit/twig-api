@@ -1,8 +1,7 @@
 'use strict';
 const Boom = require('boom');
 const Joi = require('joi');
-const PouchDB = require('pouchdb');
-const config = require('../../../config');
+const DB = require('../DAO');
 const logger = require('../../../log')('MODELS');
 
 const createModelRequest = Joi.object({
@@ -46,8 +45,8 @@ const getModelsResponse = Joi.array().items(Joi.object({
 }));
 
 const getModel = (name) => {
-  const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-  return db.allDocs({ include_docs: true })
+  const db = new DB('organisation-models');
+  return db.get()
   .then(modelsRaw => {
     const modelArray = modelsRaw.rows.filter(row => row.doc.data.name === name);
     if (modelArray.length) {
@@ -60,7 +59,7 @@ const getModel = (name) => {
 };
 
 const postModelsHandler = (request, reply) => {
-  const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
+  const db = new DB('organisation-models');
   return getModel(request.payload.name)
   .then(() => {
     const error = Error('Model name already in use');
@@ -119,8 +118,8 @@ const postModelsHandler = (request, reply) => {
 };
 
 const getModelsHandler = (request, reply) => {
-  const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-  return db.allDocs({ include_docs: true })
+  const db = new DB('organisation-models');
+  return db.get()
     .then(modelsRaw => {
       const orgModels = modelsRaw.rows
       .map(row =>
@@ -157,7 +156,7 @@ const getModelHandler = (request, reply) => {
 };
 
 const putModelHandler = (request, reply) => {
-  const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
+  const db = new DB('organisation-models');
   getModel(request.params.name)
     .then(model => {
       if (model._rev === request.payload._rev) {
@@ -216,9 +215,9 @@ const putModelHandler = (request, reply) => {
 };
 
 const deleteModelsHandler = (request, reply) => {
-  const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
+  const db = new DB('organisation-models');
   return getModel(request.params.name)
-  .then(model => db.remove(model._id, model._rev).then(() => reply().code(204)))
+  .then(model => db.remove(model).then(() => reply().code(204)))
   .catch(error => {
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));

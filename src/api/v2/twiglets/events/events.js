@@ -1,8 +1,7 @@
 'use strict';
 const Boom = require('boom');
 const Joi = require('joi');
-const PouchDb = require('pouchdb');
-const config = require('../../../../config');
+const DB = require('../../DAO');
 const logger = require('../../../../log')('EVENTS');
 const uuidV4 = require('uuid/v4');
 const R = require('ramda');
@@ -54,8 +53,8 @@ const getEventResponse = Event.keys({
 });
 
 const getTwigletInfoByName = (name) => {
-  const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
-  return twigletLookupDb.allDocs({ include_docs: true })
+  const twigletLookupDb = new DB('twiglets');
+  return twigletLookupDb.get()
   .then(twigletsRaw => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
@@ -73,7 +72,7 @@ const getTwigletInfoByName = (name) => {
 const getEvent = (twigletName, eventId) =>
   getTwigletInfoByName(twigletName)
   .then(twigletInfo => {
-    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+    const db = new DB(twigletInfo._id, false);
     return db.get('events');
   })
   .then(eventsRaw => {
@@ -91,7 +90,7 @@ const getEvent = (twigletName, eventId) =>
 const getEventsHandler = (request, reply) =>
   getTwigletInfoByName(request.params.twigletName)
   .then(twigletInfo => {
-    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+    const db = new DB(twigletInfo._id, false);
     return db.get('events');
   })
   .then((events) => {
@@ -137,7 +136,7 @@ const postEventsHandler = (request, reply) => {
   let db;
   return getTwigletInfoByName(request.params.twigletName)
   .then(twigletInfo => {
-    db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+    db = new DB(twigletInfo._id, false);
     return db.get('events')
     .catch(error => {
       if (error.status === 404) {
@@ -152,10 +151,7 @@ const postEventsHandler = (request, reply) => {
   })
   .then((doc) => {
     const newEvent = R.merge({}, request.payload);
-    return db.allDocs({
-      include_docs: true,
-      keys: ['nodes', 'links']
-    })
+    return db.get(['nodes', 'links'])
     .then((twigletDocs) => {
       const nodeKeysToKeep = [
         'attrs',
@@ -190,7 +186,7 @@ const deleteEventHandler = (request, reply) => {
   getTwigletInfoByName(request.params.twigletName)
   .then(twigletInfo => {
     twigletId = twigletInfo._id;
-    db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
+    db = new DB(twigletId, false);
     return db.get('events');
   })
   .then((doc) => {

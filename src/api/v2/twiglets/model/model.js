@@ -1,7 +1,6 @@
 'use strict';
 const Boom = require('boom');
-const PouchDb = require('pouchdb');
-const config = require('../../../../config');
+const DB = require('../../DAO');
 const logger = require('../../../../log')('MODEL');
 const Joi = require('joi');
 const R = require('ramda');
@@ -37,8 +36,8 @@ const twigletModelBase = Joi.object({
 });
 
 const getTwigletInfoByName = (name) => {
-  const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
-  return twigletLookupDb.allDocs({ include_docs: true })
+  const twigletLookupDb = new DB('twiglets');
+  return twigletLookupDb.get()
   .then(twigletsRaw => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
@@ -56,7 +55,7 @@ const getTwigletInfoByName = (name) => {
 const getModelHandler = (request, reply) => {
   getTwigletInfoByName(request.params.name)
   .then(twigletInfo => {
-    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+    const db = new DB(twigletInfo._id, false);
     return db.get('model');
   })
   .then((doc) => {
@@ -83,7 +82,7 @@ const putModelHandler = (request, reply) => {
   }
   getTwigletInfoByName(request.params.name)
     .then(twigletInfo => {
-      const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+      const db = new DB(twigletInfo._id, false);
       return db.get('model')
       .then((doc) => {
         if (doc._rev === request.payload._rev) {

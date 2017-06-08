@@ -1,8 +1,7 @@
 'use strict';
 const Boom = require('boom');
 const Joi = require('joi');
-const PouchDb = require('pouchdb');
-const config = require('../../../../config');
+const DB = require('../../DAO');
 const logger = require('../../../../log')('SEQUENCES');
 const uuidV4 = require('uuid/v4');
 
@@ -29,8 +28,8 @@ const createSequenceRequest = Joi.object({
 });
 
 const getTwigletInfoByName = (name) => {
-  const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
-  return twigletLookupDb.allDocs({ include_docs: true })
+  const twigletLookupDb = new DB('twiglets');
+  return twigletLookupDb.get()
   .then(twigletsRaw => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
@@ -48,7 +47,7 @@ const getTwigletInfoByName = (name) => {
 const getSequence = (twigletName, sequenceId) =>
   getTwigletInfoByName(twigletName)
   .then(twigletInfo => {
-    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+    const db = new DB(twigletInfo._id, false);
     return db.get('sequences');
   })
   .then(sequencesRaw => {
@@ -66,7 +65,7 @@ const getSequence = (twigletName, sequenceId) =>
 const getSequencesHandler = (request, reply) =>
   getTwigletInfoByName(request.params.twigletName)
   .then(twigletInfo => {
-    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+    const db = new DB(twigletInfo._id, false);
     return db.get('sequences');
   })
   .then((sequences) => {
@@ -113,7 +112,7 @@ const postSequencesHanlder = (request, reply) => {
   let db;
   return getTwigletInfoByName(request.params.twigletName)
   .then(twigletInfo => {
-    db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+    db = new DB(twigletInfo._id, false);
     return db.get('sequences')
     .catch(error => {
       if (error.status === 404) {
@@ -155,7 +154,7 @@ const putSequenceHandler = (request, reply) => {
   getTwigletInfoByName(request.params.twigletName)
   .then(twigletInfo => {
     twigletId = twigletInfo._id;
-    db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
+    db = new DB(twigletId, false);
     return db.get('sequences');
   })
   .then((doc) => {
@@ -191,7 +190,7 @@ const deleteSequenceHandler = (request, reply) => {
   getTwigletInfoByName(request.params.twigletName)
   .then(twigletInfo => {
     twigletId = twigletInfo._id;
-    db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
+    db = new DB(twigletId, false);
     return db.get('sequences');
   })
   .then((doc) => {
