@@ -30,12 +30,10 @@ server.connection({
   routes: {
     cors: {
       origin: [
-        'http://localhost:*',
-        'https://localhost:*',
-        'http://*.riglet',
-        'https://*.riglet',
-        'http://*.kube.local:*',
-        'https://*.kube.local:*'
+        '*://localhost:*',
+        '*://*.buildit.tools',
+        '*://*.riglet',
+        '*://*.kube.local:*'
       ],
       credentials: true,
     }
