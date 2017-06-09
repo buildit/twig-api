@@ -87,7 +87,7 @@ const putModelHandler = (request, reply) => {
       return db.get('model')
       .then((doc) => {
         if (doc._rev === request.payload._rev) {
-          doc.data = R.omit(['_rev', 'name'], request.payload);
+          doc.data = R.omit(['_rev', 'name', 'nameChanges'], request.payload);
           return db.put(doc)
             .then(() => db.get('nodes'))
             .catch(() => undefined)
