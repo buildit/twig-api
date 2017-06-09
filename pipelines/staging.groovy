@@ -35,7 +35,7 @@ node {
         registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         registry = "https://${registryBase}"
         appName = "twig-api"
-        appUrl = "http://staging.twig-api.riglet"
+        appUrl = "http://staging-twig-api.buildit.tools"
         slackChannel = "twig"
         gitUrl = "https://github.com/buildit/twig-api"
       }
