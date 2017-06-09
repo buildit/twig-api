@@ -20,18 +20,18 @@ class Models {
 
   getAll () {
     const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-    return db.allDocs({ include_docs: true });
+    return db.allDocs({ include_docs: true }).then(models => models.rows.map(row => row.doc));
   }
 
   create ({ name, entities, commitMessage }, user) {
-    const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-    return this.getModel(name)
+    return this.getOne(name)
     .then(() => {
       const error = Error('Model name already in use');
       error.status = 409;
       throw error;
     })
     .catch(error => {
+      const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
       if (error.status === 404) {
         const modelToCreate = {
           data: {
@@ -52,7 +52,7 @@ class Models {
 
   clone ({ name, cloneModel, commitMessage }, user) {
     const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-    return this.getModel(name)
+    return this.getOne(name)
     .then(() => {
       const error = Error('Model name already in use');
       error.status = 409;
@@ -60,7 +60,7 @@ class Models {
     })
     .catch(error => {
       if (error.status === 404) {
-        return config.getModel(cloneModel)
+        return this.getOne(cloneModel)
         .then(originalModel => {
           const modelToCreate = {
             data: {
@@ -80,9 +80,9 @@ class Models {
     });
   }
 
-  update ({ name, _rev, entities, commitMessage, doReplacement }, user) {
+  update ({ name, _rev, entities, commitMessage, doReplacement }, originalName, user) {
     const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-    return this.getModel(name)
+    return this.getOne(originalName)
     .then(model => {
       if (model._rev === _rev) {
         model.data.entities = entities;
@@ -118,7 +118,7 @@ class Models {
 
   delete ({ name }) {
     const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
-    return this.getModel(name)
+    return this.getOne(name)
     .then(model => db.remove(model._id, model._rev));
   }
 }

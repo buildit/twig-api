@@ -7,6 +7,7 @@ require('sinon-as-promised');
 const PouchDb = require('pouchdb');
 const Twiglet = require('./twiglets');
 const server = require('../../../../test/unit/test-server');
+const dao = require('../DAO');
 
 const expect = chai.expect;
 
@@ -455,16 +456,15 @@ describe('/v2/twiglets', () => {
       let twiglet;
       beforeEach(function* foo () {
         const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
-        allDocs.onFirstCall().resolves({ rows: [] });
-        allDocs.onSecondCall().resolves({ rows: [{
-          doc: {
-            data: {
-              name: 'some model',
-            }
+        sandbox.stub(dao.models, 'getOne').resolves({
+          data: {
+            name: 'some model',
+            entities: [],
           }
-        }] });
-        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-        allDocs.onCall(3).resolves(twigletDocs(['nodes', 'links', 'changelog']));
+        });
+        allDocs.onFirstCall().resolves({ rows: [] });
+        allDocs.onSecondCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onThirdCall().resolves(twigletDocs(['nodes', 'links', 'changelog']));
         post = sandbox.stub(PouchDb.prototype, 'post').resolves({
           id: 'some id',
         });

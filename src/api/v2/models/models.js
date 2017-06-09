@@ -74,11 +74,11 @@ const postModelsHandler = (request, reply) => {
 const getModelsHandler = (request, reply) => {
   dao.models.getAll()
   .then(modelsRaw => {
-    const orgModels = modelsRaw.rows
+    const orgModels = modelsRaw
     .map(row =>
       ({
-        name: row.doc.data.name,
-        url: request.buildUrl(`/v2/models/${row.doc.data.name}`),
+        name: row.data.name,
+        url: request.buildUrl(`/v2/models/${row.data.name}`),
       })
     );
     return reply(orgModels);
@@ -109,8 +109,8 @@ const getModelHandler = (request, reply) => {
 };
 
 const putModelHandler = (request, reply) => {
-  dao.models.update(request.payload, request.auth.credentials.user.name)
-  .then(() => dao.getModel(request.payload.name))
+  dao.models.update(request.payload, request.params.name, request.auth.credentials.user.name)
+  .then(() => dao.models.getOne(request.payload.name))
   .then(model => {
     const modelResponse = {
       name: model.data.name,

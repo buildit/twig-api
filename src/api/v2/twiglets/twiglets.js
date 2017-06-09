@@ -7,7 +7,7 @@ const uuidV4 = require('uuid/v4');
 const config = require('../../../config');
 const logger = require('../../../log')('TWIGLETS');
 const Changelog = require('./changelog');
-const Model = require('../models/');
+const dao = require('../DAO');
 
 const createTwigletRequest = Joi.object({
   name: Joi.string().required().description('the name of the twiglet'),
@@ -324,7 +324,7 @@ const createTwigletHandler = (request, reply) => {
           );
         });
       }
-      return Model.getModel(request.payload.model)
+      return dao.models.getOne(request.payload.model)
         .then(model =>
           Promise.all([
             createdDb.bulkDocs([
