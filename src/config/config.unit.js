@@ -40,10 +40,21 @@ describe('config', () => {
       });
     });
 
-    it('returns couchdb.riglet string if hostname is twig.riglet', () => {
+    it('returns couchdb.riglet string if hostname is twig-api.riglet', () => {
       ns.run(() => {
         // arrange
-        ns.set('host', 'twig.riglet');
+        ns.set('host', 'twig-api.riglet');
+
+        // act
+        // assert
+        expect(config.DB_URL).to.equal('http://couchdb.riglet:5984');
+      });
+    });
+
+    it('returns couchdb.riglet string if hostname is twig-api.buildit.tools', () => {
+      ns.run(() => {
+        // arrange
+        ns.set('host', 'twig-api.buildit.tools');
 
         // act
         // assert
@@ -54,7 +65,7 @@ describe('config', () => {
     it('chops the port', () => {
       ns.run(() => {
         // arrange
-        ns.set('host', 'twig.riglet:1234');
+        ns.set('host', 'twig-api.riglet:1234');
 
         // act
         // assert
@@ -62,10 +73,10 @@ describe('config', () => {
       });
     });
 
-    it('returns couchdb if hostname is staging.twig.riglet', () => {
+    it('returns couchdb if hostname is staging.twig-api.riglet', () => {
       ns.run(() => {
         // arrange
-        ns.set('host', 'staging.twig.riglet');
+        ns.set('host', 'staging.twig-api.riglet');
 
         // act
         // assert
@@ -73,25 +84,14 @@ describe('config', () => {
       });
     });
 
-    it('returns couchdb if hostname is foo', () => {
+    it('returns couchdb if hostname is staging-twig-api.buildit.tools', () => {
       ns.run(() => {
         // arrange
-        ns.set('host', 'foo');
+        ns.set('host', 'staging-twig-api.buildit.tools');
 
         // act
         // assert
-        expect(config.DB_URL).to.equal('http://couchdb:5984');
-      });
-    });
-
-    it('returns couchdb if hostname is twig', () => {
-      ns.run(() => {
-        // arrange
-        ns.set('host', 'twig');
-
-        // act
-        // assert
-        expect(config.DB_URL).to.equal('http://couchdb:5984');
+        expect(config.DB_URL).to.equal('http://couchdb.riglet:5984');
       });
     });
   });
@@ -149,10 +149,10 @@ describe('config', () => {
       });
     });
 
-    it('returns empty string if hostname is twig.riglet', () => {
+    it('returns empty string if hostname is twig-api.riglet', () => {
       ns.run(() => {
         // arrange
-        ns.set('host', 'twig.riglet');
+        ns.set('host', 'twig-api.riglet');
 
         // act
         // assert
@@ -160,10 +160,10 @@ describe('config', () => {
       });
     });
 
-    it('returns empty string if hostname is twig', () => {
+    it('returns empty string if hostname is twig-api.buildit.tools', () => {
       ns.run(() => {
         // arrange
-        ns.set('host', 'twig');
+        ns.set('host', 'twig-api.buildit.tools');
 
         // act
         // assert
@@ -171,10 +171,32 @@ describe('config', () => {
       });
     });
 
-    it('returns staging if hostname is staging.twig.riglet', () => {
+    it('returns empty string if hostname is twig-api', () => {
       ns.run(() => {
         // arrange
-        ns.set('host', 'staging.twig.riglet');
+        ns.set('host', 'twig-api');
+
+        // act
+        // assert
+        expect(config.TENANT).to.equal('');
+      });
+    });
+
+    it('returns staging if hostname is staging.twig-api.riglet', () => {
+      ns.run(() => {
+        // arrange
+        ns.set('host', 'staging.twig-api.riglet');
+
+        // act
+        // assert
+        expect(config.TENANT).to.equal('staging');
+      });
+    });
+
+    it('returns staging if hostname is staging-twig-api.buildit.tools', () => {
+      ns.run(() => {
+        // arrange
+        ns.set('host', 'staging-twig-api.buildit.tools');
 
         // act
         // assert

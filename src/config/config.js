@@ -18,12 +18,10 @@ const config = {
       return this._secrets._db_url;
     }
     const hostname = cls.getNamespace('hapi-request').get('host');
-    const splitHostname = hostname.split('twig', 2);
-    if (splitHostname[0].startsWith('localhost')) {
+    if (hostname.startsWith('localhost')) {
       return 'http://localhost:5984';
     }
-    const twigDomain = splitHostname.length < 2 ? '' : splitHostname[1];
-    return `http://couchdb${twigDomain.split(':', 1)[0]}:5984`;
+    return 'http://couchdb.riglet:5984';
   },
   set DB_URL (value) {
     this._secrets._db_url = value;
@@ -33,14 +31,13 @@ const config = {
       return this._secrets._tenant;
     }
     const hostname = cls.getNamespace('hapi-request').get('host');
-    if (hostname.startsWith('localhost')) {
-      return '';
+    if (hostname.includes('.twig-api')) {
+      return hostname.split('.twig-api', 1)[0];
     }
-    if (hostname.startsWith('twig') || !hostname.includes('.twig')) {
-      return '';
+    if (hostname.includes('-twig-api')) {
+      return hostname.split('-twig-api', 1)[0];
     }
-
-    return hostname.split('.twig', 1)[0];
+    return '';
   },
   set TENANT (value) {
     this._secrets._tenant = value;

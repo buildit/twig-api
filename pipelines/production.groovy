@@ -33,7 +33,7 @@ node {
 
       appName = "twig-api"
       registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
-      appUrl = "http://twig-api.riglet"
+      appUrl = "https://twig-api.buildit.tools"
       slackChannel = "twig"
       gitUrl = "https://bitbucket.org/digitalrigbitbucketteam/twig-api"
       tmpFile = UUID.randomUUID().toString() + ".tmp"
@@ -57,7 +57,7 @@ node {
       sh "rm ${tmpFile}"
       // wait until the app is deployed
       convoxInst.waitUntilDeployed("${appName}")
-      convoxInst.ensureSecurityGroupSet("${appName}", env.CONVOX_SECURITYGROUP)
+      convoxInst.ensureSecurityGroupSet("${appName}", "")
       convoxInst.ensureCertificateSet("${appName}", "node", 443, "acm-b53eb2937b23")
       convoxInst.ensureParameterSet("${appName}", "Internal", "No")
     }
