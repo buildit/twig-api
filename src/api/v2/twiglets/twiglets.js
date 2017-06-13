@@ -27,7 +27,7 @@ const attributes = Joi.array().items(Joi.object({
 
 const Link = Joi.object({
   attrs: attributes.description('non-graphical attributes such as phone number'),
-  association: Joi.string().description('the name of the link'),
+  association: Joi.string().allow('').description('the name of the link'),
   id: Joi.string().required().description('an id, use UUIDv4, etc to generate'),
   source: Joi.string().required().description('the id of the source node'),
   target: Joi.string().required().description('the id of the target node'),
@@ -40,7 +40,10 @@ const Node = Joi.object({
     Joi.number().required().description('an id, use UUIDv4, etc to generate'),
   ],
   location: Joi.string().allow('').allow(null).description('physical location, eg Denver, CO, USA'),
-  name: Joi.string().required().description('the name of the node'),
+  name: [
+    Joi.string().allow('').required().description('the name of the node'),
+    Joi.string().required().allow(null).description('the name of the node')
+  ],
   type: Joi.string().required().description('the model type of the node'),
   x: Joi.number().description('the horizontal position of the node'),
   y: Joi.number().description('the vertical position of the node'),
