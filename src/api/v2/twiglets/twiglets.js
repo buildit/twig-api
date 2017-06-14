@@ -534,6 +534,19 @@ const deleteTwigletHandler = (request, reply) => {
   });
 };
 
+
+function sanitizeNode (node) {
+  return R.pick(['attrs', 'id', 'location', 'name', 'type', 'x', 'y', '_color', '_size'], node);
+}
+
+function sanitizeLink (link) {
+  return R.pick(['attrs', 'association', 'id', 'source', 'target'], link);
+}
+
+function sanitizeModel (model) {
+  return R.pick(['entities'], model);
+}
+
 const getTwigletJsonHandler = (request, reply) =>
   getTwigletInfoByName(request.params.name)
   .then(twigletInfo => {
@@ -548,12 +561,12 @@ const getTwigletJsonHandler = (request, reply) =>
         if (row.doc && row.doc.data) {
           obj[row.id] = row.doc.data;
         }
-        else {
-          logger.warn(`no data for ${row.id}`);
-        }
         return obj;
       }, {});
-      twigletData.views = twigletData.views_2;
+      twigletData.views = twigletData.views_2 || [];
+      twigletData.nodes = twigletData.nodes.map(sanitizeNode);
+      twigletData.links = twigletData.links.map(sanitizeLink);
+      twigletData.model = sanitizeModel(twigletData.model);
       delete twigletData.views_2;
       return reply(twigletData);
     });
