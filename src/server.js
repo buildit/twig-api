@@ -36,7 +36,8 @@ server.connection({
         '*://*.kube.local:*'
       ],
       credentials: true,
-    }
+    },
+    payload: { maxBytes: 500000000 }
   }
 });
 
