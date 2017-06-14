@@ -542,7 +542,12 @@ const getTwigletJsonHandler = (request, reply) =>
     })
     .then(twigletDocs => {
       const twigletData = twigletDocs.rows.reduce((obj, row) => {
-        obj[row.id] = row.doc.data;
+        if (row.doc && row.doc.data) {
+          obj[row.id] = row.doc.data;
+        }
+        else {
+          logger.warn(`no data for ${row.id}`);
+        }
         return obj;
       }, {});
       twigletData.views = twigletData.views_2;
