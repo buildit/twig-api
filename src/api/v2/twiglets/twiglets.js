@@ -85,6 +85,7 @@ const jsonTwigletRequest = Joi.object({
       forceLinkDistance: Joi.number().required(),
       forceLinkStrength: Joi.number().required(),
       forceVelocityDecay: Joi.number().required(),
+      gravityPoints: Joi.object(),
       linkType: Joi.string().required(),
       nodeSizingAutomatic: Joi.boolean().required(),
       scale: Joi.number().required(),

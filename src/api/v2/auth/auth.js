@@ -87,11 +87,26 @@ const validateHeimdall = (email, password) =>
     })
   );
 
+const validateLocal = (email, password) =>
+  new Promise((resolve, reject) => {
+    if (password !== 'password') {
+      return reject();
+    }
+
+    return resolve({
+      id: email,
+      name: email
+    });
+  });
+
 const login = (request, reply) =>
   Promise.resolve()
   .then(() => {
     if (request.payload.email === 'testuser@test.com') {
       return validateHeimdall(request.payload.email, request.payload.password);
+    }
+    if (request.payload.email === 'local@user' && config.DB_URL.includes('localhost')) {
+      return validateLocal(request.payload.email, request.payload.password);
     }
     return validate(request.payload.email, request.payload.password);
   })
