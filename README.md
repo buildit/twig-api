@@ -10,6 +10,20 @@ The API will enable CRUD operations on the DB.
 ### Getting Started
 ---
 
+Twig API requires a data store. At this time that is CouchDB. Please install and have it
+running prior to using Twig.
+
+To install with brew:
+```Shell
+brew install couchdb
+```
+
+Once CouchDB is installed, it should be running at [localhost:5984](localhost:5984). If you open
+localhost:5984 you should see something along the lines of:
+```Shell
+{"couchdb": "Welcome",...}
+```
+
 ```Shell
 npm i
 cp .env.example .env
@@ -66,6 +80,8 @@ Hap Pearman
 Ben Hernandez
 
 Lizzie Szoke
+
+Mike Thomas
 
 ### License
 ---
