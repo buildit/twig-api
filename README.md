@@ -18,11 +18,13 @@ To install with brew:
 brew install couchdb
 ```
 
-Once CouchDB is installed, it should be running at [localhost:5984](localhost:5984). If you open
+Once CouchDB is installed, it should be running at [http://localhost:5984](http://localhost:5984). If you open
 localhost:5984 you should see something along the lines of:
 ```Shell
 {"couchdb": "Welcome",...}
 ```
+
+After you have installed CouchDB, you can get Twig API started with:
 
 ```Shell
 npm i
