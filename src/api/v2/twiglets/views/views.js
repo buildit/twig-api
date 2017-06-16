@@ -26,8 +26,11 @@ const userStateResponse = Joi.object({
   forceLinkStrength: Joi.number().required(),
   forceVelocityDecay: Joi.number().required(),
   gravityPoints: Joi.object(),
+  levelFilter: Joi.number(),
   linkType: Joi.string().required(),
   nodeSizingAutomatic: Joi.boolean().required(),
+  renderOnEveryTick: Joi.boolean(),
+  runSimulation: Joi.boolean(),
   scale: Joi.number().required(),
   separationDistance: Joi.number().optional(),
   showLinkLabels: Joi.boolean().required(),
@@ -106,6 +109,7 @@ const getViewsHandler = (request, reply) => {
     return reply(views);
   })
   .catch((error) => {
+    console.log(error);
     if (error.status === 404) {
       return reply([]).code(200);
     }
@@ -192,6 +196,7 @@ const postViewsHandler = (request, reply) => {
     });
   })
   .catch(e => {
+    console.log(e);
     logger.error(JSON.stringify(e));
     return reply(Boom.create(e.status || 500, e.message, e));
   });
