@@ -97,7 +97,7 @@ node {
         convoxInst.waitUntilDeployed("${appName}-staging")
         convoxInst.ensureSecurityGroupSet("${appName}-staging", "")
         convoxInst.ensureCertificateSet("${appName}-staging", "node", 443, "acm-b53eb2937b23")
-        convoxInst.ensureParameterSet("${appName}-staging", "Internal", "No")
+        convoxInst.ensureParameterSet("${appName}-staging", "Internal", "Yes")
       }
 
       stage("Run Functional Tests") {
