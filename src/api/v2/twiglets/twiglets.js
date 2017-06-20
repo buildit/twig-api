@@ -31,6 +31,8 @@ const Link = Joi.object({
   id: Joi.string().required().description('an id, use UUIDv4, etc to generate'),
   source: Joi.string().required().description('the id of the source node'),
   target: Joi.string().required().description('the id of the target node'),
+  _color: Joi.string().description('overrides the default color of the link'),
+  _size: Joi.number().description('overrides the default thickness of the link')
 }).label('Link');
 
 const Node = Joi.object({
@@ -217,11 +219,13 @@ const getTwiglet = (name, urlBuilder) =>
         '_size',
       ];
       const linkKeysToPick = [
-        'atts',
+        'attrs',
         'association',
         'id',
         'source',
         'target',
+        '_color',
+        '_size',
       ];
       return R.merge(
         R.omit(['changelog', 'views_2', 'events', 'sequences'], twigletData),
@@ -541,7 +545,7 @@ function sanitizeNode (node) {
 }
 
 function sanitizeLink (link) {
-  return R.pick(['attrs', 'association', 'id', 'source', 'target'], link);
+  return R.pick(['attrs', 'association', 'id', 'source', 'target', '_color', '_size'], link);
 }
 
 function sanitizeModel (model) {
