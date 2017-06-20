@@ -25,6 +25,8 @@ const attributes = Joi.array().items(Joi.object({
 }));
 
 const Link = Joi.object({
+  _color: Joi.string(),
+  _size: Joi.number(),
   attrs: attributes,
   association: Joi.string(),
   id: Joi.string().required(),
