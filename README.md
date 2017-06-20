@@ -35,6 +35,14 @@ To install with brew:
 brew install couchdb
 ```
 
+To install/run with Docker:
+```bash
+docker pull couchdb:1
+
+# expose it to the world on port 5984
+docker run -d -p 5984:5984 --name couchdb couchdb:1
+```
+
 Once CouchDB is installed, it should be running at [http://localhost:5984](http://localhost:5984). If you open
 localhost:5984 you should see something along the lines of:
 ```Shell
@@ -82,9 +90,9 @@ In order to use Twig locally, an instance of Twig API must be up and running.
 ---
 In the Buildit Riglet:
 
-**Staging Environment**: http://staging.twig-api.riglet
+**Staging Environment**: https://staging-twig-api.buildit.tools - must be connected to Buildit Tools VPN/VPC
 
-**Production Environment**: http://twig-api.riglet
+**Production Environment**: http://twig-api.buildit.tools
 
 ### Development
 ---
@@ -106,20 +114,6 @@ the guidelines outlined in [Airbnb's JavaScript style guide](https://github.com/
 #### CI/CD
 
 Twig API CI/CD assumes the use of [Jenkins](https://jenkins.io/) Pipeline features (as described by the staging and production groovy scripts in the pipelines directory).
-
-#### How to Contribute
-
-Want to contribute?
-
-To fix a bug or enhance Twig API, follow these steps:
-
-* Fork the repository
-* Create a new branch (`git checkout -b improve-feature`)
-* Make your changes
-* Write tests for your changes
-* Commit your changes (`git commit -m 'Made awesome improvements'`)
-* Push to your branch (`git push origin improve-feature`)
-* Create a pull request
 
 ##### Opening an issue
 
