@@ -32,8 +32,6 @@ const Link = Joi.object({
   id: Joi.string().required(),
   source: Joi.string().required(),
   target: Joi.string().required(),
-  _color: Joi.string(),
-  _size: Joi.number(),
 });
 
 const Node = Joi.object({
