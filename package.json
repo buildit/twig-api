@@ -18,12 +18,12 @@
   "main": "src/server.js",
   "repository": {
     "type": "git",
-    "url": "git@bitbucket.org:digitalrigbitbucketteam/twig-api.git"
+    "url": "git@github.com:buildit/twig-api.git"
   },
   "engines": {
     "node": ">=6.10.0"
   },
-  "bugs": "https://digitalrig.atlassian.net/projects/NETWRKDIAG",
+  "bugs": "https://trello.com/b/gvh3zIcI/twig",
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "^3.5.0",
