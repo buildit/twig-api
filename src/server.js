@@ -55,6 +55,17 @@ server.ext('onRequest', (req, reply) => {
   });
 });
 
+server.ext('onRequest', (req, reply) => {
+  const protocol = req.headers['x-forwarded-proto'] || req.connection.info.protocol;
+  const host = req.headers['x-forwarded-host'] || req.info.hostname;
+  if (host === 'localhost' || protocol === 'https') {
+    return reply.continue();
+  }
+  return reply
+    .redirect(`https://${host}${req.url.path}`)
+    .permanent();
+});
+
 server.register([cookieAuth, Inert, Vision,
   {
     register: HapiSwagger,

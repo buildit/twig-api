@@ -1,7 +1,7 @@
 {
-    "vsicons.presets.angular": false,
     "search.exclude": {
       "**/node_modules": true,
-      "reports": true
+      "reports": true,
+      ".nyc_output": true
     }
 }
