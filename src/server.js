@@ -31,7 +31,7 @@ server.connection({
     cors: {
       origin: [
         '*://localhost:*',
-        '*://*.buildit.tools',
+        'https://*.buildit.tools',
         '*://*.riglet',
         '*://*.kube.local:*'
       ],
