@@ -10,6 +10,7 @@ const version = require('../package').version;
 const helpers = require('./server.helpers');
 const v1 = require('./api/v1');
 const v2 = require('./api/v2');
+const config = require('./config');
 
 const options = {
   info: {
@@ -78,7 +79,7 @@ server.register([cookieAuth, Inert, Vision,
 
     server.auth.strategy('session', 'cookie', 'required', {
       password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
-      isSecure: false
+      isSecure: config.SECURE_COOKIES
     });
   });
 
