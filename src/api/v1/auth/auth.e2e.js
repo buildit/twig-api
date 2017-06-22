@@ -61,8 +61,10 @@ describe('/login', () => {
         expect(res).to.have.status(200);
       });
 
-      it('sets a cookie', () => {
-        expect(res).to.have.cookie('sid');
+      it.only('sets a cookie', () => {
+        // TODO: waiting for a chai-http release that includes https://github.com/chaijs/chai-http/issues/43
+        // expect(res).to.have.cookie('sid');
+        expect(res).to.have.header('set-cookie', /^sid=/);
       });
 
       it('returns response', () => {

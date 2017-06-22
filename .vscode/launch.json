@@ -7,12 +7,12 @@
         {
             "name": "Debug unit tests",
             "type": "node",
-            "protocol": "auto",
             "request": "launch",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}",
             "stopOnEntry": false,
-            "args": ["--require", "co-mocha","--recursive", "test/unit", "**/*.unit.js", "--no-timeouts"]
+            "args": ["--require", "co-mocha","--recursive", "--no-timeouts", "test/unit", "**/*.unit.js" ],
+            "internalConsoleOptions": "openOnSessionStart"
         },
         {
             "name": "Debug e2e tests",
@@ -22,7 +22,8 @@
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}",
             "stopOnEntry": false,
-            "args": ["--require", "co-mocha","--recursive", "test/e2e", "**/*.e2e.js", "--no-timeouts"]
+            "args": ["--require", "co-mocha","--recursive", "--no-timeouts", "test/e2e", "**/*.e2e.js"],
+            "internalConsoleOptions": "openOnSessionStart"
         },
         {
             "name": "Attach to NodeJS",
