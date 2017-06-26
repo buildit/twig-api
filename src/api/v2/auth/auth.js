@@ -45,8 +45,8 @@ const validate = (email, password) => {
     }));
 };
 
-const validateWiproJwt = (token) => {
-  const oidConfigUrl = 'https://login.microsoftonline.com/wipro365.onmicrosoft.com/.well-known/openid-configuration';
+const validateMothershipJwt = (token) => {
+  const oidConfigUrl = 'https://login.microsoftonline.com/258ac4e4-146a-411e-9dc8-79a9e12fd6da/.well-known/openid-configuration';
 
   const decodedJwt = jwt.decode(token, { complete: true });
 
@@ -129,7 +129,7 @@ const login = (request, reply) =>
   .catch(() => reply(Boom.unauthorized('Invalid email/password')));
 
 const validateJwt = (request, reply) => {
-  validateWiproJwt(request.payload.jwt)
+  validateMothershipJwt(request.payload.jwt)
     .then((user) => {
       request.cookieAuth.set({ user });
       return reply({

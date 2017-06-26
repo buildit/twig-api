@@ -65,7 +65,7 @@ describe('/v2/login', () => {
 });
 
 // TODO
-describe('/v2/validateWiproJwt', () => {
+describe('/v2/validateMothershipJwt', () => {
   const oidConfigResponse = { jwks_uri: 'some_uri' };
 
   const jwkResponse = {
