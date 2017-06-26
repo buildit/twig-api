@@ -20,7 +20,7 @@ function putS3
     "https://$bucket.s3.amazonaws.com$aws_path$file"
 }
 
-scp -r centos@couchdb.riglet:/usr/local/var/lib/couchdb ./backups
+scp -rp centos@couchdb.riglet:/usr/local/var/lib/couchdb ./backups
 aws s3 sync ./backups/ s3://twig-backups --region us-west-2
 #tar cvfz backups.tgz backups
 rm -rf ./backups
