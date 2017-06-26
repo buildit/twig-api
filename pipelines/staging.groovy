@@ -90,7 +90,7 @@ node {
           [tag: tag, registryBase: registryBase, ad_ip_address: ad_ip_address])
         writeFile(file: tmpFile, text: ymlData)
 
-        sh "convox login ${env.CONVOX_RACKNAME} --password ${env.CONVOX_PASSWORD}"
+        convoxInst.login("${env.CONVOX_RACKNAME}")
         convoxInst.ensureApplicationCreated("${appName}-staging")
         sh "convox deploy --app ${appName}-staging --description '${tag}' --file ${tmpFile} --wait"
         // wait until the app is deployed
