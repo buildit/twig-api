@@ -21,7 +21,7 @@ function putS3
 }
 
 scp -rp centos@couchdb.riglet:/usr/local/var/lib/couchdb ./backups
-aws s3 sync ./backups/ s3://twig-backups --region us-west-2
+aws s3 sync ./backups/ s3://twig-backups --region us-west-2 --delete
 #tar cvfz backups.tgz backups
 rm -rf ./backups
 #putS3 . backups.tgz "/"
