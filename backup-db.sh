@@ -21,12 +21,13 @@ function putS3
 }
 
 scp -r centos@couchdb.riglet:/usr/local/var/lib/couchdb ./backups
-tar cvfz backups.tgz backups
+aws s3 sync ./backups/ s3://twig-backups --region us-west-2
+#tar cvfz backups.tgz backups
 rm -rf ./backups
-putS3 . backups.tgz "/"
+#putS3 . backups.tgz "/"
 # aws s3 cp ./backups s3://twig-backups --recursive
 #for file in ./backups/*; do
 #  putS3 ./backups/ "${file##*/}" "/"
 #done
 
-rm backups.tgz
+#rm backups.tgz
