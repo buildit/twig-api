@@ -24,6 +24,7 @@ pipeline {
     stage('Staging') {
       when { branch 'master' }
       steps {
+        sh "/usr/local/bin/sonar-scanner -Dsonar.projectVersion=${version}"
         sh "npm shrinkwrap"
       }
     }
