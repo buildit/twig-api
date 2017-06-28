@@ -3,6 +3,7 @@
 def appName = 'twig-api'
 def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
 def registry = "https://${registryBase}"
+def projectVersion
 
 // def ecrInst = new ecr()
 // def shellInst = new shell()
@@ -22,6 +23,14 @@ pipeline {
     pollSCM('* * * * *')
   }
   stages {
+    stage('Setup') {
+      steps {
+        script {
+          def npmInst = new npm()
+          projectVersion = npmInst.getVersion()
+        }
+      }
+    }
     stage('Build')  {
       steps {
         sh "npm install"
@@ -43,14 +52,12 @@ pipeline {
     stage('Package') {
       when { branch 'jenkins-declarative-pipeline' }
       steps {
-        sh "/usr/local/bin/sonar-scanner -Dsonar.projectVersion=${version}"
+        sh "/usr/local/bin/sonar-scanner -Dsonar.projectVersion=${projectVersion}"
         sh "npm shrinkwrap"
         script {
           def gitInst = new git()
-          def npmInst = new npm()
           def shortCommitHash = gitInst.getShortCommit()
           def commitMessage = gitInst.getCommitMessage()
-          def projectVersion = npmInst.getVersion()
 
           def tag = "${projectVersion}-${env.BUILD_NUMBER}-${shortCommitHash}"
           def image = docker.build("${appName}:${tag}", '.')
