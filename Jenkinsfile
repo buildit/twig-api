@@ -1,4 +1,3 @@
-@Library('buildit')
 pipeline {
   agent { docker 'node:boron' }
   options {
