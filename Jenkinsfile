@@ -1,13 +1,11 @@
 // @Library('github.com/buildit/jenkins-pipeline-libraries') _
 @Library('buildit') _
-def gitInst = new git()
-def npmInst = new npm()
 def appName = 'twig-api'
-def shortCommitHash = gitInst.getShortCommit()
-def commitMessage = gitInst.getCommitMessage()
-def version = npmInst.getVersion()
 def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
 def registry = "https://${registryBase}"
+def shortCommitHash
+def commitMessage
+def projectVersion
 
 // def ecrInst = new ecr()
 // def shellInst = new shell()
@@ -27,6 +25,11 @@ pipeline {
     pollSCM('* * * * *')
   }
   stages {
+    stage('Setup') {
+      shortCommitHash = gitInst.getShortCommit()
+      commitMessage = gitInst.getCommitMessage()
+      projectVersion = npmInst.getVersion()
+    }
     stage('Build')  {
       steps {
         sh "npm install"
@@ -51,7 +54,7 @@ pipeline {
         sh "/usr/local/bin/sonar-scanner -Dsonar.projectVersion=${version}"
         sh "npm shrinkwrap"
         script {
-          def tag = "${version}-${env.BUILD_NUMBER}-${shortCommitHash}"
+          def tag = "${projectVersion}-${env.BUILD_NUMBER}-${shortCommitHash}"
           def image = docker.build("${appName}:${tag}", '.')
           docker.withRegistry(registry) {
             image.push("${tag}")
