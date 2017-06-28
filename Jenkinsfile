@@ -32,14 +32,5 @@ pipeline {
     always {
       junit 'reports/test-results.xml'
     }
-    success {
-
-    }
-    failure {
-
-    }
-    unstable {
-
-    }
   }
 }
