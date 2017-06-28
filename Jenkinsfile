@@ -61,6 +61,9 @@ pipeline {
 
           def tag = "${projectVersion}-${env.BUILD_NUMBER}-${shortCommitHash}"
           def image = docker.build("${appName}:${tag}", '.')
+
+          def ecrInst = new ecr()
+          ecrInst.authenticate(env.AWS_REGION)
           docker.withRegistry(registry) {
             image.push("${tag}")
           }
