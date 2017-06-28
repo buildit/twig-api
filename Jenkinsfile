@@ -1,3 +1,4 @@
+@Library('buildit')
 pipeline {
   agent any
   options {
