@@ -1,7 +1,7 @@
 pipeline {
   agent { docker 'node:boron' }
   options {
-    buildDiscarder(logRotator(numToKeepStr: '1')) }
+    buildDiscarder(logRotator(numToKeepStr: '1'))
     disableConcurrentBuilds()
   }
   triggers {
