@@ -9,13 +9,17 @@ pipeline {
     pollSCM('* * * * *')
   }
   stages {
-    stage('Build & Test')  {
+    stage('Build')  {
       steps {
         sh "npm install"
-        sh "npm run test:ci"
+      }
+    }
+    stage('Test') {
+      steps {
         sh "npm run lint"
         sh "npm run validate"
         sh "npm run security"
+        sh "npm run test:ci"
       }
     }
     stage('Staging') {
@@ -27,7 +31,7 @@ pipeline {
   }
   post {
     always {
-      junit 'reports/**.xml'
+      junit 'reports/test-results.xml'
     }
     success {
 
