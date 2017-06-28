@@ -1,8 +1,23 @@
-@Library('buildit') _
+@Library('github.com/buildit/jenkins-pipeline-libraries@master') _
+// @Library('buildit') _
+def gitInst = new git()
+def npmInst = new npm()
+def appName = 'twig-api'
+def shortCommitHash = gitInst.getShortCommit()
+def commitMessage = gitInst.getCommitMessage()
+def version = npmInst.getVersion()
+def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+def registry = "https://${registryBase}"
+
+// def ecrInst = new ecr()
+// def shellInst = new shell()
+// def slackInst = new slack()
+// def convoxInst = new convox()
+// def templateInst = new template()
 pipeline {
   agent any
   options {
-    buildDiscarder(logRotator(numToKeepStr: '1'))
+    buildDiscarder(logRotator(numToKeepStr: '10'))
     disableConcurrentBuilds()
   }
   tools {
@@ -30,11 +45,18 @@ pipeline {
         }
       }
     }
-    stage('Staging') {
+    stage('Package') {
       when { branch 'master' }
       steps {
         sh "/usr/local/bin/sonar-scanner -Dsonar.projectVersion=${version}"
         sh "npm shrinkwrap"
+        script {
+          def tag = "${version}-${env.BUILD_NUMBER}-${shortCommitHash}"
+          def image = docker.build("${appName}:${tag}", '.')
+          docker.withRegistry(registry) {
+            image.push("${tag}")
+          }
+        }
       }
     }
   }
