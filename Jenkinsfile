@@ -3,9 +3,6 @@
 def appName = 'twig-api'
 def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
 def registry = "https://${registryBase}"
-def shortCommitHash
-def commitMessage
-def projectVersion
 
 // def ecrInst = new ecr()
 // def shellInst = new shell()
@@ -25,17 +22,6 @@ pipeline {
     pollSCM('* * * * *')
   }
   stages {
-    stage('Setup') {
-      steps {
-        script {
-          def gitInst = new git()
-          def npmInst = new npm()
-          shortCommitHash = gitInst.getShortCommit()
-          commitMessage = gitInst.getCommitMessage()
-          projectVersion = npmInst.getVersion()
-        }
-      }
-    }
     stage('Build')  {
       steps {
         sh "npm install"
@@ -60,6 +46,12 @@ pipeline {
         sh "/usr/local/bin/sonar-scanner -Dsonar.projectVersion=${version}"
         sh "npm shrinkwrap"
         script {
+          def gitInst = new git()
+          def npmInst = new npm()
+          def shortCommitHash = gitInst.getShortCommit()
+          def commitMessage = gitInst.getCommitMessage()
+          def projectVersion = npmInst.getVersion()
+
           def tag = "${projectVersion}-${env.BUILD_NUMBER}-${shortCommitHash}"
           def image = docker.build("${appName}:${tag}", '.')
           docker.withRegistry(registry) {
