@@ -22,7 +22,7 @@ pipeline {
       }
     }
     stage('Staging') {
-      when { branch 'master' }
+      when { branch 'jenkins-declarative-pipeline' }
       steps {
         sh "npm shrinkwrap"
       }

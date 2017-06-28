@@ -215,7 +215,7 @@ describe('config', () => {
       config.TENANT = '';
       // act
       // assert
-      expect(config.getTenantDatabaseString('foo')).to.contain('/foo');
+      expect(config.getTenantDatabaseString('foo')).to.contain('/blah');
     });
 
     it('prefixes tenant to dbName on populated tenant', () => {
