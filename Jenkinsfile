@@ -26,9 +26,11 @@ pipeline {
   }
   stages {
     stage('Setup') {
-      shortCommitHash = gitInst.getShortCommit()
-      commitMessage = gitInst.getCommitMessage()
-      projectVersion = npmInst.getVersion()
+      script {
+        shortCommitHash = gitInst.getShortCommit()
+        commitMessage = gitInst.getCommitMessage()
+        projectVersion = npmInst.getVersion()
+      }
     }
     stage('Build')  {
       steps {
