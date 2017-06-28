@@ -1,5 +1,5 @@
-@Library('github.com/buildit/jenkins-pipeline-libraries@master') _
-// @Library('buildit') _
+// @Library('github.com/buildit/jenkins-pipeline-libraries') _
+@Library('buildit') _
 def gitInst = new git()
 def npmInst = new npm()
 def appName = 'twig-api'
@@ -46,7 +46,7 @@ pipeline {
       }
     }
     stage('Package') {
-      when { branch 'master' }
+      when { branch 'jenkins-declarative-pipeline' }
       steps {
         sh "/usr/local/bin/sonar-scanner -Dsonar.projectVersion=${version}"
         sh "npm shrinkwrap"
