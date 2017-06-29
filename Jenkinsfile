@@ -4,12 +4,10 @@ def appName = 'twig-api'
 def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
 def registry = "https://${registryBase}"
 def projectVersion
+def tag
+def slackChannel = "twig"
 
-// def ecrInst = new ecr()
 // def shellInst = new shell()
-// def slackInst = new slack()
-// def convoxInst = new convox()
-// def templateInst = new template()
 pipeline {
   agent any
   options {
@@ -59,7 +57,7 @@ pipeline {
           def shortCommitHash = gitInst.getShortCommit()
           def commitMessage = gitInst.getCommitMessage()
 
-          def tag = "${projectVersion}-${env.BUILD_NUMBER}-${shortCommitHash}"
+          tag = "${projectVersion}-${env.BUILD_NUMBER}-${shortCommitHash}"
           def image = docker.build("${appName}:${tag}", '.')
 
           def ecrInst = new ecr()
@@ -69,6 +67,40 @@ pipeline {
           }
         }
       }
+    }
+    stage('Deploy') {
+      when { branch: 'master' }
+      steps {
+        script {
+          def convoxInst = new convox()
+          def templateInst = new template()
+
+          def tmpFile = UUID.randomUUID().toString() + ".tmp"
+          def ymlData = templateInst.transform(readFile("docker-compose.yml.template"),
+            [tag: tag, registryBase: registryBase, ad_ip_address: ad_ip_address])
+          writeFile(file: tmpFile, text: ymlData)
+
+          convoxInst.login("${env.CONVOX_RACKNAME}")
+          convoxInst.ensureApplicationCreated("${appName}-staging")
+          sh "convox deploy --app ${appName}-staging --description '${tag}' --file ${tmpFile} --wait"
+          // wait until the app is deployed
+          convoxInst.waitUntilDeployed("${appName}-staging")
+          convoxInst.ensureSecurityGroupSet("${appName}-staging", "")
+          convoxInst.ensureCertificateSet("${appName}-staging", "node", 443, "acm-b53eb2937b23")
+          convoxInst.ensureParameterSet("${appName}-staging", "Internal", "Yes")
+        }
+      }
+    }
+  }
+  post {
+    success {
+      slackInst.notify("Deployed to Staging", "Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' has been deployed to <${appUrl}|${appUrl}>\n\n${commitMessage}", "good", "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png", slackChannel)
+    }
+    failure {
+      slackInst.notify("Error while deploying to Staging", "Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed to deploy to <${appUrl}|${appUrl}>.", "danger", "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png", slackChannel)
+    }
+    unstable {
+      slackInst.notify("Error while deploying to Staging", "Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed to deploy to <${appUrl}|${appUrl}>.", "danger", "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png", slackChannel)
     }
   }
 }
