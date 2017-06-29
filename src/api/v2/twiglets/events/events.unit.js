@@ -281,7 +281,7 @@ describe('/v2/Twiglet::Events', () => {
     });
   });
 
-  describe('DELETE', () => {
+  describe('DELETE one event', () => {
     function req () {
       return {
         method: 'DELETE',
@@ -321,6 +321,50 @@ describe('/v2/Twiglet::Events', () => {
         sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
         sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
         sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
+        response = yield server.inject(req());
+      });
+
+      it('relays the error', () => {
+        expect(response.result.statusCode).to.equal(420);
+      });
+    });
+  });
+
+  describe('DELETE all events', () => {
+    function req () {
+      return {
+        method: 'DELETE',
+        url: '/v2/twiglets/Some%20Twiglet/events',
+        credentials: {
+          id: 123,
+          username: 'ben',
+          user: {
+            name: 'Ben Hernandez',
+          },
+        }
+      };
+    }
+
+    describe('success', () => {
+      let response;
+      beforeEach(function* foo () {
+        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
+        sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
+        sandbox.stub(PouchDb.prototype, 'remove').resolves({ });
+        response = yield server.inject(req());
+      });
+
+      it('responds with code 204', () => {
+        expect(response.statusCode).to.equal(204);
+      });
+    });
+
+    describe('errors', () => {
+      let response;
+      beforeEach(function* foo () {
+        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
+        sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
+        sandbox.stub(PouchDb.prototype, 'remove').rejects({ status: 420 });
         response = yield server.inject(req());
       });
 
