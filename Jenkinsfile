@@ -53,7 +53,7 @@ pipeline {
       }
     }
     stage('Package') {
-      when { branch 'jenkins-declarative-pipeline' }
+      when { branch 'master' }
       steps {
         sh "/usr/local/bin/sonar-scanner -Dsonar.projectVersion=${projectVersion}"
         sh "npm shrinkwrap"
@@ -74,7 +74,7 @@ pipeline {
       }
     }
     stage('Deploy') {
-      when { branch 'jenkins-declarative-pipeline' }
+      when { branch 'master' }
       steps {
         script {
           def convoxInst = new convox()
@@ -99,22 +99,22 @@ pipeline {
   }
   post {
     success {
-      slackNotify title: "Build Succeeded - Deployed to Staging",
-                  text: "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' has been deployed to <${appUrl}|${appUrl}>\n\n${commitMessage}",
+      slackNotify title: "Build Succeeded - Staging",
+                  text: "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' succeeded.\n\n${commitMessage}",
                   color: "good",
                   icon: "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
                   channel: slackChannel
     }
     failure {
-      slackNotify title: "Build Failed",
-                  text: "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed to deploy to <${appUrl}|${appUrl}>.",
+      slackNotify title: "Build Failed - Staging",
+                  text: "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
                   color: "danger",
                   icon: "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
                   channel: slackChannel
     }
     unstable {
-      slackNotify title: "Build Failed",
-                  text: "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed to deploy to <${appUrl}|${appUrl}>.",
+      slackNotify title: "Build Failed - Staging",
+                  text: "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
                   color: "danger",
                   icon: "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
                   channel: slackChannel
