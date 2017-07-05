@@ -27,6 +27,7 @@ pipeline {
   stages {
     stage('Setup') {
       steps {
+        sh "env"
         script {
           def npmInst = new npm()
           projectVersion = npmInst.getVersion()
