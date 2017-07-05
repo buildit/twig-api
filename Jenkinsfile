@@ -53,7 +53,7 @@ pipeline {
       }
     }
     stage('Package') {
-      when { branch 'jenkins-declarative-pipeline' }
+      when { branch 'master' }
       steps {
         sh "/usr/local/bin/sonar-scanner -Dsonar.projectVersion=${projectVersion}"
         sh "npm shrinkwrap"
@@ -63,12 +63,13 @@ pipeline {
           commitMessage = gitInst.getCommitMessage()
 
           tag = "${projectVersion}-${env.BUILD_NUMBER}-${shortCommitHash}"
+          def image = docker.build("${appName}:${tag}", '.')
 
           def ecrInst = new ecr()
           ecrInst.authenticate(env.AWS_REGION)
-        }
-        docker.withRegistry(registry) {
-          docker.build("${appName}:${tag}", '.').push(tag)
+          docker.withRegistry(registry) {
+            image.push("${tag}")
+          }
         }
       }
     }
@@ -99,7 +100,7 @@ pipeline {
   post {
     success {
       slackNotify title: "Build Succeeded - Staging",
-                  text: "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' on branch '<|>'succeeded.\n\n${commitMessage}",
+                  text: "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' on branch '<|>' succeeded.\n\n${commitMessage}",
                   color: "good",
                   icon: "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
                   channel: slackChannel
