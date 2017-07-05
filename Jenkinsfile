@@ -1,11 +1,15 @@
 // @Library('github.com/buildit/jenkins-pipeline-libraries') _
 @Library('buildit') _
 def appName = 'twig-api'
+def gitUrl = "https://github.com/buildit/twig-api"
 def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
 def registry = "https://${registryBase}"
 def projectVersion
 def tag
 def slackChannel = "twig"
+def ad_ip_address
+def shortCommitHash
+def commitMessage
 
 // def shellInst = new shell()
 pipeline {
@@ -26,6 +30,7 @@ pipeline {
         script {
           def npmInst = new npm()
           projectVersion = npmInst.getVersion()
+          ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
         }
       }
     }
@@ -54,8 +59,8 @@ pipeline {
         sh "npm shrinkwrap"
         script {
           def gitInst = new git()
-          def shortCommitHash = gitInst.getShortCommit()
-          def commitMessage = gitInst.getCommitMessage()
+          shortCommitHash = gitInst.getShortCommit()
+          commitMessage = gitInst.getCommitMessage()
 
           tag = "${projectVersion}-${env.BUILD_NUMBER}-${shortCommitHash}"
           def image = docker.build("${appName}:${tag}", '.')
