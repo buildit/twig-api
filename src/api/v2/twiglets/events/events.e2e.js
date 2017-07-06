@@ -183,4 +183,38 @@ describe('events', () => {
       });
     });
   });
+
+  describe('DELETE /twiglets/{twigletName}/events', () => {
+    describe('success', () => {
+      let res;
+      let twiglet;
+
+      beforeEach(function* foo () {
+        yield createModel(baseModel());
+        twiglet = (yield createTwiglet(baseTwiglet())).body;
+        yield createEvent(baseTwiglet().name, baseEvent());
+        console.info(twiglet.events_url);
+        res = yield hitUrl(twiglet.events_url, 'delete', true);
+      });
+
+      afterEach('Delete new twiglet', function* () {
+        yield deleteTwiglet(baseTwiglet());
+        yield deleteModel(baseModel());
+      });
+
+      it('returns 204', () => {
+        expect(res).to.have.status(204);
+      });
+
+      it('GET events returns empty array', function* () {
+        const events = (yield getEvents(baseTwiglet().name)).body;
+        expect(events.length).to.equal(0);
+      });
+
+      it('returns 204 when no events', function* () {
+        const secondResponse = yield hitUrl(twiglet.events_url, 'delete', true);
+        expect(secondResponse).to.have.status(204);
+      });
+    });
+  });
 });

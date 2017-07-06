@@ -209,6 +209,26 @@ const deleteEventHandler = (request, reply) => {
   });
 };
 
+const deleteAllEventsHandler = (request, reply) => {
+  let db;
+  let twigletId;
+  getTwigletInfoByName(request.params.twigletName)
+  .then(twigletInfo => {
+    twigletId = twigletInfo._id;
+    db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
+    return db.get('events');
+  })
+  .then(events => db.remove(events._id, events._rev))
+  .then(() => reply().code(204))
+  .catch(error => {
+    if (error.status === 404) {
+      return reply([]).code(204);
+    }
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
+  });
+};
+
 module.exports = {
   routes: [
     {
@@ -247,6 +267,14 @@ module.exports = {
       method: ['DELETE'],
       path: '/v2/twiglets/{twigletName}/events/{eventId}',
       handler: deleteEventHandler,
+      config: {
+        tags: ['api']
+      }
+    },
+    {
+      method: ['DELETE'],
+      path: '/v2/twiglets/{twigletName}/events',
+      handler: deleteAllEventsHandler,
       config: {
         tags: ['api']
       }
