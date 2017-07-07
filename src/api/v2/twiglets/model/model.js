@@ -5,6 +5,7 @@ const config = require('../../../../config');
 const logger = require('../../../../log')('MODEL');
 const Joi = require('joi');
 const R = require('ramda');
+const { addCommitMessage } = require('../changelog');
 
 function updateNode (oldNameMap) {
   return function map (node) {
@@ -33,7 +34,8 @@ const twigletModelBase = Joi.object({
   nameChanges: Joi.array(Joi.object({
     originalType: Joi.string(),
     currentType: Joi.string(),
-  }))
+  })),
+  commitMessage: Joi.string(),
 });
 
 const getTwigletInfoByName = (name) => {
@@ -110,6 +112,17 @@ const putModelHandler = (request, reply) => {
                   return updatedEvent;
                 });
                 return db.put(updatedEvents);
+              }
+              return undefined;
+            })
+            .then(() => {
+              if (request.payload.commitMessage) {
+                return addCommitMessage(
+                  twigletInfo._id,
+                  request.payload.commitMessage,
+                  request.auth.credentials.user.name,
+                  false
+                );
               }
               return undefined;
             })
