@@ -103,22 +103,24 @@ pipeline {
         }
       }
     }
-      parallel (
-        "Master" : {
-        stage('E2E Tests') {
-          when { branch 'master' }
-          steps {
-            echo 'master'
+    stage('E2E Tests') {
+      steps {
+        parallel (
+          "Master" : {
+            when { branch 'master' }
+            steps {
+              echo 'master'
+            }
+          },
+          "Pull Request" : {
+            when { branch '!master' }
+            steps {
+              echo 'pull request'
+            }
           }
-        }},
-        "Pull Request" : {
-        stage('E2E Tests') {
-          when { branch '!master' }
-          steps {
-            echo 'pull request'
-          }
-        }}
-      )
+        )
+      }
+    }
   }
   post {
     success {
