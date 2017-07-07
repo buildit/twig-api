@@ -28,6 +28,7 @@ pipeline {
     stage('Setup') {
       steps {
         sh "env"
+        // jobDsl targets: 'asdf'
         script {
           def npmInst = new npm()
           projectVersion = npmInst.getVersion()
@@ -53,24 +54,23 @@ pipeline {
         }
       }
     }
-    stage('Package') {
+    stage('Analysis') {
       when { branch 'master' }
       steps {
         sh "/usr/local/bin/sonar-scanner -Dsonar.projectVersion=${projectVersion}"
+      }
+    }
+    stage('Package') {
+      steps {
         sh "npm shrinkwrap"
         script {
           def gitInst = new git()
           shortCommitHash = gitInst.getShortCommit()
           commitMessage = gitInst.getCommitMessage()
 
-          tag = "${projectVersion}-${env.BUILD_NUMBER}-${shortCommitHash}"
+          tag = "${projectVersion}-${env.BRANCH_NAME}-${env.BUILD_NUMBER}-${shortCommitHash}"
           def image = docker.build("${appName}:${tag}", '.')
 
-          def ecrInst = new ecr()
-          ecrInst.authenticate(env.AWS_REGION)
-          docker.withRegistry(registry) {
-            image.push("${tag}")
-          }
         }
       }
     }
@@ -80,6 +80,12 @@ pipeline {
         script {
           def convoxInst = new convox()
           def templateInst = new template()
+          def ecrInst = new ecr()
+
+          ecrInst.authenticate(env.AWS_REGION)
+          docker.withRegistry(registry) {
+            image.push("${tag}")
+          }
 
           def tmpFile = UUID.randomUUID().toString() + ".tmp"
           def ymlData = templateInst.transform(readFile("docker-compose.yml.template"),
@@ -96,6 +102,22 @@ pipeline {
           convoxInst.ensureParameterSet("${appName}-staging", "Internal", "Yes")
         }
       }
+    }
+    stage('E2E Tests') {
+      parallel (
+        "Master" : {
+          when { branch 'master' }
+          steps {
+            echo 'master'
+          }
+        },
+        "Pull Request" : {
+          when { branch '!master' }
+          steps {
+            echo 'pull request'
+          }
+        }
+      )
     }
   }
   post {
