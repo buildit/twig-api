@@ -116,8 +116,10 @@ pipeline {
     }
     stage("Promote Build to latest") {
       when { branch 'master' }
-      docker.withRegistry(registry) {
-        image.push("latest")
+      steps {
+        withDockerRegistry(registry) {
+          image.push("latest")
+        }
       }
     }
   }
