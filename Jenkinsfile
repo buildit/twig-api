@@ -119,7 +119,6 @@ pipeline {
           }
         }}
       )
-    }
   }
   post {
     success {
