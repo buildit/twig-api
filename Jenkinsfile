@@ -103,20 +103,21 @@ pipeline {
         }
       }
     }
-    stage('E2E Tests') {
       parallel (
         "Master" : {
+        stage('E2E Tests') {
           when { branch 'master' }
           steps {
             echo 'master'
           }
-        },
+        }},
         "Pull Request" : {
+        stage('E2E Tests') {
           when { branch '!master' }
           steps {
             echo 'pull request'
           }
-        }
+        }}
       )
     }
   }
