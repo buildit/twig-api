@@ -10,6 +10,7 @@ def slackChannel = "twig"
 def ad_ip_address
 def shortCommitHash
 def commitMessage
+def image
 
 // def shellInst = new shell()
 pipeline {
@@ -69,8 +70,7 @@ pipeline {
           commitMessage = gitInst.getCommitMessage()
 
           tag = "${projectVersion}-${env.BRANCH_NAME}-${env.BUILD_NUMBER}-${shortCommitHash}"
-          def image = docker.build("${appName}:${tag}", '.')
-
+          image = docker.build("${appName}:${tag}", '.')
         }
       }
     }
@@ -104,21 +104,20 @@ pipeline {
       }
     }
     stage('E2E Tests') {
+      when { branch 'master' }
       steps {
-        parallel (
-          "Master" : {
-            when { branch 'master' }
-            steps {
-              echo 'master'
-            }
-          },
-          "Pull Request" : {
-            when { branch '!master' }
-            steps {
-              echo 'pull request'
-            }
-          }
-        )
+        sh "URL=${appUrl} npm run test:e2e:ci"
+      }
+      post {
+        always {
+          junit 'reports/e2e-test-results.xml'
+        }
+      }
+    }
+    stage("Promote Build to latest") {
+      when { branch 'master' }
+      docker.withRegistry(registry) {
+        image.push("latest")
       }
     }
   }
