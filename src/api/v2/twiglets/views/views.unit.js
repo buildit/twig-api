@@ -22,7 +22,6 @@ function getViewResults () {
         userState: {
           autoConnectivity: 'in',
           autoScale: 'linear',
-          bidirectionalLinks: true,
           cascadingCollapse: true,
           currentNode: null,
           filters: [{
@@ -184,7 +183,6 @@ describe('/v2/Twiglet::Views', () => {
           userState: {
             autoConnectivity: 'in',
             autoScale: 'linear',
-            bidirectionalLinks: true,
             cascadingCollapse: true,
             currentNode: null,
             filters: [{
@@ -283,7 +281,6 @@ describe('/v2/Twiglet::Views', () => {
           userState: {
             autoConnectivity: 'in',
             autoScale: 'linear',
-            bidirectionalLinks: true,
             cascadingCollapse: true,
             currentNode: null,
             filters: [{

@@ -77,7 +77,6 @@ const jsonTwigletRequest = Joi.object({
     userState: Joi.object({
       autoConnectivity: Joi.string().required(),
       autoScale: Joi.string().required(),
-      bidirectionalLinks: Joi.boolean().required(),
       cascadingCollapse: Joi.boolean().required(),
       currentNode: [Joi.string().required().allow(''), Joi.string().required().allow(null)],
       filters: Joi.object().required(),

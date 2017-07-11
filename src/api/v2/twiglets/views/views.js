@@ -15,7 +15,7 @@ const userStateResponse = Joi.object({
   autoConnectivity: Joi.string().required(),
   autoScale: Joi.string().required(),
   alphaTarget: Joi.number().optional(),
-  bidirectionalLinks: Joi.boolean().required(),
+  bidirectionalLinks: Joi.boolean().optional(),
   cascadingCollapse: Joi.boolean().required(),
   currentNode: [Joi.string().required().allow(''), Joi.string().required().allow(null)],
   filters: Joi.array().required(),

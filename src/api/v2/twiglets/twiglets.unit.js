@@ -87,7 +87,6 @@ function twigletDocs (keys) {
             userState: {
               autoConnectivity: 'in',
               autoScale: 'linear',
-              bidirectionalLinks: true,
               cascadingCollapse: true,
               currentNode: null,
               filters: {
@@ -520,7 +519,6 @@ describe('/v2/twiglets', () => {
             userState: {
               autoConnectivity: 'some string',
               autoScale: 'some string',
-              bidirectionalLinks: true,
               cascadingCollapse: true,
               currentNode: 'some string',
               filters: { a: 'filter' },
