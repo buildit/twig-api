@@ -127,7 +127,7 @@ pipeline {
   post {
     success {
       script {
-        slackInst = new slack()
+        def slackInst = new slack()
         slackInst.notify(
           title: "Build Succeeded - Staging",
           text: "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' succeeded.\n\n${commitMessage}",
@@ -139,7 +139,7 @@ pipeline {
     }
     failure {
       script {
-        slackInst = new slack()
+        def slackInst = new slack()
         slackInst.notify(
           title: "Build Failed - Staging",
           text: "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
@@ -151,7 +151,7 @@ pipeline {
     }
     unstable {
       script {
-        slackInst = new slack()
+        def slackInst = new slack()
         slackInst.notify(
           title: "Build Failed - Staging",
           text: "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
