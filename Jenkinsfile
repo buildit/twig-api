@@ -105,7 +105,7 @@ pipeline {
     stage('E2E Tests') {
       when { branch 'master' }
       steps {
-        sh "URL=${appUrl} npm run test:e2e:ci"
+        sh "URL=https://staging-twig-api.buildit.tools npm run test:e2e:ci"
       }
       post {
         always {
