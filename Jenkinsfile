@@ -28,7 +28,6 @@ pipeline {
   stages {
     stage('Setup') {
       steps {
-        sh "env"
         // jobDsl targets: 'asdf'
         script {
           def npmInst = new npm()
@@ -128,6 +127,7 @@ pipeline {
   post {
     success {
       echo 'success - here i am'
+      andyEcho 'Andy'
       slackNotify title: "Build Succeeded - Staging",
                   text: "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' succeeded.\n\n${commitMessage}",
                   color: "good",
