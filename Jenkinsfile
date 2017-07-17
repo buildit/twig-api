@@ -126,25 +126,40 @@ pipeline {
   }
   post {
     success {
-      slackNotify title: "Build Succeeded - Staging",
-                  text: "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' succeeded.\n\n${commitMessage}",
-                  color: "good",
-                  icon: "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
-                  channel: slackChannel
+      script {
+        slackInst = new slack()
+        slackInst.notify(
+          title: "Build Succeeded - Staging",
+          text: "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' succeeded.\n\n${commitMessage}",
+          color: "good",
+          icon: "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
+          channel: slackChannel
+        )
+      }
     }
     failure {
-      slackNotify title: "Build Failed - Staging",
-                  text: "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
-                  color: "danger",
-                  icon: "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
-                  channel: slackChannel
+      script {
+        slackInst = new slack()
+        slackInst.notify(
+          title: "Build Failed - Staging",
+          text: "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
+          color: "danger",
+          icon: "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
+          channel: slackChannel
+        )
+      }
     }
     unstable {
-      slackNotify title: "Build Failed - Staging",
-                  text: "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
-                  color: "danger",
-                  icon: "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
-                  channel: slackChannel
+      script {
+        slackInst = new slack()
+        slackInst.notify(
+          title: "Build Failed - Staging",
+          text: "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
+          color: "danger",
+          icon: "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
+          channel: slackChannel
+        )
+      }
     }
   }
 }
