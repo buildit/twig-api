@@ -27,7 +27,9 @@ pipeline {
   stages {
     stage('Setup') {
       steps {
-        // jobDsl targets: 'asdf'
+        jobDsl targets: ['jenkinsJobs/twig-backup-dsl.groovy'].join('\n'),
+               removedJobAction: 'DISABLE',
+               lookupStrategy: 'SEED_JOB'
         script {
           def npmInst = new npm()
           projectVersion = npmInst.getVersion()
