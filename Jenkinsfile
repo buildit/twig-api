@@ -28,7 +28,7 @@ pipeline {
     stage('Bootstrap Additional Jobs') {
       when { branch: 'master' }
       steps {
-        jobDsl targets: 'jenkinsJobs.groovy'],
+        jobDsl targets: 'jenkinsJobs.groovy',
                removedJobAction: 'DELETE'
       }
     }
