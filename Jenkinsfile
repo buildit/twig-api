@@ -17,7 +17,6 @@ pipeline {
     buildDiscarder(logRotator(numToKeepStr: '10'))
     disableConcurrentBuilds()
     skipStagesAfterUnstable()
-    timestamps()
   }
   tools {
     nodejs 'lts/boron'

@@ -5,7 +5,6 @@ pipeline {
     buildDiscarder(logRotator(numToKeepStr: '10'))
     disableConcurrentBuilds()
     skipStagesAfterUnstable()
-    timestamps()
   }
   triggers {
     cron('0 2 * * *')
