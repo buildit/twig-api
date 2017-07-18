@@ -1,4 +1,3 @@
-// @Library('github.com/buildit/jenkins-pipeline-libraries') _
 @Library('buildit') _
 def appName = 'twig-api'
 def gitUrl = "https://github.com/buildit/twig-api"
@@ -12,12 +11,12 @@ def shortCommitHash
 def commitMessage
 def image
 
-// def shellInst = new shell()
 pipeline {
   agent any
   options {
     buildDiscarder(logRotator(numToKeepStr: '10'))
     disableConcurrentBuilds()
+    skipStagesAfterUnstable()
   }
   tools {
     nodejs 'lts/boron'
@@ -28,7 +27,8 @@ pipeline {
   stages {
     stage('Setup') {
       steps {
-        // jobDsl targets: 'asdf'
+        jobDsl targets: ['jenkinsJobs/twigBackupDsl.groovy'].join('\n'),
+               removedJobAction: 'DISABLE'
         script {
           def npmInst = new npm()
           projectVersion = npmInst.getVersion()
