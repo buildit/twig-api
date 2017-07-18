@@ -109,16 +109,21 @@ pipeline {
       }
       post {
         success {
-          script {
-            def slackInst = new slack()
-            slackInst.notify(
-              "Deployed to Staging",
-              "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' has been deployed to <${appUrl}|${appUrl}>",
-              "good",
-              "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
-              slackChannel
-            )
-          }
+          // script {
+          //   def slackInst = new slack()
+          //   slackInst.notify(
+          //     "Deployed to Staging",
+          //     "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' has been deployed to <${appUrl}|${appUrl}>",
+          //     "good",
+          //     "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
+          //     slackChannel
+          //   )
+          // }
+          slackNotify("Build Succeeded - Staging",
+                  "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' succeeded.\n\n${commitMessage}",
+                  "good",
+                  "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
+                  slackChannel)
         }
       }
     }
