@@ -1,5 +1,6 @@
 @Library('buildit') _
 def appName = 'twig-api'
+def appUrl = "https://twig-api.buildit.tools"
 def gitUrl = "https://github.com/buildit/twig-api"
 def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
 def registry = "https://${registryBase}"
@@ -104,6 +105,20 @@ pipeline {
           convoxInst.ensureSecurityGroupSet("${appName}-staging", "")
           convoxInst.ensureCertificateSet("${appName}-staging", "node", 443, "acm-b53eb2937b23")
           convoxInst.ensureParameterSet("${appName}-staging", "Internal", "Yes")
+        }
+      }
+      post {
+        success {
+          script {
+            def slackInst = new slack()
+            slackInst.notify(
+              "Deployed to Staging",
+              "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' has been deployed to <${appUrl}|${appUrl}>",
+              "good",
+              "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
+              slackChannel
+            )
+          }
         }
       }
     }
