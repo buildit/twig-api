@@ -8,8 +8,7 @@ pipelineJob('twig-backup-andytest') {
                 github('buildit/twig-api')
                 credentials('github-jenkins-buildit')
             }
-            branch('master')
-
+            branch('test-branching')
         }
       }
       scriptPath('pipelines/twig-backup.groovy')
