@@ -4,9 +4,9 @@ def appUrl = "https://staging-twig-api.buildit.tools"
 def gitUrl = "https://github.com/buildit/twig-api"
 def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
 def registry = "https://${registryBase}"
+def slackChannel = "twig"
 def projectVersion
 def tag
-def slackChannel = "twig"
 def ad_ip_address
 def shortCommitHash
 def commitMessage
