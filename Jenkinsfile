@@ -1,6 +1,6 @@
 @Library('buildit') _
 def appName = 'twig-api'
-def appUrl = "https://twig-api.buildit.tools"
+def appUrl = "https://staging-twig-api.buildit.tools"
 def gitUrl = "https://github.com/buildit/twig-api"
 def registryBase = "006393696278.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
 def registry = "https://${registryBase}"
