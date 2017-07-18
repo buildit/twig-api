@@ -29,8 +29,7 @@ pipeline {
       steps {
         jobDsl targets: ['jenkinsJobs/twigBackupDsl.groovy'].join('\n'),
                removedJobAction: 'DISABLE',
-               lookupStrategy: 'SEED_JOB',
-               sandbox: true
+               lookupStrategy: 'SEED_JOB'
         script {
           def npmInst = new npm()
           projectVersion = npmInst.getVersion()
