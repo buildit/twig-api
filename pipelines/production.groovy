@@ -40,8 +40,7 @@ pipeline {
   post {
     success {
       script {
-        def slackInst = new slack()
-        slackInst.notify(
+        slackNotify(
           "Deployed to Production",
           "(<${env.BUILD_URL}|Job>) Tagged Docker Image '${tag}' has been deployed to <${appUrl}|${appUrl}>",
           "good",
@@ -52,8 +51,7 @@ pipeline {
     }
     failure {
       script {
-        def slackInst = new slack()
-        slackInst.notify(
+        slackNotify(
           "Failed to deploy to Production",
           "(<${env.BUILD_URL}|Failed Job>)",
           "danger",
@@ -64,8 +62,7 @@ pipeline {
     }
     unstable {
       script {
-        def slackInst = new slack()
-        slackInst.notify(
+        slackNotify(
           "Failed to deploy to Production",
           "(<${env.BUILD_URL}|Failed Job>)",
           "danger",

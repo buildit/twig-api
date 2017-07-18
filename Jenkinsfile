@@ -109,11 +109,13 @@ pipeline {
       }
       post {
         success {
-          slackNotify("Deployed to Staging",
-                  "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' has been deployed to <${appUrl}|${appUrl}>",
-                  "good",
-                  "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
-                  slackChannel)
+          slackNotify(
+            "Deployed to Staging",
+            "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' has been deployed to <${appUrl}|${appUrl}>",
+            "good",
+            "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
+            slackChannel
+          )
         }
       }
     }
@@ -142,8 +144,7 @@ pipeline {
   post {
     success {
       script {
-        def slackInst = new slack()
-        slackInst.notify(
+        slackNotify(
           "Build Succeeded - Staging - Branch: ${env.BRANCH_NAME}",
           "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' succeeded.\n\n${commitMessage}",
           "good",
@@ -154,8 +155,7 @@ pipeline {
     }
     failure {
       script {
-        def slackInst = new slack()
-        slackInst.notify(
+        slackNotify(
           "Build Failed - Staging - Branch: ${env.BRANCH_NAME}",
           "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
           "danger",
@@ -166,8 +166,7 @@ pipeline {
     }
     unstable {
       script {
-        def slackInst = new slack()
-        slackInst.notify(
+        slackNotify(
           "Build Failed - Staging - Branch: ${env.BRANCH_NAME}",
           "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
           "danger",

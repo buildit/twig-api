@@ -16,8 +16,7 @@ pipeline {
   post {
     failure {
       script {
-        def slackInst = new slack()
-        slackInst.notify(
+        slackNotify(
           "Twig CouchDB Backup Failed",
           "${env.BUILD_URL}",
           "danger",
@@ -28,8 +27,7 @@ pipeline {
     }
     unstable {
       script {
-        def slackInst = new slack()
-        slackInst.notify(
+        slackNotify(
           "Twig CouchDB Backup Failed",
           "${env.BUILD_URL}",
           "danger",
