@@ -2,12 +2,7 @@
 pipeline {
   agent any
   options {
-    buildDiscarder(logRotator(numToKeepStr: '10'))
-    disableConcurrentBuilds()
     skipStagesAfterUnstable()
-  }
-  triggers {
-    cron('0 2 * * *')
   }
   stages {
     stage('Backup Twig') {
