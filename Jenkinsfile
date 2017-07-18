@@ -25,10 +25,15 @@ pipeline {
     pollSCM('* * * * *')
   }
   stages {
+    stage('Bootstrap Additional Jobs') {
+      when { branch: 'master' }
+      steps {
+        jobDsl targets: 'jenkinsJobs.groovy'],
+               removedJobAction: 'DELETE'
+      }
+    }
     stage('Setup') {
       steps {
-        jobDsl targets: ['jenkinsJobs/twigBackupDsl.groovy'].join('\n'),
-               removedJobAction: 'DISABLE'
         script {
           def npmInst = new npm()
           projectVersion = npmInst.getVersion()
