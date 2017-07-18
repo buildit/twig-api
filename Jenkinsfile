@@ -1,4 +1,3 @@
-// @Library('github.com/buildit/jenkins-pipeline-libraries') _
 @Library('buildit') _
 def appName = 'twig-api'
 def gitUrl = "https://github.com/buildit/twig-api"
@@ -12,12 +11,13 @@ def shortCommitHash
 def commitMessage
 def image
 
-// def shellInst = new shell()
 pipeline {
   agent any
   options {
     buildDiscarder(logRotator(numToKeepStr: '10'))
     disableConcurrentBuilds()
+    skipStagesAfterUnstable()
+    timestamps()
   }
   tools {
     nodejs 'lts/boron'
