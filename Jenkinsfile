@@ -1,3 +1,4 @@
+def password
 pipeline {
   agent any
   options {
@@ -11,7 +12,14 @@ pipeline {
         JENKINS_GITHUB = credentials('github-jenkins-buildit')
       }
       steps {
-        sh "echo ${JENKINS_GITHUB}"
+        script {
+          password = env.JENKINS_GITHUB
+        }
+      }
+    }
+    stage ('real') {
+      steps {
+        echo password
       }
     }
   }
