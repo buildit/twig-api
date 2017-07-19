@@ -4,7 +4,9 @@ FROM node:6
 WORKDIR /usr/src/app
 
 # Install app dependencies
-COPY node_modules/ /usr/src/app/node_modules/
+COPY package.json /usr/src/app/
+COPY npm-shrinkwrap.json /usr/src/app/
+RUN npm install --production
 
 # Bundle app source
 COPY src/ /usr/src/app/src/
