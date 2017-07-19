@@ -107,17 +107,6 @@ pipeline {
           convoxInst.ensureParameterSet("${appName}-staging", "Internal", "Yes")
         }
       }
-      post {
-        success {
-          slackNotify(
-            "Deployed to Staging",
-            "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' has been deployed to <${appUrl}|${appUrl}>",
-            "good",
-            "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
-            slackChannel
-          )
-        }
-      }
     }
     stage('E2E Tests') {
       when { branch 'master' }
@@ -146,7 +135,7 @@ pipeline {
       script {
         slackNotify(
           "Build Succeeded - Staging - Branch: ${env.BRANCH_NAME}",
-          "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' succeeded.\n\n${commitMessage}",
+          "(<${env.BUILD_URL}|Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' ${ env.BRANCH_NAME == 'master' ? 'deployed to <'+appUrl+'|'+appUrl+'>' : 'succeeded'}.\n\n${commitMessage}",
           "good",
           "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
           slackChannel
