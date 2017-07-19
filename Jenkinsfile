@@ -68,7 +68,7 @@ pipeline {
     }
     stage('Package') {
       steps {
-        sh "npm shrinkwrap"
+        sh "npm prune --production"
         script {
           def gitInst = new git()
           shortCommitHash = gitInst.getShortCommit()
