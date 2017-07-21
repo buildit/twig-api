@@ -35,7 +35,7 @@ server.connection({
         'https://*.buildit.tools',
         '*://*.riglet',
         '*://*.kube.local:*',
-        'http://twig-ui-redesign-user-testing.s3-website-us-west-2.amazonaws.com/twiglet',
+        'http://twig-ui-redesign-user-testing.s3-website-us-west-2.amazonaws.com'
       ],
       credentials: true,
     },
