@@ -83,8 +83,8 @@ describe('/v2/Twiglet::Views', () => {
         expect(response.statusCode).to.equal(200);
       });
 
-      it('only returns 2 keys', () => {
-        expect(Reflect.ownKeys(response.result[0]).length).to.equal(2);
+      it('only returns 3 keys', () => {
+        expect(Reflect.ownKeys(response.result[0]).length).to.equal(3);
       });
 
       it('returns the url', () => {

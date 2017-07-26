@@ -7,6 +7,7 @@ const logger = require('../../../../log')('VIEWS');
 const Changelog = require('../changelog');
 
 const getViewsResponse = Joi.array().items(Joi.object({
+  description: Joi.string().allow(''),
   name: Joi.string().required(),
   url: Joi.string().uri().required()
 }));
@@ -102,6 +103,7 @@ const getViewsHandler = (request, reply) => {
     const views = viewsRaw.data
     .map(item =>
       ({
+        description: item.description,
         name: item.name,
         url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/views/${item.name}`)
       })
