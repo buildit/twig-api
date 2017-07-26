@@ -17,6 +17,8 @@ pipeline {
     stage("Deploy to production") {
       steps {
         script {
+          def templateInst = new template()
+          def convoxInst = new convox()
           def ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
           def tmpFile = UUID.randomUUID().toString() + ".tmp"
           def ymlData = templateInst.transform(readFile("docker-compose.yml.template")
