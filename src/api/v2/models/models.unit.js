@@ -4,9 +4,9 @@ const chai = require('chai');
 chai.use(require('chai-string'));
 const sinon = require('sinon');
 require('sinon-as-promised');
-const PouchDb = require('pouchdb');
 const Models = require('./models');
 const server = require('../../../../test/unit/test-server');
+const dao = require('../DAO');
 
 const expect = chai.expect;
 server.route(Models.routes);
@@ -15,34 +15,30 @@ function stubModel () {
   return {
     _id: 'testModel',
     _rev: '12345',
-    doc: {
-      _id: 'testModel',
-      _rev: '12345',
-      data: {
-        name: 'testModel1',
-        entities: {
-          ent1: {
-            class: 'ent1',
-            color: '#008800',
-            image: '1',
-            size: '40',
-            type: 'type 1',
-          },
-          ent2: {
-            class: 'ent2',
-            color: '#880000',
-            image: '2',
-            size: 25,
-            type: 'type 2',
-          }
+    data: {
+      name: 'testModel1',
+      entities: {
+        ent1: {
+          class: 'ent1',
+          color: '#008800',
+          image: '1',
+          size: '40',
+          type: 'type 1',
         },
-        changelog: [{
-          message: 'Model Created',
-          user: 'test.user@corp.riglet.io',
-          timestamp: new Date().toISOString(),
-        }],
+        ent2: {
+          class: 'ent2',
+          color: '#880000',
+          image: '2',
+          size: 25,
+          type: 'type 2',
+        }
       },
-    }
+      changelog: [{
+        message: 'Model Created',
+        user: 'test.user@corp.riglet.io',
+        timestamp: new Date().toISOString(),
+      }],
+    },
   };
 }
 
@@ -95,23 +91,15 @@ describe('/v2/models/', () => {
       let res;
 
       beforeEach(function* foo () {
-        const getModelsStub = sandbox.stub(PouchDb.prototype, 'allDocs');
-        getModelsStub.onFirstCall().resolves({ rows: [] });
-        getModelsStub.onSecondCall().resolves({
-          rows: [
-            {
-              doc: {
-                _rev: 'some rev',
-                _id: req().payload._id,
-                data: {
-                  entities: req().payload.entities,
-                  name: 'model1',
-                },
-              }
-            }
-          ]
+        sandbox.stub(dao.models, 'create').resolves();
+        sandbox.stub(dao.models, 'getOne').resolves({
+          _rev: 'some rev',
+          _id: req().payload._id,
+          data: {
+            entities: req().payload.entities,
+            name: 'model1',
+          },
         });
-        sandbox.stub(PouchDb.prototype, 'post').resolves();
         res = yield server.inject(req());
       });
 
@@ -137,45 +125,25 @@ describe('/v2/models/', () => {
     });
 
     describe('errors', () => {
-      it('returns a conflict error if the model already exists', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({
-          rows: [
-            {
-              doc: {
-                data: {
-                  name: 'model1',
-                },
-              }
-            }
-          ]
-        });
+      it('returns an errors passed on', function* foo () {
+        const error = new Error('conflict');
+        error.status = 409;
+        sandbox.stub(dao.models, 'create').rejects(error);
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(409);
       });
 
       it('passes database errors on to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419, message: 'teapots' });
+        const error = new Error('teapots');
+        error.status = 419;
+        sandbox.stub(dao.models, 'create').rejects(error);
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(419);
-        expect(res.result.message).to.equal('teapots');
       });
 
       it('unknown errors are passed as 500', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ message: 'not teapots' });
-        const res = yield server.inject(req());
-        expect(res.statusCode).to.equal(500);
-      });
-
-      it('passes on put errors to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
-        sandbox.stub(PouchDb.prototype, 'post').rejects({ status: 419, message: 'teapots' });
-        const res = yield server.inject(req());
-        expect(res.statusCode).to.equal(419);
-      });
-
-      it('handles passes on put errors to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
-        sandbox.stub(PouchDb.prototype, 'post').rejects({ message: 'not teapots' });
+        const error = new Error('some error');
+        sandbox.stub(dao.models, 'create').rejects(error);
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(500);
       });
@@ -193,68 +161,57 @@ describe('/v2/models/', () => {
       let res;
 
       function stubModels () {
-        return {
-          total_rows: 3,
-          offset: 0,
-          rows:
-          [
-            {
-              id: 'testModel',
-              key: 'testModel',
-              value: { rev: '12345' },
-              doc: {
-                data: {
-                  name: 'testModel1',
-                  entities: {
-                    ent1: {
-                      class: 'ent1',
-                      color: '#008800',
-                      image: '1',
-                      size: '40',
-                      type: 'type 1',
-                    },
-                    ent2: {
-                      class: 'ent2',
-                      color: '#880000',
-                      image: '2',
-                      size: 25,
-                      type: 'type 2',
-                    }
-                  }
-                }
-              }
-            },
-            {
-              id: 'buildit',
-              key: 'buildit',
-              value: { rev: '67890' },
-              doc: {
-                data: {
-                  name: 'testModel1',
-                  entities: {
-                    ent3: {
-                      class: 'ent3',
-                      color: '#000088',
-                      image: '3',
-                      size: 100,
-                      type: 'type 3',
-                    },
-                    ent4: {
-                      class: 'ent4',
-                      color: '#008888',
-                      image: '4',
-                      size: '15',
-                      type: 'type 4',
-                    },
-                  }
+        return [
+          {
+            _id: 'testModel',
+            _key: 'testModel',
+            data: {
+              name: 'testModel1',
+              entities: {
+                ent1: {
+                  class: 'ent1',
+                  color: '#008800',
+                  image: '1',
+                  size: '40',
+                  type: 'type 1',
+                },
+                ent2: {
+                  class: 'ent2',
+                  color: '#880000',
+                  image: '2',
+                  size: 25,
+                  type: 'type 2',
                 }
               }
             }
-          ]
-        };
+          },
+          {
+            _id: 'buildit',
+            _key: 'buildit',
+            data: {
+              name: 'testModel1',
+              entities: {
+                ent3: {
+                  class: 'ent3',
+                  color: '#000088',
+                  image: '3',
+                  size: 100,
+                  type: 'type 3',
+                },
+                ent4: {
+                  class: 'ent4',
+                  color: '#008888',
+                  image: '4',
+                  size: '15',
+                  type: 'type 4',
+                },
+              }
+            }
+          }
+        ];
       }
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves(stubModels());
+        sandbox.stub(dao.models, 'getAll').resolves(stubModels());
         res = yield server.inject(req());
       });
 
@@ -281,13 +238,13 @@ describe('/v2/models/', () => {
 
     describe('errors', () => {
       it('passes on errors to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ status: 418 });
+        sandbox.stub(dao.models, 'getAll').rejects({ status: 418 });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(418);
       });
 
       it('handles unknown errors by passing 500', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ message: 'some message' });
+        sandbox.stub(dao.models, 'getAll').rejects(new Error('some error'));
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(500);
       });
@@ -343,29 +300,23 @@ describe('/models/{name}', () => {
 
     describe('success', () => {
       let res;
-      let put;
+      let update;
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({
-          rows: [
-            {
-              doc: {
-                _rev: '12345',
-                _id: req().payload._id,
-                data: {
-                  entities: req().payload.entities,
-                  name: 'testModel1',
-                  changelog: [],
-                },
-              }
-            }
-          ]
+        update = sandbox.stub(dao.models, 'update').resolves();
+        sandbox.stub(dao.models, 'getOne').resolves({
+          _rev: '12345',
+          _id: req().payload._id,
+          data: {
+            entities: req().payload.entities,
+            name: 'testModel1',
+            changelog: [],
+          }
         });
-        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
         res = yield server.inject(req());
       });
 
-      it('calls put', () => {
-        expect(put.callCount).to.equal(1);
+      it('calls update', () => {
+        expect(update.callCount).to.equal(1);
       });
 
       it('returns OK', () => {
@@ -382,27 +333,19 @@ describe('/models/{name}', () => {
     });
 
     describe('errors', () => {
-      it('errors if the model cannot be found', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
+      it('passes back errors', function* foo () {
+        const dbError = new Error('conflict');
+        dbError.status = 409;
+        sandbox.stub(dao.models, 'update').rejects(dbError);
         const res = yield server.inject(req());
-        expect(res.statusCode).to.equal(404);
-      });
-
-      it('errors if _rev does not match and sends back _rev for overwrite', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
-        const badRev = req();
-        badRev.payload._rev = 'wrong!';
-        const res = yield server.inject(badRev);
         expect(res.statusCode).to.equal(409);
-        expect(res.result.data._rev).to.equal('12345');
       });
 
-      it('passes database error codes on to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
-        sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 419, message: 'teapots' });
+      it('passes back 500 errors for unknown codes', function* foo () {
+        const dbError = new Error('some error');
+        sandbox.stub(dao.models, 'update').rejects(dbError);
         const res = yield server.inject(req());
-        expect(res.statusCode).to.equal(419);
-        expect(res.result.message).to.equal('teapots');
+        expect(res.statusCode).to.equal(500);
       });
     });
   });
@@ -425,8 +368,7 @@ describe('/models/{name}', () => {
     describe('success', () => {
       let res;
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
-        sandbox.stub(PouchDb.prototype, 'remove').resolves();
+        sandbox.stub(dao.models, 'delete').resolves();
         res = yield server.inject(req());
       });
 
@@ -436,25 +378,16 @@ describe('/models/{name}', () => {
     });
 
     describe('errors', () => {
-      it('responds with 404 if the model cannot be found', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
-        sandbox.stub(PouchDb.prototype, 'remove').resolves();
-        const res = yield server.inject(req());
-        expect(res.statusCode).to.equal(404);
-        expect(res.result.message).to.equal('Not Found');
-      });
-
-      it('responds with an error if it cannot delete the model', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
-        sandbox.stub(PouchDb.prototype, 'remove').rejects({ status: 409, message: 'Conflict!' });
+      it('passes pouchdb errors on to the client', function* foo () {
+        const dbError = new Error('conflict');
+        dbError.status = 409;
+        sandbox.stub(dao.models, 'delete').rejects(dbError);
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(409);
-        expect(res.result.message).to.equal('Conflict!');
       });
 
       it('unknown errors come through as 500', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
-        sandbox.stub(PouchDb.prototype, 'remove').rejects({ message: 'some error' });
+        sandbox.stub(dao.models, 'delete').rejects(new Error('some error'));
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(500);
       });
@@ -472,7 +405,7 @@ describe('/models/{name}', () => {
       let res;
 
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
+        sandbox.stub(dao.models, 'getOne').resolves(stubModel());
         res = yield server.inject(req());
       });
 
@@ -487,13 +420,15 @@ describe('/models/{name}', () => {
 
     describe('errors', () => {
       it('passes on errors to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419 });
+        const dbError = new Error('conflict');
+        dbError.status = 409;
+        sandbox.stub(dao.models, 'getOne').rejects(dbError);
         const res = yield server.inject(req());
-        expect(res.statusCode).to.equal(419);
+        expect(res.statusCode).to.equal(409);
       });
 
       it('handles unknown errors by passing 500', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ message: 'some message' });
+        sandbox.stub(dao.models, 'getOne').rejects(new Error('some message'));
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(500);
       });

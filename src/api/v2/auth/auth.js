@@ -137,7 +137,7 @@ const validateJwt = (request, reply) => {
       });
     })
   .catch((err) => {
-    console.log(err);
+    logger.error(err);
     reply(Boom.unauthorized('Authentication failed'));
   });
 };
