@@ -45,14 +45,16 @@ describe('/v2/Twiglet::Models', () => {
                 color: '#1f77b4',
                 size: '50',
                 class: 'amazon',
-                image: ''
+                image: '',
+                attributes: [{ name: 'name1', dataType: 'string', required: true }],
               },
               client: {
                 type: 'client',
                 color: '#aec7e8',
                 size: '40',
                 class: 'building',
-                image: ''
+                image: '',
+                attributes: [],
               },
             }
           }
@@ -78,6 +80,51 @@ describe('/v2/Twiglet::Models', () => {
 
       it('returns the entities', () => {
         expect(response.result.entities).to.deep.equal(getModelResults().data.entities);
+      });
+    });
+
+    describe('twiglet uses old model style', () => {
+      let result;
+      function getModelResults () {
+        return {
+          _rev: 'some revision number',
+          data: {
+            entities: {
+              organisation: {
+                color: '#1f77b4',
+                size: '50',
+                class: 'amazon',
+                image: '',
+              },
+              client: {
+                type: 'client',
+                color: '#aec7e8',
+                size: '40',
+                class: 'building',
+                image: '',
+                attributes: [{ name: 'name1', dataType: 'string', required: true }]
+              },
+            }
+          }
+        };
+      }
+
+      beforeEach(function* foo () {
+        sandbox.stub(PouchDb.prototype, 'get').resolves(getModelResults());
+        result = (yield server.inject(req())).result;
+      });
+
+      it('adds a type if it does not exist', () => {
+        expect(result.entities.organisation.type).to.equal('organisation');
+      });
+
+      it('adds attributes with an empty array if it does not exist', () => {
+        expect(result.entities.organisation.attributes).to.deep.equal([]);
+      });
+
+      it('does not overwrite existing attributes', () => {
+        expect(result.entities.client.attributes).to.deep
+          .equal([{ name: 'name1', dataType: 'string', required: true }]);
       });
     });
 

@@ -67,7 +67,7 @@ const jsonTwigletRequest = Joi.object({
         name: Joi.string().required(),
         dataType: Joi.string().required(),
         required: Joi.bool().required(),
-      })).description('the entities of the model'),
+      })).description('the entities of the model').required(),
     }).required()),
   }).required(),
   views: Joi.array(Joi.object({
@@ -267,6 +267,19 @@ const getTwigletHandler = (request, reply) =>
       return reply(Boom.create(error.status || 500, error.message, error));
     });
 
+function ensureEntitiesHaveAttributesAndType (entities) {
+  return Reflect.ownKeys(entities).reduce((object, key) => {
+    let entity = entities[key];
+    if (!entity.attributes) {
+      entity = R.merge(entity, { attributes: [] });
+    }
+    if (!entity.type) {
+      entity = R.merge(entity, { type: key });
+    }
+    return R.merge(object, { [key]: entity });
+  }, {});
+}
+
 const createTwigletHandler = (request, reply) => {
   let jsonTwiglet;
   if (request.payload.json && request.payload.json !== '') {
@@ -335,7 +348,10 @@ const createTwigletHandler = (request, reply) => {
         .then(model =>
           Promise.all([
             createdDb.bulkDocs([
-              { _id: 'model', data: { entities: model.data.entities } },
+              {
+                _id: 'model',
+                data: { entities: ensureEntitiesHaveAttributesAndType(model.data.entities) }
+              },
               { _id: 'nodes', data: [] },
               { _id: 'links', data: [] },
               { _id: 'views_2', data: [] },

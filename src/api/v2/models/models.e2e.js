@@ -39,14 +39,16 @@ function baseModel () {
         color: '#008800',
         image: '1',
         size: '40',
-        type: 'type 1',
+        type: 'ent1',
+        attributes: [],
       },
       ent2: {
         class: 'ent2',
         color: '#880000',
         image: '2',
         size: 25,
-        type: 'type 2',
+        type: 'ent2',
+        attributes: [],
       }
     },
     name: 'model1',

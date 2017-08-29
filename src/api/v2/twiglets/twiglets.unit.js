@@ -459,6 +459,7 @@ describe('/v2/twiglets', () => {
           doc: {
             data: {
               name: 'some model',
+              entities: {},
             }
           }
         }] });
@@ -488,6 +489,56 @@ describe('/v2/twiglets', () => {
       it('logs the post to the commit log.', () =>
         expect(put.getCall(0).args[0]).to.include.keys({ _id: 'changelog' })
       );
+    });
+
+    describe('successes - basic creation with old model', () => {
+      let postedEntities;
+
+      beforeEach(function* foo () {
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.onFirstCall().resolves({ rows: [] });
+        allDocs.onSecondCall().resolves({ rows: [{
+          doc: {
+            data: {
+              name: 'some model',
+              entities: {
+                ent1: {
+                  class: 'some class',
+                },
+                ent2: {
+                  class: 'some other class',
+                  attributes: [{ name: 'name1', dataType: 'string', required: true }],
+                }
+              }
+            }
+          }
+        }] });
+        allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onCall(3).resolves(twigletDocs(['nodes', 'links', 'changelog']));
+        sandbox.stub(PouchDb.prototype, 'post').resolves({
+          id: 'some id',
+        });
+        const get = sandbox.stub(PouchDb.prototype, 'get');
+        get.withArgs('changelog').rejects({ status: 404 });
+        get.resolves(twigletInfo());
+        const bulkDocs = sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        sandbox.stub(PouchDb.prototype, 'put').resolves();
+        yield server.inject(req());
+        postedEntities = bulkDocs.getCall(0).args[0][0].data.entities;
+      });
+
+      it('adds the attributes key with an empty array', () => {
+        expect(postedEntities.ent1.attributes).to.deep.equal([]);
+      });
+
+      it('adds the type key with same name as the key', () => {
+        expect(postedEntities.ent1.type).to.deep.equal('ent1');
+      });
+
+      it('does not overwrite existing attributes', () => {
+        expect(postedEntities.ent2.attributes).to.deep
+          .equal([{ name: 'name1', dataType: 'string', required: true }]);
+      });
     });
 
     describe('success - from JSON', () => {

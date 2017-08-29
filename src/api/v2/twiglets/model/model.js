@@ -29,7 +29,7 @@ const twigletModelBase = Joi.object({
       name: Joi.string().required(),
       dataType: Joi.string().required(),
       required: Joi.bool().required(),
-    })),
+    })).required(),
   })),
   nameChanges: Joi.array(Joi.object({
     originalType: Joi.string(),
@@ -55,6 +55,20 @@ const getTwigletInfoByName = (name) => {
   });
 };
 
+function ensureEntitiesHaveAttributesAndType (entities) {
+  return Reflect.ownKeys(entities).reduce((object, key) => {
+    let entity = entities[key];
+    if (!entity.attributes) {
+      entity = R.merge(entity, { attributes: [] });
+    }
+    if (!entity.type) {
+      entity = R.merge(entity, { type: key });
+    }
+    return R.merge(object, { [key]: entity });
+  }, {});
+}
+
+
 const getModelHandler = (request, reply) => {
   getTwigletInfoByName(request.params.name)
   .then(twigletInfo => {
@@ -64,7 +78,7 @@ const getModelHandler = (request, reply) => {
   .then((doc) => {
     reply({
       _rev: doc._rev,
-      entities: doc.data.entities,
+      entities: ensureEntitiesHaveAttributesAndType(doc.data.entities),
     });
   })
   .catch((error) => {

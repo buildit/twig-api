@@ -204,12 +204,14 @@ describe('POST /v2/twiglets', () => {
             ent1: {
               class: 'some class',
               image: 'a',
-              type: 'ent1'
+              type: 'ent1',
+              attributes: [],
             },
             ent2: {
               class: 'second class',
               image: 'b',
               type: 'ent2',
+              attributes: [],
             },
           },
         },

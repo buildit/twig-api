@@ -35,14 +35,16 @@ describe('/v2/twiglets/{name}/model', () => {
               color: '#008800',
               size: '40',
               class: 'idk',
-              image: 'S'
+              image: 'S',
+              attributes: [],
             },
             entity: {
               type: 'entity',
               color: '#880000',
               size: '30',
               class: 'still do not know',
-              image: 'E'
+              image: 'E',
+              attributes: [],
             }
           },
           nameChanges: [],
@@ -50,7 +52,7 @@ describe('/v2/twiglets/{name}/model', () => {
         expect(res).to.have.status(200);
       });
 
-      it('updates a model (without nameChanges coming in', function* () {
+      it('updates a model (without nameChanges coming in)', function* () {
         const res = yield authAgent.put(`/v2/twiglets/${baseTwiglet().name}/model`)
         .send({
           _rev,
@@ -60,14 +62,16 @@ describe('/v2/twiglets/{name}/model', () => {
               color: '#008800',
               size: '40',
               class: 'idk',
-              image: 'S'
+              image: 'S',
+              attributes: [],
             },
             entity: {
               type: 'entity',
               color: '#880000',
               size: '30',
               class: 'still do not know',
-              image: 'E'
+              image: 'E',
+              attributes: [],
             }
           },
         });
