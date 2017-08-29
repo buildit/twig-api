@@ -485,6 +485,21 @@ describe('/models/{name}', () => {
       });
     });
 
+    describe('old models', () => {
+      let res;
+
+      beforeEach(function* foo () {
+        const stubbedModel = stubModel();
+        delete stubbedModel.doc.data.changelog;
+        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubbedModel] });
+        res = yield server.inject(req());
+      });
+
+      it('appends a placeholder changelog on older, unmigrated models', () => {
+        expect(res.result.latestCommit.user).to.equal('robot@buildit');
+      });
+    });
+
     describe('errors', () => {
       it('passes on errors to the client', function* foo () {
         sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419 });

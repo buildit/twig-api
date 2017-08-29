@@ -144,7 +144,9 @@ const getModelHandler = (request, reply) => {
         entities: model.data.entities,
         name: model.data.name,
         _rev: model._rev,
-        latestCommit: model.data.changelog[0],
+        latestCommit: model.data.changelog
+          ? model.data.changelog[0]
+          : { message: 'no history', user: 'robot@buildit', timestamp: new Date().toISOString() },
         url: request.buildUrl(`/v2/models/${model.data.name}`),
         changelog_url: request.buildUrl(`/v2/models/${model.data.name}/changelog`)
       };
