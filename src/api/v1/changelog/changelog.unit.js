@@ -1,4 +1,5 @@
 'use strict';
+
 /* eslint no-unused-expressions: 0 */
 const expect = require('chai').expect;
 const sinon = require('sinon');

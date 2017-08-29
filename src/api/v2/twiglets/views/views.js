@@ -1,4 +1,5 @@
 'use strict';
+
 const Boom = require('boom');
 const Joi = require('joi');
 const PouchDb = require('pouchdb');
@@ -59,7 +60,7 @@ const getViewResponse = createViewRequest.keys({
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({ include_docs: true })
-  .then(twigletsRaw => {
+  .then((twigletsRaw) => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
       const twiglet = modelArray[0].doc;
@@ -76,11 +77,11 @@ const getTwigletInfoByName = (name) => {
 const getView = (name, viewName) => {
   const twigletName = name;
   return getTwigletInfoByName(twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('views_2');
   })
-  .then(viewsRaw => {
+  .then((viewsRaw) => {
     if (viewsRaw.data) {
       const viewArray = viewsRaw.data.filter(row => row.name === viewName);
       if (viewArray.length) {
@@ -95,7 +96,7 @@ const getView = (name, viewName) => {
 
 const getViewsHandler = (request, reply) => {
   getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('views_2');
   })
@@ -122,7 +123,7 @@ const getViewsHandler = (request, reply) => {
 
 const getViewHandler = (request, reply) => {
   getView(request.params.twigletName, request.params.viewName)
-    .then(view => {
+    .then((view) => {
       const viewUrl = `/v2/twiglets/${request.params.twigletName}/views/${request.params.viewName}`;
       const viewResponse = {
         description: view.description,
@@ -134,7 +135,7 @@ const getViewHandler = (request, reply) => {
       };
       return reply(viewResponse);
     })
-    .catch(error => {
+    .catch((error) => {
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
     });
@@ -144,11 +145,11 @@ const postViewsHandler = (request, reply) => {
   let db;
   let twigletId;
   getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('views_2')
-    .catch(error => {
+    .catch((error) => {
       if (error.status === 404) {
         return db.put({
           _id: 'views_2',
@@ -167,7 +168,7 @@ const postViewsHandler = (request, reply) => {
       error.status = 409;
       throw error;
     })
-    .catch(error => {
+    .catch((error) => {
       if (error.status === 404) {
         doc.data.push(request.payload);
         return Promise.all([
@@ -180,7 +181,7 @@ const postViewsHandler = (request, reply) => {
       throw error;
     })
     .then(() => getView(request.params.twigletName, request.payload.name))
-    .then(newView => {
+    .then((newView) => {
       const viewUrl = `/v2/twiglets/${request.params.twigletName}/views/${request.params.viewName}`;
       const viewResponse = {
         description: newView.description,
@@ -192,12 +193,12 @@ const postViewsHandler = (request, reply) => {
       };
       return reply(viewResponse).code(201);
     })
-    .catch(e => {
+    .catch((e) => {
       logger.error(JSON.stringify(e));
       return reply(Boom.create(e.status || 500, e.message, e));
     });
   })
-  .catch(e => {
+  .catch((e) => {
     console.log(e);
     logger.error(JSON.stringify(e));
     return reply(Boom.create(e.status || 500, e.message, e));
@@ -208,7 +209,7 @@ const putViewHandler = (request, reply) => {
   let db;
   let twigletId;
   getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
     return db.get('views_2');
@@ -244,7 +245,7 @@ const putViewHandler = (request, reply) => {
     };
     return reply(viewResponse).code(200);
   })
-  .catch(e => {
+  .catch((e) => {
     logger.error(JSON.stringify(e));
     return reply(Boom.create(e.status || 500, e.message, e));
   });
@@ -254,7 +255,7 @@ const deleteViewHandler = (request, reply) => {
   let db;
   let twigletId;
   getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
     return db.get('views_2');
@@ -270,7 +271,7 @@ const deleteViewHandler = (request, reply) => {
     ]);
   })
   .then(() => reply().code(204))
-  .catch(error => {
+  .catch((error) => {
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));
   });

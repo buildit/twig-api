@@ -1,4 +1,5 @@
 'use strict';
+
 const restler = require('restler');
 const Boom = require('boom');
 const config = require('../../../config');
@@ -42,6 +43,7 @@ module.exports.buildMapFunc = () => {
   return mapFuncStr;
 };
 
+/* eslint-disable no-plusplus */
 module.exports.buildReduceFunc = () => {
   const reduceFunc = function (key, values) {
     const result = [];

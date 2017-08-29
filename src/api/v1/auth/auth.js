@@ -1,4 +1,5 @@
 'use strict';
+
 const ldap = require('ldapjs');
 const Boom = require('boom');
 const Joi = require('joi');

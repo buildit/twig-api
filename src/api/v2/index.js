@@ -1,4 +1,5 @@
 'use strict';
+
 const auth = require('./auth');
 const models = require('./models');
 const modelsChangelog = require('./models/changelog');

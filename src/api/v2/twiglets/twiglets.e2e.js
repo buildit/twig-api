@@ -1,6 +1,8 @@
 /* eslint func-names: 0 */
 /* eslint no-unused-expressions: 0 */
+
 'use strict';
+
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
@@ -90,7 +92,7 @@ describe('POST /v2/twiglets', () => {
 
     it('returns a conflict error if the twiglet already exists', () => {
       createTwiglet(baseTwiglet())
-        .catch(secondResponse => {
+        .catch((secondResponse) => {
           expect(secondResponse).to.have.status(409);
         });
     });
@@ -424,7 +426,7 @@ describe('GET /v2/twiglets/{name}', () => {
     });
 
     it('returns 404', (done) => {
-      promise.catch(res => {
+      promise.catch((res) => {
         expect(res).to.have.status(404);
         done();
       });

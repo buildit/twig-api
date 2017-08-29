@@ -1,4 +1,5 @@
 'use strict';
+
 const Boom = require('boom');
 const Joi = require('joi');
 const PouchDB = require('pouchdb');
@@ -48,7 +49,7 @@ const getModelsResponse = Joi.array().items(Joi.object({
 const getModel = (name) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return db.allDocs({ include_docs: true })
-  .then(modelsRaw => {
+  .then((modelsRaw) => {
     const modelArray = modelsRaw.rows.filter(row => row.doc.data.name === name);
     if (modelArray.length) {
       return modelArray[0].doc;
@@ -67,7 +68,7 @@ const postModelsHandler = (request, reply) => {
     error.status = 409;
     throw error;
   })
-  .catch(error => {
+  .catch((error) => {
     if (error.status === 404) {
       if (!request.payload.cloneModel) {
         const modelToCreate = {
@@ -84,7 +85,7 @@ const postModelsHandler = (request, reply) => {
         return db.post(modelToCreate);
       }
       return getModel(request.payload.cloneModel)
-      .then(originalModel => {
+      .then((originalModel) => {
         const modelToCreate = {
           data: {
             entities: originalModel.data.entities,
@@ -102,7 +103,7 @@ const postModelsHandler = (request, reply) => {
     throw error;
   })
   .then(() => getModel(request.payload.name))
-  .then(newModel => {
+  .then((newModel) => {
     const modelResponse = {
       entities: newModel.data.entities,
       _rev: newModel._rev,
@@ -112,7 +113,7 @@ const postModelsHandler = (request, reply) => {
     };
     return reply(modelResponse).code(201);
   })
-  .catch(e => {
+  .catch((e) => {
     logger.error(JSON.stringify(e));
     return reply(Boom.create(e.status || 500, e.message, e));
   });
@@ -121,7 +122,7 @@ const postModelsHandler = (request, reply) => {
 const getModelsHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return db.allDocs({ include_docs: true })
-    .then(modelsRaw => {
+    .then((modelsRaw) => {
       const orgModels = modelsRaw.rows
       .map(row =>
         ({
@@ -139,7 +140,7 @@ const getModelsHandler = (request, reply) => {
 
 const getModelHandler = (request, reply) => {
   getModel(request.params.name)
-    .then(model => {
+    .then((model) => {
       const modelResponse = {
         entities: model.data.entities,
         name: model.data.name,
@@ -161,7 +162,7 @@ const getModelHandler = (request, reply) => {
 const putModelHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   getModel(request.params.name)
-    .then(model => {
+    .then((model) => {
       if (model._rev === request.payload._rev) {
         model.data.entities = request.payload.entities;
         model.data.name = request.payload.name;
@@ -195,7 +196,7 @@ const putModelHandler = (request, reply) => {
       throw error;
     })
     .then(() => getModel(request.payload.name))
-    .then(model => {
+    .then((model) => {
       const modelResponse = {
         name: model.data.name,
         _rev: model._rev,
@@ -221,7 +222,7 @@ const deleteModelsHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return getModel(request.params.name)
   .then(model => db.remove(model._id, model._rev).then(() => reply().code(204)))
-  .catch(error => {
+  .catch((error) => {
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));
   });

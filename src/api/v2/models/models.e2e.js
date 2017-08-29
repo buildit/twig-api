@@ -1,4 +1,5 @@
 'use strict';
+
 /* eslint func-names: 0 */
 /* eslint no-unused-expressions: 0 */
 const chai = require('chai');
@@ -124,7 +125,7 @@ describe('POST /v2/models', () => {
     describe('(Error)', () => {
       it('returns a conflict error if the model already exists', () => {
         createModel(baseModel())
-          .catch(secondResponse => {
+          .catch((secondResponse) => {
             expect(secondResponse).to.have.status(409);
           });
       });
@@ -237,7 +238,7 @@ describe('GET /models/{name}', () => {
   describe('(Error)', () => {
     it('returns 404', () =>
       getModel({ name: 'non-existant-name' })
-        .catch(res => {
+        .catch((res) => {
           expect(res).to.have.status(404);
         })
     );
@@ -280,7 +281,7 @@ describe('PUT /models/{name}', () => {
       const updates = baseModel();
       updates._rev = 'does not matter';
       return updateModel(updates._id, updates)
-        .catch(res => {
+        .catch((res) => {
           expect(res.status).to.equal(404);
         });
     });
@@ -301,7 +302,7 @@ describe('DELETE /models/{name}', () => {
 
     it('GET model returns 404', () =>
       getModel(baseModel())
-        .catch(response => {
+        .catch((response) => {
           expect(response).to.have.status(404);
         })
     );
@@ -315,7 +316,7 @@ describe('DELETE /models/{name}', () => {
   describe('(Error)', () => {
     it('returns 404 when models doesnt exist', () =>
       deleteModel(baseModel())
-        .catch(response => {
+        .catch((response) => {
           expect(response).to.have.status(404);
         })
     );

@@ -1,6 +1,8 @@
 /* eslint func-names: 0 */
 /* eslint no-unused-expressions: 0 */
+
 'use strict';
+
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { authAgent } = require('../../../../../test/e2e');

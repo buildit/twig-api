@@ -1,4 +1,5 @@
 'use strict';
+
 const Hapi = require('hapi');
 const cookieAuth = require('hapi-auth-cookie');
 const cls = require('continuation-local-storage');
@@ -43,7 +44,7 @@ server.connection({
   }
 });
 
-server.decorate('request', 'buildUrl', (request) =>
+server.decorate('request', 'buildUrl', request =>
   helpers.buildUrl(request),
   { apply: true });
 
@@ -87,7 +88,7 @@ server.register([cookieAuth, Inert, Vision,
 Reflect.ownKeys(v1).forEach(key => server.route(v1[key].routes));
 Reflect.ownKeys(v2).forEach(key => server.route(v2[key].routes));
 
-server.start(err => {
+server.start((err) => {
   if (err) {
     throw err;
   }

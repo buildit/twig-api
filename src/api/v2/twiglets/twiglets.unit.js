@@ -1,4 +1,5 @@
 'use strict';
+
 /* eslint no-unused-expressions: 0 */
 const chai = require('chai');
 chai.use(require('chai-string'));
@@ -246,7 +247,7 @@ describe('/v2/twiglets', () => {
       sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve({ rows: [] }));
 
       return server.inject(req)
-        .then(response => {
+        .then((response) => {
           expect(response.result).to.be.empty;
         });
     });
@@ -283,13 +284,13 @@ describe('/v2/twiglets', () => {
       });
 
       it('does not return a _rev if it exists', () =>
-        results.forEach(twiglet => {
+        results.forEach((twiglet) => {
           expect(twiglet._rev).to.not.exist;
         })
       );
 
       it('returns name and description', () =>
-        results.forEach(twiglet => {
+        results.forEach((twiglet) => {
           expect(twiglet.name).to.exist;
           expect(twiglet.description).to.exist;
         })
@@ -873,7 +874,7 @@ describe('/v2/twiglets', () => {
       it('errors if the a node.type is not in the entities', () => {
         const request = req();
         request.payload.nodes[1].type = 'ent3';
-        server.inject(request).then(response => {
+        server.inject(request).then((response) => {
           expect(response.statusCode).to.equal(400);
           expect(response.message.includes('some other new node id')).to.be(true);
         })
@@ -884,7 +885,7 @@ describe('/v2/twiglets', () => {
         const request = req();
         request.payload._rev = 'not splittable';
         return server.inject(request)
-          .then(response => {
+          .then((response) => {
             expect(response.statusCode).to.equal(400);
           });
       });
@@ -892,7 +893,7 @@ describe('/v2/twiglets', () => {
       it('responds with a 404 the twiglet cannot be found', () => {
         allDocs.onFirstCall().resolves({ rows: [] });
         return server.inject(req())
-          .then(response => {
+          .then((response) => {
             expect(response.statusCode).to.equal(404);
           });
       });
@@ -904,7 +905,7 @@ describe('/v2/twiglets', () => {
           const request = req();
           request.payload._rev = 'INCORRECTinfoRev:nodeRev:linkRev';
           return server.inject(request)
-            .then(response => {
+            .then((response) => {
               expect(response.statusCode).to.equal(409);
               expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
             });
@@ -914,7 +915,7 @@ describe('/v2/twiglets', () => {
           const request = req();
           request.payload._rev = 'infoRev:INCORRECTnodeRev:linkRev';
           return server.inject(request)
-            .then(response => {
+            .then((response) => {
               expect(response.statusCode).to.equal(409);
               expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
             });
@@ -924,7 +925,7 @@ describe('/v2/twiglets', () => {
           const request = req();
           request.payload._rev = 'infoRev:nodeRev:INCORRECTlinkRev';
           return server.inject(request)
-            .then(response => {
+            .then((response) => {
               expect(response.statusCode).to.equal(409);
               expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
             });
@@ -1117,7 +1118,7 @@ describe('/v2/twiglets', () => {
         delete request.payload.links;
         delete request.payload.description;
         request.payload.nodes[1].type = 'ent3';
-        server.inject(request).then(response => {
+        server.inject(request).then((response) => {
           expect(response.statusCode).to.equal(400);
           expect(response.message.includes('some other new node id')).to.be(true);
         })
@@ -1128,7 +1129,7 @@ describe('/v2/twiglets', () => {
         const request = req();
         request.payload._rev = 'not splittable';
         return server.inject(request)
-          .then(response => {
+          .then((response) => {
             expect(response.statusCode).to.equal(400);
           });
       });
@@ -1136,7 +1137,7 @@ describe('/v2/twiglets', () => {
       it('responds with a 404 the twiglet cannot be found', () => {
         allDocs.onFirstCall().resolves({ rows: [] });
         return server.inject(req())
-          .then(response => {
+          .then((response) => {
             expect(response.statusCode).to.equal(404);
           });
       });
@@ -1148,7 +1149,7 @@ describe('/v2/twiglets', () => {
           const request = req();
           request.payload._rev = 'INCORRECTinfoRev:nodeRev:linkRev';
           return server.inject(request)
-            .then(response => {
+            .then((response) => {
               expect(response.statusCode).to.equal(409);
               expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
             });
@@ -1158,7 +1159,7 @@ describe('/v2/twiglets', () => {
           const request = req();
           request.payload._rev = 'infoRev:INCORRECTnodeRev:linkRev';
           return server.inject(request)
-            .then(response => {
+            .then((response) => {
               expect(response.statusCode).to.equal(409);
               expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
             });
@@ -1168,7 +1169,7 @@ describe('/v2/twiglets', () => {
           const request = req();
           request.payload._rev = 'infoRev:nodeRev:INCORRECTlinkRev';
           return server.inject(request)
-            .then(response => {
+            .then((response) => {
               expect(response.statusCode).to.equal(409);
               expect(response.result.data._rev).to.equal('infoRev:nodeRev:linkRev');
             });
@@ -1202,7 +1203,7 @@ describe('/v2/twiglets', () => {
       });
       it('returns 204 once deleted', () =>
         server.inject(req())
-          .then(response => {
+          .then((response) => {
             expect(response.statusCode).to.equal(204);
           })
       );

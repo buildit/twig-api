@@ -1,4 +1,5 @@
 'use strict';
+
 const PouchDb = require('pouchdb');
 const Boom = require('boom');
 const Joi = require('joi');
@@ -20,7 +21,7 @@ const getChangelogResponse = Joi.object({
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({ include_docs: true })
-  .then(twigletsRaw => {
+  .then((twigletsRaw) => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
       const twiglet = modelArray[0].doc;
@@ -65,10 +66,10 @@ const addCommitMessage = (_id, commitMessage, user, replacement,
 
 const getChangelogHandler = (request, reply) => {
   getTwigletInfoByName(request.params.name)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('changelog')
-      .then((doc) => reply({ changelog: doc.data }))
+      .then(doc => reply({ changelog: doc.data }))
       .catch((error) => {
         if (error.status !== 404) {
           throw error;

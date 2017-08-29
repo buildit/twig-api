@@ -1,4 +1,5 @@
 'use strict';
+
 /* eslint no-unused-expressions: 0 */
 const chai = require('chai');
 chai.use(require('chai-string'));

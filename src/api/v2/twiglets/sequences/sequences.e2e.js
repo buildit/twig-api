@@ -1,6 +1,8 @@
 /* eslint func-names: 0 */
 /* eslint no-unused-expressions: 0 */
+
 'use strict';
+
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
@@ -110,7 +112,7 @@ describe('sequences', () => {
     });
   });
 
-  describe('GET /twiglets/{twigletName}/sequences/${sequenceId}', () => {
+  describe('GET /twiglets/{twigletName}/sequences/{sequenceId}', () => {
     describe('success', () => {
       let res;
       let sequenceSnapshot;
@@ -150,7 +152,7 @@ describe('sequences', () => {
     });
   });
 
-  describe('PUT /twiglets/{twigletName}/sequences/${sequenceId}', () => {
+  describe('PUT /twiglets/{twigletName}/sequences/{sequenceId}', () => {
     describe('success', () => {
       let res;
       let updates;
@@ -181,7 +183,7 @@ describe('sequences', () => {
     });
   });
 
-  describe('DELETE /twiglets/{twigletName}/sequences/${sequenceId}', () => {
+  describe('DELETE /twiglets/{twigletName}/sequences/{sequenceId}', () => {
     describe('succcess', () => {
       let res;
       let sequenceSnapshot;

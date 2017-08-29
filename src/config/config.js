@@ -1,4 +1,5 @@
 'use strict';
+
 // Going to try 12factor style config a try instead... get all from environment
 // https://12factor.net/config
 const ramda = require('ramda');

@@ -1,4 +1,5 @@
 'use strict';
+
 const ldap = require('ldapjs');
 const Boom = require('boom');
 const Joi = require('joi');
@@ -52,7 +53,7 @@ const validateMothershipJwt = (token) => {
 
   function findKeyAsCert (keys, jwtKid) {
     return `-----BEGIN CERTIFICATE-----
-${keys.keys.filter((key) => key.kid === jwtKid)[0].x5c[0]}
+${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
 -----END CERTIFICATE-----`;
   }
 
@@ -60,7 +61,7 @@ ${keys.keys.filter((key) => key.kid === jwtKid)[0].x5c[0]}
   .then(oidConfig => JSON.parse(oidConfig))
   .then(oidConfig => rp.get({ url: oidConfig.jwks_uri }))
   .then(keys => JSON.parse(keys))
-  .then(keys => {
+  .then((keys) => {
     const cert = findKeyAsCert(keys, decodedJwt.header.kid);
     return jwt.verify(token, cert);
   })
@@ -80,7 +81,7 @@ const validateHeimdall = (email, password) =>
     },
   })
   .then(user => JSON.parse(user))
-  .then((user) =>
+  .then(user =>
     ({
       id: user.emails[0].value,
       name: `${user.name.familyName}, ${user.name.givenName}`

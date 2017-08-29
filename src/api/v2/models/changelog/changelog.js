@@ -1,4 +1,5 @@
 'use strict';
+
 const Boom = require('boom');
 const Joi = require('joi');
 const logger = require('../../../../log')('CHANGELOG');
@@ -19,7 +20,7 @@ const getChangelogResponse = Joi.object({
 
 const getChangelogHandler = (request, reply) =>
   getModel(request.params.name)
-    .then((doc) => reply({ changelog: doc.data.changelog }))
+    .then(doc => reply({ changelog: doc.data.changelog }))
     .catch((error) => {
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));

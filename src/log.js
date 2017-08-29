@@ -1,4 +1,5 @@
 'use strict';
+
 const winston = require('winston');
 const WinstonDailyRotateFile = require('winston-daily-rotate-file');
 const { join } = require('path');
@@ -69,7 +70,7 @@ function Log (ns = 'Logger', log = logger) {
     'log', 'error', 'warn', 'info', 'debug'
   ].reduce((type, fn) => {
     if (fn === 'error') {
-      type[fn] = err => {
+      type[fn] = (err) => {
         if (err.message && err.stack) {
           log.error(`${ns} ${err.message}`, err.stack);
         }

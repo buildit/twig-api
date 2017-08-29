@@ -1,4 +1,5 @@
 'use strict';
+
 const Boom = require('boom');
 const PouchDb = require('pouchdb');
 const config = require('../../../../config');
@@ -41,7 +42,7 @@ const twigletModelBase = Joi.object({
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({ include_docs: true })
-  .then(twigletsRaw => {
+  .then((twigletsRaw) => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
       const twiglet = modelArray[0].doc;
@@ -71,7 +72,7 @@ function ensureEntitiesHaveAttributesAndType (entities) {
 
 const getModelHandler = (request, reply) => {
   getTwigletInfoByName(request.params.name)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('model');
   })
@@ -98,7 +99,7 @@ const putModelHandler = (request, reply) => {
       }, {});
   }
   getTwigletInfoByName(request.params.name)
-    .then(twigletInfo => {
+    .then((twigletInfo) => {
       const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
       return db.get('model')
       .then((doc) => {
@@ -107,7 +108,7 @@ const putModelHandler = (request, reply) => {
           return db.put(doc)
             .then(() => db.get('nodes'))
             .catch(() => undefined)
-            .then(nodes => {
+            .then((nodes) => {
               if (nodes) {
                 const updatedNodes = Object.assign({}, nodes);
                 updatedNodes.data = nodes.data.map(updateNode(oldNameMap));
@@ -117,10 +118,10 @@ const putModelHandler = (request, reply) => {
             })
             .then(() => db.get('events'))
             .catch(() => undefined)
-            .then(events => {
+            .then((events) => {
               if (events) {
                 const updatedEvents = Object.assign({}, events);
-                updatedEvents.data = updatedEvents.data.map(event => {
+                updatedEvents.data = updatedEvents.data.map((event) => {
                   const updatedEvent = Object.assign({}, event);
                   updatedEvent.nodes = updatedEvent.nodes.map(updateNode(oldNameMap));
                   return updatedEvent;
@@ -148,7 +149,7 @@ const putModelHandler = (request, reply) => {
         throw error;
       });
     })
-    .then((doc) =>
+    .then(doc =>
       reply({
         _rev: doc._rev,
         entities: doc.data.entities,

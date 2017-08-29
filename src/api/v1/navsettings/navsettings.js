@@ -1,4 +1,5 @@
 'use strict';
+
 const PouchDb = require('pouchdb');
 const Joi = require('joi');
 const config = require('../../../config');
@@ -6,7 +7,7 @@ const config = require('../../../config');
 const put = (request, reply) => {
   const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
   db.get('views')
-  .then(doc => {
+  .then((doc) => {
     const id = request.payload._viewId;
     const key = request.payload.key;
     const value = request.payload.value;
@@ -25,7 +26,7 @@ const put = (request, reply) => {
     return undefined;
   })
   .then(() => reply({}).code(202))
-  .catch(error => {
+  .catch((error) => {
     if (error.error !== 'conflict') {
       console.warn(error);
     }

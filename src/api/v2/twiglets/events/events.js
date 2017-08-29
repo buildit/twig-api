@@ -1,4 +1,5 @@
 'use strict';
+
 const Boom = require('boom');
 const Joi = require('joi');
 const PouchDb = require('pouchdb');
@@ -58,7 +59,7 @@ const getEventResponse = Event.keys({
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({ include_docs: true })
-  .then(twigletsRaw => {
+  .then((twigletsRaw) => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
       const twiglet = modelArray[0].doc;
@@ -74,11 +75,11 @@ const getTwigletInfoByName = (name) => {
 
 const getEvent = (twigletName, eventId) =>
   getTwigletInfoByName(twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('events');
   })
-  .then(eventsRaw => {
+  .then((eventsRaw) => {
     if (eventsRaw.data) {
       const eventArray = eventsRaw.data.filter(row => row.id === eventId);
       if (eventArray.length) {
@@ -92,7 +93,7 @@ const getEvent = (twigletName, eventId) =>
 
 const getEventsHandler = (request, reply) =>
   getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('events');
   })
@@ -118,7 +119,7 @@ const getEventsHandler = (request, reply) =>
 
 const getEventHandler = (request, reply) =>
   getEvent(request.params.twigletName, request.params.eventId)
-  .then(event => {
+  .then((event) => {
     const eventUrl = `/v2/twiglets/${request.params.twigletName}/events/${request.params.eventId}`;
     const eventResponse = {
       id: event.id,
@@ -130,7 +131,7 @@ const getEventHandler = (request, reply) =>
     };
     return reply(eventResponse);
   })
-  .catch(error => {
+  .catch((error) => {
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));
   });
@@ -138,10 +139,10 @@ const getEventHandler = (request, reply) =>
 const postEventsHandler = (request, reply) => {
   let db;
   return getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('events')
-    .catch(error => {
+    .catch((error) => {
       if (error.status === 404) {
         return db.put({
           _id: 'events',
@@ -180,7 +181,7 @@ const postEventsHandler = (request, reply) => {
   .then(() => {
     reply('OK').code(201);
   })
-  .catch(e => {
+  .catch((e) => {
     logger.error(JSON.stringify(e));
     return reply(Boom.create(e.status || 500, e.message, e));
   });
@@ -190,7 +191,7 @@ const deleteEventHandler = (request, reply) => {
   let db;
   let twigletId;
   getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
     return db.get('events');
@@ -203,7 +204,7 @@ const deleteEventHandler = (request, reply) => {
     ]);
   })
   .then(() => reply().code(204))
-  .catch(error => {
+  .catch((error) => {
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));
   });
@@ -213,14 +214,14 @@ const deleteAllEventsHandler = (request, reply) => {
   let db;
   let twigletId;
   getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
     return db.get('events');
   })
   .then(events => db.remove(events._id, events._rev))
   .then(() => reply().code(204))
-  .catch(error => {
+  .catch((error) => {
     if (error.status === 404) {
       return reply([]).code(204);
     }

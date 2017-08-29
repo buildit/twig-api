@@ -1,4 +1,5 @@
 'use strict';
+
 const Hapi = require('hapi');
 const cookieAuth = require('hapi-auth-cookie');
 const cls = require('continuation-local-storage');
@@ -9,7 +10,7 @@ const server = new Hapi.Server();
 
 server.connection();
 
-server.decorate('request', 'buildUrl', (request) =>
+server.decorate('request', 'buildUrl', request =>
   helpers.buildUrl(request),
   { apply: true });
 

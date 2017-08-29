@@ -1,4 +1,5 @@
 'use strict';
+
 const Boom = require('boom');
 const Joi = require('joi');
 const R = require('ramda');
@@ -159,7 +160,7 @@ const getTwigletsResponse = Joi.array().required().items(
 );
 
 function checkNodesAreInModel (model, nodes) {
-  (nodes || []).forEach(node => {
+  (nodes || []).forEach((node) => {
     if (model.entities[node.type] === undefined) {
       const error = new Error();
       error.status = 400;
@@ -172,7 +173,7 @@ function checkNodesAreInModel (model, nodes) {
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({ include_docs: true })
-  .then(twigletsRaw => {
+  .then((twigletsRaw) => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
       const twiglet = modelArray[0].doc;
@@ -187,14 +188,14 @@ const getTwigletInfoByName = (name) => {
 
 const getTwiglet = (name, urlBuilder) =>
   getTwigletInfoByName(name)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const dbString = config.getTenantDatabaseString(twigletInfo.twigId);
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.allDocs({
       include_docs: true,
       keys: ['nodes', 'links', 'changelog']
     })
-    .then(twigletDocs => {
+    .then((twigletDocs) => {
       const url = urlBuilder(`/v2/twiglets/${name}`);
       const eventsUrl = urlBuilder(`/v2/twiglets/${name}/events`);
       const modelUrl = urlBuilder(`/v2/twiglets/${name}/model`);
@@ -233,7 +234,7 @@ const getTwiglet = (name, urlBuilder) =>
           name: twigletInfo.name,
           description: twigletInfo.description,
           latestCommit: twigletData.changelog.data[0],
-          nodes: twigletData.nodes.data.map(n => {
+          nodes: twigletData.nodes.data.map((n) => {
             const node = R.pick(nodeKeysToPick, n);
             node.id = escape(node.id);
             node.id = node.id.replace(/%/g, '');
@@ -242,7 +243,7 @@ const getTwiglet = (name, urlBuilder) =>
             }
             return node;
           }),
-          links: twigletData.links.data.map(l => {
+          links: twigletData.links.data.map((l) => {
             const link = R.pick(linkKeysToPick, l);
             link.id = escape(link.id);
             link.id = link.id.replace(/%/g, '');
@@ -261,7 +262,7 @@ const getTwiglet = (name, urlBuilder) =>
 
 const getTwigletHandler = (request, reply) =>
   getTwiglet(request.params.name, request.buildUrl)
-    .then((twiglet) => reply(twiglet))
+    .then(twiglet => reply(twiglet))
     .catch((error) => {
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
@@ -292,14 +293,14 @@ const createTwigletHandler = (request, reply) => {
   }
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({ include_docs: true })
-  .then(docs => {
+  .then((docs) => {
     if (docs.rows.some(row => row.doc.name === request.payload.name)) {
       return reply(Boom.conflict('Twiglet already exists'));
     }
     const newTwiglet = R.pick(['name', 'description'], request.payload);
     newTwiglet._id = `twig-${uuidV4()}`;
     return twigletLookupDb.post(newTwiglet)
-    .then(twigletInfo => {
+    .then((twigletInfo) => {
       const dbString = config.getTenantDatabaseString(twigletInfo.id);
       const createdDb = new PouchDB(dbString);
       if (jsonTwiglet) {
@@ -320,7 +321,7 @@ const createTwigletHandler = (request, reply) => {
       }
       if (request.payload.cloneTwiglet && request.payload.cloneTwiglet !== 'N/A') {
         return getTwigletInfoByName(request.payload.cloneTwiglet)
-        .then(twigletToBeClonedInfo => {
+        .then((twigletToBeClonedInfo) => {
           const cloneString = config.getTenantDatabaseString(twigletToBeClonedInfo.twigId);
           const clonedDb = new PouchDB(cloneString, { skip_setup: true });
           return clonedDb.allDocs({
@@ -383,7 +384,7 @@ const getTwigletsHandler = (request, reply) => {
   return db.allDocs({ include_docs: true })
     .then((doc) => {
       const twiglets = doc.rows
-      .map((twiglet) =>
+      .map(twiglet =>
         R.merge(
           R.omit(['_rev', '_id'], twiglet.doc),
           {
@@ -413,14 +414,14 @@ const putTwigletHandler = (request, reply) => {
   }
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   return getTwigletInfoByName(request.params.name)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const dbString = config.getTenantDatabaseString(twigletInfo.twigId);
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.allDocs({
       include_docs: true,
       keys: ['nodes', 'links', 'model']
     })
-    .then(twigletDocs => {
+    .then((twigletDocs) => {
       const twigletData = twigletDocs.rows.reduce((obj, row) => {
         obj[row.id] = row.doc;
         return obj;
@@ -429,7 +430,7 @@ const putTwigletHandler = (request, reply) => {
           || twigletData.nodes._rev !== _revs[1]
           || twigletData.links._rev !== _revs[2]) {
         return getTwiglet(request.params.name, request.buildUrl)
-        .then(twiglet => {
+        .then((twiglet) => {
           const error = Error('Your revision number is out of date');
           error.status = 409;
           error.twiglet = twiglet;
@@ -459,7 +460,7 @@ const putTwigletHandler = (request, reply) => {
   .then(() =>
     getTwiglet(request.payload.name, request.buildUrl)
   )
-  .then((twiglet) => reply(twiglet).code(200))
+  .then(twiglet => reply(twiglet).code(200))
   .catch((error) => {
     if (error.status !== 409) {
       logger.error(JSON.stringify(error));
@@ -479,14 +480,14 @@ const patchTwigletHandler = (request, reply) => {
   }
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   return getTwigletInfoByName(request.params.name)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const dbString = config.getTenantDatabaseString(twigletInfo.twigId);
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.allDocs({
       include_docs: true,
       keys: ['nodes', 'links', 'model']
     })
-    .then(twigletDocs => {
+    .then((twigletDocs) => {
       const twigletData = twigletDocs.rows.reduce((obj, row) => {
         obj[row.id] = row.doc;
         return obj;
@@ -495,7 +496,7 @@ const patchTwigletHandler = (request, reply) => {
           || twigletData.nodes._rev !== _revs[1]
           || twigletData.links._rev !== _revs[2]) {
         return getTwiglet(request.params.name, request.buildUrl)
-        .then(twiglet => {
+        .then((twiglet) => {
           const error = Error('Your revision number is out of date');
           error.status = 409;
           error.twiglet = twiglet;
@@ -527,7 +528,7 @@ const patchTwigletHandler = (request, reply) => {
   .then(() =>
     getTwiglet(request.payload.name || request.params.name, request.buildUrl)
   )
-  .then((twiglet) => reply(twiglet).code(200))
+  .then(twiglet => reply(twiglet).code(200))
   .catch((error) => {
     if (error.status !== 409) {
       logger.error(JSON.stringify(error));
@@ -541,7 +542,7 @@ const patchTwigletHandler = (request, reply) => {
 const deleteTwigletHandler = (request, reply) => {
   const twigletLookupDb = new PouchDB(config.getTenantDatabaseString('twiglets'));
   return getTwigletInfoByName(request.params.name)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const dbString = config.getTenantDatabaseString(twigletInfo.twigId);
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.destroy()
@@ -569,14 +570,14 @@ function sanitizeModel (model) {
 
 const getTwigletJsonHandler = (request, reply) =>
   getTwigletInfoByName(request.params.name)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const dbString = config.getTenantDatabaseString(twigletInfo.twigId);
     const db = new PouchDB(dbString, { skip_setup: true });
     return db.allDocs({
       include_docs: true,
       keys: ['nodes', 'links', 'model', 'views_2', 'events', 'sequences']
     })
-    .then(twigletDocs => {
+    .then((twigletDocs) => {
       const twigletData = twigletDocs.rows.reduce((obj, row) => {
         if (row.doc && row.doc.data) {
           obj[row.id] = row.doc.data;

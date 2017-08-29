@@ -1,4 +1,5 @@
 'use strict';
+
 const Boom = require('boom');
 const Joi = require('joi');
 const PouchDb = require('pouchdb');
@@ -31,7 +32,7 @@ const createSequenceRequest = Joi.object({
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({ include_docs: true })
-  .then(twigletsRaw => {
+  .then((twigletsRaw) => {
     const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
     if (modelArray.length) {
       const twiglet = modelArray[0].doc;
@@ -47,11 +48,11 @@ const getTwigletInfoByName = (name) => {
 
 const getSequence = (twigletName, sequenceId) =>
   getTwigletInfoByName(twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('sequences');
   })
-  .then(sequencesRaw => {
+  .then((sequencesRaw) => {
     if (sequencesRaw.data) {
       const sequenceArray = sequencesRaw.data.filter(row => row.id === sequenceId);
       if (sequenceArray.length) {
@@ -65,7 +66,7 @@ const getSequence = (twigletName, sequenceId) =>
 
 const getSequencesHandler = (request, reply) =>
   getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('sequences');
   })
@@ -92,7 +93,7 @@ const getSequencesHandler = (request, reply) =>
 
 const getSequenceHandler = (request, reply) =>
   getSequence(request.params.twigletName, request.params.sequenceId)
-  .then(sequence => {
+  .then((sequence) => {
     const sequenceId = request.params.sequenceId;
     const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
     const sequenceResponse = {
@@ -104,7 +105,7 @@ const getSequenceHandler = (request, reply) =>
     };
     return reply(sequenceResponse);
   })
-  .catch(error => {
+  .catch((error) => {
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));
   });
@@ -112,10 +113,10 @@ const getSequenceHandler = (request, reply) =>
 const postSequencesHanlder = (request, reply) => {
   let db;
   return getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
     return db.get('sequences')
-    .catch(error => {
+    .catch((error) => {
       if (error.status === 404) {
         return db.put({
           _id: 'sequences',
@@ -143,7 +144,7 @@ const postSequencesHanlder = (request, reply) => {
     };
     return reply(sequenceResponse).code(201);
   })
-  .catch(e => {
+  .catch((e) => {
     logger.error(JSON.stringify(e));
     return reply(Boom.create(e.status || 500, e.message, e));
   });
@@ -153,7 +154,7 @@ const putSequenceHandler = (request, reply) => {
   let db;
   let twigletId;
   getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
     return db.get('sequences');
@@ -179,7 +180,7 @@ const putSequenceHandler = (request, reply) => {
     };
     return reply(sequenceResponse).code(200);
   })
-  .catch(e => {
+  .catch((e) => {
     logger.error(JSON.stringify(e));
     return reply(Boom.create(e.status || 500, e.message, e));
   });
@@ -189,7 +190,7 @@ const deleteSequenceHandler = (request, reply) => {
   let db;
   let twigletId;
   getTwigletInfoByName(request.params.twigletName)
-  .then(twigletInfo => {
+  .then((twigletInfo) => {
     twigletId = twigletInfo._id;
     db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
     return db.get('sequences');
@@ -202,7 +203,7 @@ const deleteSequenceHandler = (request, reply) => {
     ]);
   })
   .then(() => reply().code(204))
-  .catch(error => {
+  .catch((error) => {
     logger.error(JSON.stringify(error));
     return reply(Boom.create(error.status || 500, error.message, error));
   });

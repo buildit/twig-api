@@ -1,4 +1,5 @@
 'use strict';
+
 const PouchDb = require('pouchdb');
 const Boom = require('boom');
 const Joi = require('joi');
@@ -21,7 +22,7 @@ const get = (request, reply) => {
   const db = new PouchDb(config.getTenantDatabaseString(request.params.id), { skip_setup: true });
   return db.info()
     .then(() => db.get('changelog')
-      .then((doc) => reply({ changelog: doc.data }))
+      .then(doc => reply({ changelog: doc.data }))
       .catch((error) => {
         if (error.status !== 404) {
           throw error;
