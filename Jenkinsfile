@@ -39,6 +39,10 @@ pipeline {
           def npmInst = new npm()
           projectVersion = npmInst.getVersion()
           ad_ip_address = sh(script: "dig +short corp.${env.RIG_DOMAIN} | head -1", returnStdout: true).trim()
+
+          def gitInst = new git()
+          shortCommitHash = gitInst.getShortCommit()
+          commitMessage = gitInst.getCommitMessage()
         }
       }
     }
@@ -70,10 +74,6 @@ pipeline {
       steps {
         sh "npm shrinkwrap"
         script {
-          def gitInst = new git()
-          shortCommitHash = gitInst.getShortCommit()
-          commitMessage = gitInst.getCommitMessage()
-
           tag = "${projectVersion}-${env.BRANCH_NAME}-${env.BUILD_NUMBER}-${shortCommitHash}"
           image = docker.build("${appName}:${tag}", '.')
         }
