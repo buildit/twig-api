@@ -20,7 +20,7 @@ function updateNode (oldNameMap) {
 const twigletModelBase = Joi.object({
   _rev: Joi.string(),
   entities: Joi.object().pattern(/[\S\s]*/, Joi.object({
-    type: Joi.string(),
+    type: Joi.string().required(),
     color: Joi.string(),
     size: [Joi.string().allow(''), Joi.number()],
     class: Joi.string().required(),

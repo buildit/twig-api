@@ -49,6 +49,19 @@ localhost:5984 you should see something along the lines of:
 {"couchdb": "Welcome",...}
 ```
 
+You also need to update the cross origin settings to allow local access.
+
+```Shell
+npm install -g add-cors-to-couchdb
+add-cors-to-couchdb
+```
+
+Then execute the data migration scripts to get started with some organisation models
+
+```Shell
+MODE=local node ./scripts/init-new-db.js
+```
+
 #### Quick Start
 
 After you have installed CouchDB, you are ready to get Twig API started. Clone this repository, then run
