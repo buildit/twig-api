@@ -197,7 +197,7 @@ describe('/v2/Twiglet::Sequences', () => {
       beforeEach(function* foo () {
         sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
         const get = sandbox.stub(PouchDb.prototype, 'get')
-            .resolves(twigletDocs().rows[5].doc);
+          .resolves(twigletDocs().rows[5].doc);
         get.onFirstCall().rejects({ status: 404 });
         put = sandbox.stub(PouchDb.prototype, 'put').resolves('');
         response = yield server.inject(req());

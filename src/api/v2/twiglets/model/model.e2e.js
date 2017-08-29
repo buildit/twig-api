@@ -29,54 +29,54 @@ describe('/v2/twiglets/{name}/model', () => {
 
       it('updates a model', function* () {
         const res = yield authAgent.put(`/v2/twiglets/${baseTwiglet().name}/model`)
-        .send({
-          _rev,
-          entities: {
-            some: {
-              type: 'some',
-              color: '#008800',
-              size: '40',
-              class: 'idk',
-              image: 'S',
-              attributes: [],
+          .send({
+            _rev,
+            entities: {
+              some: {
+                type: 'some',
+                color: '#008800',
+                size: '40',
+                class: 'idk',
+                image: 'S',
+                attributes: [],
+              },
+              entity: {
+                type: 'entity',
+                color: '#880000',
+                size: '30',
+                class: 'still do not know',
+                image: 'E',
+                attributes: [],
+              }
             },
-            entity: {
-              type: 'entity',
-              color: '#880000',
-              size: '30',
-              class: 'still do not know',
-              image: 'E',
-              attributes: [],
-            }
-          },
-          nameChanges: [],
-        });
+            nameChanges: [],
+          });
         expect(res).to.have.status(200);
       });
 
       it('updates a model (without nameChanges coming in)', function* () {
         const res = yield authAgent.put(`/v2/twiglets/${baseTwiglet().name}/model`)
-        .send({
-          _rev,
-          entities: {
-            some: {
-              type: 'some',
-              color: '#008800',
-              size: '40',
-              class: 'idk',
-              image: 'S',
-              attributes: [],
+          .send({
+            _rev,
+            entities: {
+              some: {
+                type: 'some',
+                color: '#008800',
+                size: '40',
+                class: 'idk',
+                image: 'S',
+                attributes: [],
+              },
+              entity: {
+                type: 'entity',
+                color: '#880000',
+                size: '30',
+                class: 'still do not know',
+                image: 'E',
+                attributes: [],
+              }
             },
-            entity: {
-              type: 'entity',
-              color: '#880000',
-              size: '30',
-              class: 'still do not know',
-              image: 'E',
-              attributes: [],
-            }
-          },
-        });
+          });
         expect(res).to.have.status(200);
       });
     });

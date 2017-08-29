@@ -44,9 +44,7 @@ server.connection({
   }
 });
 
-server.decorate('request', 'buildUrl', request =>
-  helpers.buildUrl(request),
-  { apply: true });
+server.decorate('request', 'buildUrl', request => helpers.buildUrl(request), { apply: true });
 
 
 server.ext('onRequest', (req, reply) => {
@@ -69,11 +67,16 @@ server.ext('onRequest', (req, reply) => {
     .permanent();
 });
 
-server.register([cookieAuth, Inert, Vision,
-  {
-    register: HapiSwagger,
-    options
-  }],
+server.register(
+  [
+    cookieAuth,
+    Inert,
+    Vision,
+    {
+      register: HapiSwagger,
+      options
+    }
+  ],
   (err) => {
     if (err) {
       throw err;
@@ -83,7 +86,8 @@ server.register([cookieAuth, Inert, Vision,
       password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
       isSecure: config.SECURE_COOKIES
     });
-  });
+  }
+);
 
 Reflect.ownKeys(v1).forEach(key => server.route(v1[key].routes));
 Reflect.ownKeys(v2).forEach(key => server.route(v2[key].routes));

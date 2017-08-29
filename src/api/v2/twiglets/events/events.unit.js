@@ -228,7 +228,7 @@ describe('/v2/Twiglet::Events', () => {
           ]
         });
         const get = sandbox.stub(PouchDb.prototype, 'get')
-            .resolves(twigletDocs().rows[4].doc);
+          .resolves(twigletDocs().rows[4].doc);
         get.onFirstCall().rejects({ status: 404 });
         put = sandbox.stub(PouchDb.prototype, 'put').resolves('');
         response = yield server.inject(req());

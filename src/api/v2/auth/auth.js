@@ -58,17 +58,17 @@ ${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
   }
 
   return rp.get({ url: oidConfigUrl })
-  .then(oidConfig => JSON.parse(oidConfig))
-  .then(oidConfig => rp.get({ url: oidConfig.jwks_uri }))
-  .then(keys => JSON.parse(keys))
-  .then((keys) => {
-    const cert = findKeyAsCert(keys, decodedJwt.header.kid);
-    return jwt.verify(token, cert);
-  })
-  .then(verified => ({
-    id: verified.upn,
-    name: verified.name
-  }));
+    .then(oidConfig => JSON.parse(oidConfig))
+    .then(oidConfig => rp.get({ url: oidConfig.jwks_uri }))
+    .then(keys => JSON.parse(keys))
+    .then((keys) => {
+      const cert = findKeyAsCert(keys, decodedJwt.header.kid);
+      return jwt.verify(token, cert);
+    })
+    .then(verified => ({
+      id: verified.upn,
+      name: verified.name
+    }));
 };
 
 const validateHeimdall = (email, password) =>
@@ -80,13 +80,13 @@ const validateHeimdall = (email, password) =>
       password,
     },
   })
-  .then(user => JSON.parse(user))
-  .then(user =>
-    ({
-      id: user.emails[0].value,
-      name: `${user.name.familyName}, ${user.name.givenName}`
-    })
-  );
+    .then(user => JSON.parse(user))
+    .then(user =>
+      ({
+        id: user.emails[0].value,
+        name: `${user.name.familyName}, ${user.name.givenName}`
+      })
+    );
 
 const validateLocal = (email, password) =>
   new Promise((resolve, reject) => {
@@ -102,16 +102,16 @@ const validateLocal = (email, password) =>
 
 const login = (request, reply) =>
   Promise.resolve()
-  .then(() => {
-    if (request.payload.email === 'testuser@test.com') {
-      return validateHeimdall(request.payload.email, request.payload.password);
-    }
-    if (request.payload.email === 'local@user' && config.DB_URL.includes('localhost')) {
-      return validateLocal(request.payload.email, request.payload.password);
-    }
-    return validate(request.payload.email, request.payload.password);
-  })
-  .then((user) => {
+    .then(() => {
+      if (request.payload.email === 'testuser@test.com') {
+        return validateHeimdall(request.payload.email, request.payload.password);
+      }
+      if (request.payload.email === 'local@user' && config.DB_URL.includes('localhost')) {
+        return validateLocal(request.payload.email, request.payload.password);
+      }
+      return validate(request.payload.email, request.payload.password);
+    })
+    .then((user) => {
     // put user in cache w/ a session id as key..put session id in cookie
     // const sid = String(++this.uuid);
     // request.server.app.cache.set(sid, { user }, 0, (error) => {
@@ -122,12 +122,12 @@ const login = (request, reply) =>
     //   request.cookieAuth.set({ sid });
     //   return reply.redirect('/');
     // });
-    request.cookieAuth.set({ user });
-    return reply({
-      user
-    });
-  })
-  .catch(() => reply(Boom.unauthorized('Invalid email/password')));
+      request.cookieAuth.set({ user });
+      return reply({
+        user
+      });
+    })
+    .catch(() => reply(Boom.unauthorized('Invalid email/password')));
 
 const validateJwt = (request, reply) => {
   validateMothershipJwt(request.payload.jwt)
@@ -137,10 +137,10 @@ const validateJwt = (request, reply) => {
         user
       });
     })
-  .catch((err) => {
-    console.log(err);
-    reply(Boom.unauthorized('Authentication failed'));
-  });
+    .catch((err) => {
+      console.log(err);
+      reply(Boom.unauthorized('Authentication failed'));
+    });
 };
 
 const logout = (request, reply) => {

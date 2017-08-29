@@ -10,9 +10,7 @@ const server = new Hapi.Server();
 
 server.connection();
 
-server.decorate('request', 'buildUrl', request =>
-  helpers.buildUrl(request),
-  { apply: true });
+server.decorate('request', 'buildUrl', request => helpers.buildUrl(request), { apply: true });
 
 server.ext('onRequest', (req, reply) => {
   ns.bindEmitter(req.raw.req);

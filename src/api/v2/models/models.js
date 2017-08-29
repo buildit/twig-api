@@ -49,74 +49,74 @@ const getModelsResponse = Joi.array().items(Joi.object({
 const getModel = (name) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return db.allDocs({ include_docs: true })
-  .then((modelsRaw) => {
-    const modelArray = modelsRaw.rows.filter(row => row.doc.data.name === name);
-    if (modelArray.length) {
-      return modelArray[0].doc;
-    }
-    const error = Error('Not Found');
-    error.status = 404;
-    throw error;
-  });
+    .then((modelsRaw) => {
+      const modelArray = modelsRaw.rows.filter(row => row.doc.data.name === name);
+      if (modelArray.length) {
+        return modelArray[0].doc;
+      }
+      const error = Error('Not Found');
+      error.status = 404;
+      throw error;
+    });
 };
 
 const postModelsHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return getModel(request.payload.name)
-  .then(() => {
-    const error = Error('Model name already in use');
-    error.status = 409;
-    throw error;
-  })
-  .catch((error) => {
-    if (error.status === 404) {
-      if (!request.payload.cloneModel) {
-        const modelToCreate = {
-          data: {
-            entities: request.payload.entities,
-            changelog: [{
-              message: request.payload.commitMessage,
-              user: request.auth.credentials.user.name,
-              timestamp: new Date().toISOString(),
-            }],
-            name: request.payload.name,
-          }
-        };
-        return db.post(modelToCreate);
+    .then(() => {
+      const error = Error('Model name already in use');
+      error.status = 409;
+      throw error;
+    })
+    .catch((error) => {
+      if (error.status === 404) {
+        if (!request.payload.cloneModel) {
+          const modelToCreate = {
+            data: {
+              entities: request.payload.entities,
+              changelog: [{
+                message: request.payload.commitMessage,
+                user: request.auth.credentials.user.name,
+                timestamp: new Date().toISOString(),
+              }],
+              name: request.payload.name,
+            }
+          };
+          return db.post(modelToCreate);
+        }
+        return getModel(request.payload.cloneModel)
+          .then((originalModel) => {
+            const modelToCreate = {
+              data: {
+                entities: originalModel.data.entities,
+                changelog: [{
+                  message: request.payload.commitMessage,
+                  user: request.auth.credentials.user.name,
+                  timestamp: new Date().toISOString(),
+                }],
+                name: request.payload.name,
+              }
+            };
+            return db.post(modelToCreate);
+          });
       }
-      return getModel(request.payload.cloneModel)
-      .then((originalModel) => {
-        const modelToCreate = {
-          data: {
-            entities: originalModel.data.entities,
-            changelog: [{
-              message: request.payload.commitMessage,
-              user: request.auth.credentials.user.name,
-              timestamp: new Date().toISOString(),
-            }],
-            name: request.payload.name,
-          }
-        };
-        return db.post(modelToCreate);
-      });
-    }
-    throw error;
-  })
-  .then(() => getModel(request.payload.name))
-  .then((newModel) => {
-    const modelResponse = {
-      entities: newModel.data.entities,
-      _rev: newModel._rev,
-      name: newModel.data.name,
-      url: request.buildUrl(`/v2/models/${newModel.data.name}`),
-      changelog_url: request.buildUrl(`/v2/models/${newModel.data.name}/changelog`)
-    };
-    return reply(modelResponse).code(201);
-  })
-  .catch((e) => {
-    logger.error(JSON.stringify(e));
-    return reply(Boom.create(e.status || 500, e.message, e));
-  });
+      throw error;
+    })
+    .then(() => getModel(request.payload.name))
+    .then((newModel) => {
+      const modelResponse = {
+        entities: newModel.data.entities,
+        _rev: newModel._rev,
+        name: newModel.data.name,
+        url: request.buildUrl(`/v2/models/${newModel.data.name}`),
+        changelog_url: request.buildUrl(`/v2/models/${newModel.data.name}/changelog`)
+      };
+      return reply(modelResponse).code(201);
+    })
+    .catch((e) => {
+      logger.error(JSON.stringify(e));
+      return reply(Boom.create(e.status || 500, e.message, e));
+    });
 };
 
 const getModelsHandler = (request, reply) => {
@@ -124,12 +124,12 @@ const getModelsHandler = (request, reply) => {
   return db.allDocs({ include_docs: true })
     .then((modelsRaw) => {
       const orgModels = modelsRaw.rows
-      .map(row =>
-        ({
-          name: row.doc.data.name,
-          url: request.buildUrl(`/v2/models/${row.doc.data.name}`),
-        })
-      );
+        .map(row =>
+          ({
+            name: row.doc.data.name,
+            url: request.buildUrl(`/v2/models/${row.doc.data.name}`),
+          })
+        );
       return reply(orgModels);
     })
     .catch((error) => {
@@ -221,11 +221,11 @@ const putModelHandler = (request, reply) => {
 const deleteModelsHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return getModel(request.params.name)
-  .then(model => db.remove(model._id, model._rev).then(() => reply().code(204)))
-  .catch((error) => {
-    logger.error(JSON.stringify(error));
-    return reply(Boom.create(error.status || 500, error.message, error));
-  });
+    .then(model => db.remove(model._id, model._rev).then(() => reply().code(204)))
+    .catch((error) => {
+      logger.error(JSON.stringify(error));
+      return reply(Boom.create(error.status || 500, error.message, error));
+    });
 };
 
 const routes = [

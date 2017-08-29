@@ -38,12 +38,12 @@ describe('/login', () => {
     sandbox.stub(ldap, 'createClient').returns(ldapStub);
     // act
     return server.inject(req)
-        .then((response) => {
+      .then((response) => {
         // assert
-          expect(response.headers['set-cookie']).to.exist;
-          expect(response.result.user.name).to.eq('foo@bar.com');
-          expect(response.result.user.id).to.eq('foo@bar.com');
-        });
+        expect(response.headers['set-cookie']).to.exist;
+        expect(response.result.user.name).to.eq('foo@bar.com');
+        expect(response.result.user.id).to.eq('foo@bar.com');
+      });
   });
 
   it('logs in - fail', () => {
@@ -56,10 +56,10 @@ describe('/login', () => {
 
     // act
     return server.inject(req)
-        .then((response) => {
+      .then((response) => {
         // assert
-          expect(response.headers['set-cookie']).to.not.exist;
-          expect(response.statusCode).to.equal(401);
-        });
+        expect(response.headers['set-cookie']).to.not.exist;
+        expect(response.statusCode).to.equal(401);
+      });
   });
 });

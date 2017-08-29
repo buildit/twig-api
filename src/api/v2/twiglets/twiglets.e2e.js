@@ -32,19 +32,19 @@ function getTwiglet ({ name }) {
 
 function getEntireTwiglet ({ name }) {
   return getTwiglet({ name })
-  .then(response =>
-    Promise.all([
-      anonAgent.get(`/v2/twiglets/${name}/model`),
-      anonAgent.get(`/v2/twiglets/${name}/changelog`),
-      anonAgent.get(`/v2/twiglets/${name}/views`),
-    ])
-    .then(([model, changelog, views]) => {
-      response.body.model = model.body;
-      response.body.changelog = changelog.body.changelog;
-      response.body.views = views.body.views;
-      return response.body;
-    })
-  );
+    .then(response =>
+      Promise.all([
+        anonAgent.get(`/v2/twiglets/${name}/model`),
+        anonAgent.get(`/v2/twiglets/${name}/changelog`),
+        anonAgent.get(`/v2/twiglets/${name}/views`),
+      ])
+        .then(([model, changelog, views]) => {
+          response.body.model = model.body;
+          response.body.changelog = changelog.body.changelog;
+          response.body.views = views.body.views;
+          return response.body;
+        })
+    );
 }
 
 function getTwiglets () {
@@ -69,7 +69,7 @@ describe('POST /v2/twiglets', () => {
     let res;
 
     before(function* foo () {
-        // act
+      // act
       yield createModel(baseModel());
       res = yield createTwiglet(baseTwiglet());
     });
@@ -331,7 +331,7 @@ describe('POST /v2/twiglets', () => {
 
   describe('(Error)', () => {
     before(function* foo () {
-        // act
+      // act
       yield createModel(baseModel());
       yield createTwiglet(baseTwiglet());
     });

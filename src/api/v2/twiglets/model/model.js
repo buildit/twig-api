@@ -42,18 +42,18 @@ const twigletModelBase = Joi.object({
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({ include_docs: true })
-  .then((twigletsRaw) => {
-    const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
-    if (modelArray.length) {
-      const twiglet = modelArray[0].doc;
-      twiglet.originalId = twiglet._id;
-      twiglet._id = twiglet._id;
-      return twiglet;
-    }
-    const error = Error('Not Found');
-    error.status = 404;
-    throw error;
-  });
+    .then((twigletsRaw) => {
+      const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
+      if (modelArray.length) {
+        const twiglet = modelArray[0].doc;
+        twiglet.originalId = twiglet._id;
+        twiglet._id = twiglet._id;
+        return twiglet;
+      }
+      const error = Error('Not Found');
+      error.status = 404;
+      throw error;
+    });
 };
 
 function ensureEntitiesHaveAttributesAndType (entities) {
@@ -72,20 +72,20 @@ function ensureEntitiesHaveAttributesAndType (entities) {
 
 const getModelHandler = (request, reply) => {
   getTwigletInfoByName(request.params.name)
-  .then((twigletInfo) => {
-    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-    return db.get('model');
-  })
-  .then((doc) => {
-    reply({
-      _rev: doc._rev,
-      entities: ensureEntitiesHaveAttributesAndType(doc.data.entities),
+    .then((twigletInfo) => {
+      const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+      return db.get('model');
+    })
+    .then((doc) => {
+      reply({
+        _rev: doc._rev,
+        entities: ensureEntitiesHaveAttributesAndType(doc.data.entities),
+      });
+    })
+    .catch((error) => {
+      logger.error(JSON.stringify(error));
+      return reply(Boom.create(error.status || 500, error.message, error));
     });
-  })
-  .catch((error) => {
-    logger.error(JSON.stringify(error));
-    return reply(Boom.create(error.status || 500, error.message, error));
-  });
 };
 
 const putModelHandler = (request, reply) => {
@@ -102,52 +102,52 @@ const putModelHandler = (request, reply) => {
     .then((twigletInfo) => {
       const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
       return db.get('model')
-      .then((doc) => {
-        if (doc._rev === request.payload._rev) {
-          doc.data = R.omit(['_rev', 'name', 'nameChanges'], request.payload);
-          return db.put(doc)
-            .then(() => db.get('nodes'))
-            .catch(() => undefined)
-            .then((nodes) => {
-              if (nodes) {
-                const updatedNodes = Object.assign({}, nodes);
-                updatedNodes.data = nodes.data.map(updateNode(oldNameMap));
-                return db.put(updatedNodes);
-              }
-              return undefined;
-            })
-            .then(() => db.get('events'))
-            .catch(() => undefined)
-            .then((events) => {
-              if (events) {
-                const updatedEvents = Object.assign({}, events);
-                updatedEvents.data = updatedEvents.data.map((event) => {
-                  const updatedEvent = Object.assign({}, event);
-                  updatedEvent.nodes = updatedEvent.nodes.map(updateNode(oldNameMap));
-                  return updatedEvent;
-                });
-                return db.put(updatedEvents);
-              }
-              return undefined;
-            })
-            .then(() => {
-              if (request.payload.commitMessage) {
-                return addCommitMessage(
-                  twigletInfo._id,
-                  request.payload.commitMessage,
-                  request.auth.credentials.user.name,
-                  false
-                );
-              }
-              return undefined;
-            })
-            .then(() => doc);
-        }
-        const error = Error('Conflict, bad revision number');
-        error.status = 409;
-        error._rev = doc._rev;
-        throw error;
-      });
+        .then((doc) => {
+          if (doc._rev === request.payload._rev) {
+            doc.data = R.omit(['_rev', 'name', 'nameChanges'], request.payload);
+            return db.put(doc)
+              .then(() => db.get('nodes'))
+              .catch(() => undefined)
+              .then((nodes) => {
+                if (nodes) {
+                  const updatedNodes = Object.assign({}, nodes);
+                  updatedNodes.data = nodes.data.map(updateNode(oldNameMap));
+                  return db.put(updatedNodes);
+                }
+                return undefined;
+              })
+              .then(() => db.get('events'))
+              .catch(() => undefined)
+              .then((events) => {
+                if (events) {
+                  const updatedEvents = Object.assign({}, events);
+                  updatedEvents.data = updatedEvents.data.map((event) => {
+                    const updatedEvent = Object.assign({}, event);
+                    updatedEvent.nodes = updatedEvent.nodes.map(updateNode(oldNameMap));
+                    return updatedEvent;
+                  });
+                  return db.put(updatedEvents);
+                }
+                return undefined;
+              })
+              .then(() => {
+                if (request.payload.commitMessage) {
+                  return addCommitMessage(
+                    twigletInfo._id,
+                    request.payload.commitMessage,
+                    request.auth.credentials.user.name,
+                    false
+                  );
+                }
+                return undefined;
+              })
+              .then(() => doc);
+          }
+          const error = Error('Conflict, bad revision number');
+          error.status = 409;
+          error._rev = doc._rev;
+          throw error;
+        });
     })
     .then(doc =>
       reply({

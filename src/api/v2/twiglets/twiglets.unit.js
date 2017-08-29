@@ -731,28 +731,28 @@ describe('/v2/twiglets', () => {
         it('requires a name', () => {
           delete request.payload.name;
           return server.inject(request)
-          .then((response) => {
-            expect(response.result.statusCode).to.equal(400);
-            expect(response.result.message).to.contain('"name" is required');
-          });
+            .then((response) => {
+              expect(response.result.statusCode).to.equal(400);
+              expect(response.result.message).to.contain('"name" is required');
+            });
         });
 
         it('requires a description', () => {
           delete request.payload.description;
           return server.inject(request)
-          .then((response) => {
-            expect(response.result.statusCode).to.equal(400);
-            expect(response.result.message).to.contain('"description" is required');
-          });
+            .then((response) => {
+              expect(response.result.statusCode).to.equal(400);
+              expect(response.result.message).to.contain('"description" is required');
+            });
         });
 
         it('requires a commit message', () => {
           delete request.payload.commitMessage;
           return server.inject(request)
-          .then((response) => {
-            expect(response.result.statusCode).to.equal(400);
-            expect(response.result.message).to.contain('"commitMessage" is required');
-          });
+            .then((response) => {
+              expect(response.result.statusCode).to.equal(400);
+              expect(response.result.message).to.contain('"commitMessage" is required');
+            });
         });
       });
 
@@ -878,7 +878,7 @@ describe('/v2/twiglets', () => {
           expect(response.statusCode).to.equal(400);
           expect(response.message.includes('some other new node id')).to.be(true);
         })
-        .catch(() => {});
+          .catch(() => {});
       });
 
       it('fails immediately if the rev cannot be split into 3 parts', () => {
@@ -1122,7 +1122,7 @@ describe('/v2/twiglets', () => {
           expect(response.statusCode).to.equal(400);
           expect(response.message.includes('some other new node id')).to.be(true);
         })
-        .catch(() => {});
+          .catch(() => {});
       });
 
       it('fails immediately if the rev cannot be split into 3 parts', () => {
