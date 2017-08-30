@@ -59,6 +59,7 @@ add-cors-to-couchdb
 Then execute the data migration scripts to get started with some organisation models
 
 ```Shell
+npm install
 MODE=local node ./scripts/init-new-db.js
 ```
 
@@ -67,7 +68,6 @@ MODE=local node ./scripts/init-new-db.js
 After you have installed CouchDB, you are ready to get Twig API started. Clone this repository, then run
 
 ```Shell
-npm install
 cp .env.example .env
 npm start
 ```
