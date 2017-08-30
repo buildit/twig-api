@@ -7,12 +7,12 @@ const logger = require('./log')('SERVER');
 const Inert = require('inert');
 const Vision = require('vision');
 const HapiSwagger = require('hapi-swagger');
-const { version, engines } = require('../package');
+const { version } = require('../package');
 const helpers = require('./server.helpers');
 const v1 = require('./api/v1');
 const v2 = require('./api/v2');
 const config = require('./config');
-const semver = require('semver');
+// const semver = require('semver');
 
 const options = {
   info: {
@@ -24,9 +24,9 @@ const options = {
   }
 };
 
-if (!semver.satisfies(process.version, engines.node)) {
-  throw new Error(`Node version '${process.version}' does not satisfy range '${engines.node}'`);
-}
+// if (!semver.satisfies(process.version, engines.node)) {
+//   throw new Error(`Node version '${process.version}' does not satisfy range '${engines.node}'`);
+// }
 
 const ns = cls.createNamespace('hapi-request');
 
