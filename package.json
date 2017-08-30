@@ -22,7 +22,7 @@
     "url": "git@github.com:buildit/twig-api.git"
   },
   "engines": {
-    "node": "^6.10.0"
+    "node": "^6.9.1"
   },
   "bugs": "https://trello.com/b/gvh3zIcI/twig",
   "license": "Apache-2.0",
