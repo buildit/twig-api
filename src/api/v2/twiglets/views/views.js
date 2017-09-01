@@ -15,7 +15,7 @@ const getViewsResponse = Joi.array().items(Joi.object({
 
 const userStateResponse = Joi.object({
   autoConnectivity: Joi.string().required(),
-  autoScale: Joi.string().required(),
+  autoScale: Joi.string(),
   alphaTarget: Joi.number().optional(),
   bidirectionalLinks: Joi.boolean().optional(),
   cascadingCollapse: Joi.boolean().required(),
@@ -30,7 +30,7 @@ const userStateResponse = Joi.object({
   gravityPoints: Joi.object(),
   levelFilter: Joi.number(),
   linkType: Joi.string().required(),
-  nodeSizingAutomatic: Joi.boolean().required(),
+  nodeSizingAutomatic: Joi.boolean(),
   renderOnEveryTick: Joi.boolean(),
   runSimulation: Joi.boolean(),
   scale: Joi.number().required(),

@@ -87,7 +87,6 @@ function twigletDocs (keys) {
             name: 'view name',
             userState: {
               autoConnectivity: 'in',
-              autoScale: 'linear',
               cascadingCollapse: true,
               currentNode: null,
               filters: {
@@ -101,7 +100,6 @@ function twigletDocs (keys) {
               forceLinkStrength: 0.5,
               forceVelocityDecay: 0.9,
               linkType: 'path',
-              nodeSizingAutomatic: true,
               scale: 8,
               showLinkLabels: false,
               showNodeLabels: false,
@@ -570,7 +568,6 @@ describe('/v2/twiglets', () => {
             nodes: {},
             userState: {
               autoConnectivity: 'some string',
-              autoScale: 'some string',
               cascadingCollapse: true,
               currentNode: 'some string',
               filters: { a: 'filter' },
@@ -581,7 +578,6 @@ describe('/v2/twiglets', () => {
               forceLinkStrength: 10,
               forceVelocityDecay: 10,
               linkType: 'some string',
-              nodeSizingAutomatic: true,
               scale: 10,
               showLinkLabels: true,
               showNodeLabels: true,

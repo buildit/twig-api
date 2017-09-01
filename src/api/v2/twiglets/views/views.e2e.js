@@ -42,7 +42,6 @@ function baseView () {
     name: 'view name',
     userState: {
       autoConnectivity: 'in',
-      autoScale: 'linear',
       cascadingCollapse: true,
       currentNode: null,
       filters: [{
@@ -56,7 +55,6 @@ function baseView () {
       forceLinkStrength: 0.5,
       forceVelocityDecay: 0.9,
       linkType: 'path',
-      nodeSizingAutomatic: true,
       scale: 8,
       showLinkLabels: false,
       showNodeLabels: false,

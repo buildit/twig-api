@@ -247,7 +247,6 @@ describe('POST /v2/twiglets', () => {
           nodes: {},
           userState: {
             autoConnectivity: 'some string',
-            autoScale: 'some string',
             cascadingCollapse: true,
             currentNode: 'some string',
             filters: { a: 'filter' },
@@ -258,7 +257,6 @@ describe('POST /v2/twiglets', () => {
             forceLinkStrength: 10,
             forceVelocityDecay: 10,
             linkType: 'some string',
-            nodeSizingAutomatic: true,
             scale: 10,
             showLinkLabels: true,
             showNodeLabels: true,

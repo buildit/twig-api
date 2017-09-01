@@ -22,7 +22,6 @@ function getViewResults () {
         name: 'view name',
         userState: {
           autoConnectivity: 'in',
-          autoScale: 'linear',
           cascadingCollapse: true,
           currentNode: null,
           filters: [{
@@ -36,7 +35,6 @@ function getViewResults () {
           forceLinkStrength: 0.5,
           forceVelocityDecay: 0.9,
           linkType: 'path',
-          nodeSizingAutomatic: true,
           scale: 8,
           showLinkLabels: false,
           showNodeLabels: false,
@@ -183,7 +181,6 @@ describe('/v2/Twiglet::Views', () => {
           name: 'test view',
           userState: {
             autoConnectivity: 'in',
-            autoScale: 'linear',
             cascadingCollapse: true,
             currentNode: null,
             filters: [{
@@ -197,7 +194,6 @@ describe('/v2/Twiglet::Views', () => {
             forceLinkStrength: 0.5,
             forceVelocityDecay: 0.9,
             linkType: 'path',
-            nodeSizingAutomatic: true,
             scale: 8,
             showLinkLabels: false,
             showNodeLabels: false,
@@ -281,7 +277,6 @@ describe('/v2/Twiglet::Views', () => {
           name: 'new view name',
           userState: {
             autoConnectivity: 'in',
-            autoScale: 'linear',
             cascadingCollapse: true,
             currentNode: null,
             filters: [{
@@ -295,7 +290,6 @@ describe('/v2/Twiglet::Views', () => {
             forceLinkStrength: 0.5,
             forceVelocityDecay: 0.9,
             linkType: 'path',
-            nodeSizingAutomatic: true,
             scale: 8,
             showLinkLabels: false,
             showNodeLabels: false,

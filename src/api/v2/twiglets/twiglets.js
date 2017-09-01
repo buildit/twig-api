@@ -77,7 +77,7 @@ const jsonTwigletRequest = Joi.object({
     nodes: Joi.object().required(),
     userState: Joi.object({
       autoConnectivity: Joi.string().required(),
-      autoScale: Joi.string().required(),
+      autoScale: Joi.string(),
       cascadingCollapse: Joi.boolean().required(),
       currentNode: [Joi.string().required().allow(''), Joi.string().required().allow(null)],
       filters: Joi.object().required(),
@@ -89,7 +89,7 @@ const jsonTwigletRequest = Joi.object({
       forceVelocityDecay: Joi.number().required(),
       gravityPoints: Joi.object(),
       linkType: Joi.string().required(),
-      nodeSizingAutomatic: Joi.boolean().required(),
+      nodeSizingAutomatic: Joi.boolean(),
       scale: Joi.number().required(),
       showLinkLabels: Joi.boolean().required(),
       showNodeLabels: Joi.boolean().required(),
