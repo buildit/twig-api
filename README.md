@@ -126,7 +126,7 @@ the guidelines outlined in [Airbnb's JavaScript style guide](https://github.com/
 
 #### CI/CD
 
-Twig API CI/CD assumes the use of [Jenkins](https://jenkins.io/) Pipeline features (as described by the staging and production groovy scripts in the pipelines directory).
+Twig API CI/CD assumes the use of [Jenkins](https://jenkins.io/) Pipeline features (see [Jenkinsfile](Jenkinsfile)).
 
 ##### Opening an issue
 
