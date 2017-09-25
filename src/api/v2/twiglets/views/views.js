@@ -19,6 +19,7 @@ const userStateResponse = Joi.object({
   alphaTarget: Joi.number().optional(),
   bidirectionalLinks: Joi.boolean().optional(),
   cascadingCollapse: Joi.boolean().required(),
+  collisionDistance: Joi.number(),
   currentNode: [Joi.string().required().allow(''), Joi.string().required().allow(null)],
   filters: Joi.array().required(),
   forceChargeStrength: Joi.number().required(),
