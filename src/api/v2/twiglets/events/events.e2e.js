@@ -65,6 +65,28 @@ describe('events', () => {
         expect(res.text).to.equal('OK');
       });
     });
+
+    describe('errors', () => {
+      beforeEach(function* foo () {
+        yield createModel(baseModel());
+        yield createTwiglet(baseTwiglet());
+        yield createEvent(baseTwiglet().name, baseEvent());
+      });
+
+      afterEach('Delete new twiglet', function* foo () {
+        yield deleteTwiglet(baseTwiglet());
+        yield deleteModel(baseModel());
+      });
+
+      it('returns 201', function* foo () {
+        try {
+          yield createEvent(baseTwiglet().name, baseEvent());
+        }
+        catch (error) {
+          expect(error).to.have.status(409);
+        }
+      });
+    });
   });
 
   describe('GET /twiglets/{twigletName}/events', () => {

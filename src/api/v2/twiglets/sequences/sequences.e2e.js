@@ -75,6 +75,15 @@ describe('sequences', () => {
           url: `${url}/twiglets/${baseTwiglet().name}/views/${baseSequence().name}`
         });
       });
+
+      it('errors if the name has already been used', function* foo () {
+        try {
+          yield createSequence(baseTwiglet().name, baseSequence());
+        }
+        catch (error) {
+          expect(error).to.have.status(409);
+        }
+      });
     });
   });
 
@@ -179,6 +188,30 @@ describe('sequences', () => {
 
       it('contains the updated sequence', () => {
         expect(res.body.name).to.equal('a different name');
+      });
+    });
+
+    describe('errors', () => {
+      afterEach('Delete new twiglet', function* foo () {
+        yield deleteTwiglet(baseTwiglet());
+        yield deleteModel(baseModel());
+      });
+
+      it('fails the update if the sequence name is already being used', function* foo () {
+        yield createModel(baseModel());
+        yield createTwiglet(baseTwiglet());
+        yield createSequence(baseTwiglet().name, baseSequence());
+        const anotherSequence = baseSequence();
+        anotherSequence.name = 'sequence name 2';
+        yield createSequence(baseTwiglet().name, anotherSequence);
+        const sequenceSnapshot = (yield getSequences(baseTwiglet().name)).body[1];
+        anotherSequence.name = 'sequence name';
+        try {
+          yield updateSequence(baseTwiglet().name, sequenceSnapshot.id, anotherSequence);
+        }
+        catch (error) {
+          expect(error).to.have.status(409);
+        }
       });
     });
   });

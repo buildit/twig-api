@@ -252,7 +252,7 @@ describe('/v2/Twiglet::Events', () => {
     });
 
     describe('errors', () => {
-      beforeEach(() => {
+      it('throws an error if the event name is already being used', function* foo () {
         const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
         allDocs.resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves({
@@ -270,9 +270,30 @@ describe('/v2/Twiglet::Events', () => {
           ]
         });
         sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
+        const request = req();
+        request.payload.name = 'event 2';
+        const response = yield server.inject(request);
+        expect(response.result.statusCode).to.equal(409);
       });
 
       it('relays the error', () => {
+        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs.resolves({ rows: [{ doc: (twigletInfo()) }] });
+        allDocs.onSecondCall().resolves({
+          rows: [
+            {
+              doc: {
+                data: [],
+              }
+            },
+            {
+              doc: {
+                data: [],
+              }
+            }
+          ]
+        });
+        sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
         sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
         return server.inject(req())
           .then((response) => {

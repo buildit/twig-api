@@ -154,6 +154,14 @@ const postEventsHandler = (request, reply) => {
         });
     })
     .then((doc) => {
+      if (doc.data.some(event => event.name === request.payload.name)) {
+        const error = new Error('Event Name must be unique');
+        error.status = 409;
+        throw error;
+      }
+      return doc;
+    })
+    .then((doc) => {
       const newEvent = R.merge({}, request.payload);
       return db.allDocs({
         include_docs: true,

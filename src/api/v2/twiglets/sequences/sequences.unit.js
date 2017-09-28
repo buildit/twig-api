@@ -221,17 +221,24 @@ describe('/v2/Twiglet::Sequences', () => {
     });
 
     describe('errors', () => {
-      beforeEach(() => {
+      it('relays the error', () => {
         sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
         sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[5].doc);
-      });
-
-      it('relays the error', () => {
         sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
         return server.inject(req())
           .then((response) => {
             expect(response.result.statusCode).to.equal(420);
           });
+      });
+
+      it('errors if the name is not unique', function* foo () {
+        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
+        sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[5].doc);
+        sandbox.stub(PouchDb.prototype, 'put').resolves('');
+        const request = req();
+        request.payload.name = 'sequence 2';
+        const response = yield server.inject(request);
+        expect(response.statusCode).to.equal(409);
       });
     });
   });
@@ -282,18 +289,50 @@ describe('/v2/Twiglet::Sequences', () => {
       });
     });
 
-    describe('errors', () => {
-      beforeEach(() => {
+    describe('success when name does not change', () => {
+      let response;
+      let put;
+      beforeEach(function* foo () {
         sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
         sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[5].doc);
+        put = sandbox.stub(PouchDb.prototype, 'put').resolves('');
+        const request = req();
+        request.payload.name = 'sequence 1';
+        response = yield server.inject(request);
       });
 
+      it('calls put', () => {
+        expect(put.callCount).to.equal(1);
+      });
+
+      it('has a status of OK', () => {
+        expect(response.statusCode).to.equal(200);
+      });
+
+      it('returns the updated sequence', () => {
+        expect(response.result).to.include.keys({ name: 'new sequence name' });
+      });
+    });
+
+    describe('errors', () => {
       it('relays the error', () => {
+        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
+        sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[5].doc);
         sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
         return server.inject(req())
           .then((response) => {
             expect(response.result.statusCode).to.equal(420);
           });
+      });
+
+      it('fails if the sequence name is not unique', function* foo () {
+        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [{ doc: (twigletInfo()) }] });
+        sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[5].doc);
+        sandbox.stub(PouchDb.prototype, 'put').resolves('');
+        const request = req();
+        request.payload.name = 'sequence 2';
+        const response = yield server.inject(request);
+        expect(response.statusCode).to.equal(409);
       });
     });
   });

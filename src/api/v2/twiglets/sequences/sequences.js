@@ -128,6 +128,14 @@ const postSequencesHanlder = (request, reply) => {
         });
     })
     .then((doc) => {
+      if (doc.data.some(sequence => sequence.name === request.payload.name)) {
+        const error = new Error('sequence name must be unique');
+        error.status = 409;
+        throw error;
+      }
+      return doc;
+    })
+    .then((doc) => {
       request.payload.id = uuidV4();
       doc.data.push(request.payload);
       return db.put(doc);
@@ -163,8 +171,14 @@ const putSequenceHandler = (request, reply) => {
       const sequenceIndex = doc.data.findIndex(
         sequence => sequence.id === request.params.sequenceId
       );
+      doc.data.splice(sequenceIndex, 1);
+      if (doc.data.some(sequence => sequence.name === request.payload.name)) {
+        const error = new Error('sequence name must be unique');
+        error.status = 409;
+        throw error;
+      }
       request.payload.id = request.params.sequenceId;
-      doc.data[sequenceIndex] = request.payload;
+      doc.data.push(request.payload);
       return Promise.all([
         db.put(doc)
       ]);
