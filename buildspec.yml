@@ -25,10 +25,10 @@ phases:
       - $(aws ecr get-login)
   build:
     commands:
-      - npm run test:ci
       - npm run lint
-      - npm run validate
-      - npm run security
+      - npm run test:ci
+#      - npm run validate
+#      - npm run security
 #      - /usr/local/bin/sonar-scanner -Dsonar.projectVersion=${version}
       - npm shrinkwrap
       - docker build --tag "$(cat /tmp/build_tag.out)" .
