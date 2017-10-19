@@ -21,5 +21,14 @@ module.exports.routes = [
       tags: ['api'],
     }
   },
+  {
+    method: ['GET'],
+    path: '/ping',
+    handler: ping,
+    config: {
+      auth: { mode: 'try' },
+      tags: ['api'],
+    }
+  },
 ];
 

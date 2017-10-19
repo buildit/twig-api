@@ -9,7 +9,6 @@ const Vision = require('vision');
 const HapiSwagger = require('hapi-swagger');
 const { version, engines } = require('../package');
 const helpers = require('./server.helpers');
-const v1 = require('./api/v1');
 const v2 = require('./api/v2');
 const config = require('./config');
 const semver = require('semver');
@@ -94,7 +93,6 @@ server.register(
   }
 );
 
-Reflect.ownKeys(v1).forEach(key => server.route(v1[key].routes));
 Reflect.ownKeys(v2).forEach(key => server.route(v2[key].routes));
 
 server.start((err) => {

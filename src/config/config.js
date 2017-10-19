@@ -10,7 +10,6 @@ const config = {
     _db_url: process.env.TWIG_API_DB_URL,
     _tenant: process.env.TWIG_API_TENANT,
   },
-  LDAP_URL: process.env.TWIG_API_LDAP_URL,
   LOG_CONSOLE: process.env.TWIG_API_LOG_CONSOLE === 'true',
   LOG_FILE: process.env.TWIG_API_LOG_FILE === 'true',
   LOG_LEVEL: process.env.TWIG_API_LOG_LEVEL,
