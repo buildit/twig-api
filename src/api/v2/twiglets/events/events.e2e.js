@@ -78,7 +78,7 @@ describe('events', () => {
         yield deleteModel(baseModel());
       });
 
-      it('returns 201', function* foo () {
+      it('409 for names not being unique', function* foo () {
         try {
           yield createEvent(baseTwiglet().name, baseEvent());
         }
