@@ -106,7 +106,7 @@ const login = (request, reply) =>
       if (request.payload.email === 'testuser@test.com') {
         return validateHeimdall(request.payload.email, request.payload.password);
       }
-      if (request.payload.email === 'local@user' && config.DB_URL.includes('localhost')) {
+      if (request.payload.email === 'local@user' && (config.DB_URL.includes('localhost') || config.DB_URL.includes('integration-twig-api.buildit.tools'))) {
         return validateLocal(request.payload.email, request.payload.password);
       }
       return validate(request.payload.email, request.payload.password);
