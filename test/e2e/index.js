@@ -6,7 +6,7 @@ const chaiHttp = require('chai-http');
 
 chai.use(chaiHttp);
 
-const url = process.env.URL || 'http://localhost:3000';
+const url = process.env.ENDPOINT_URI || 'http://localhost:3000';
 const authAgent = chai.request.agent(url);
 const anonAgent = chai.request(url);
 
