@@ -15,7 +15,6 @@ chai.use(chaiHttp);
 describe('/v2/login', () => {
   describe('POST', () => {
     it('Bad credentials -> 401', (done) => {
-      console.log('url?', url);
       chai.request(url).post('/v2/login')
         .send({
           email: 'foo@bar.com',
