@@ -39,7 +39,7 @@ function stubModel () {
         },
         changelog: [{
           message: 'Model Created',
-          user: 'test.user@corp.riglet.io',
+          user: 'user@local',
           timestamp: new Date().toISOString(),
         }],
       },

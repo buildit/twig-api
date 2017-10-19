@@ -15,6 +15,7 @@ chai.use(chaiHttp);
 describe('/v2/login', () => {
   describe('POST', () => {
     it('Bad credentials -> 401', (done) => {
+      console.log('url?', url);
       chai.request(url).post('/v2/login')
         .send({
           email: 'foo@bar.com',
@@ -54,8 +55,8 @@ describe('/v2/login', () => {
       let res;
       before('logs in', function* () {
         res = yield chai.request(url).post('/v2/login').send({
-          email: 'twigtest@corp.riglet.io',
-          password: '978f9YYX2n&b',
+          email: 'local@user',
+          password: 'password',
         });
       });
 
@@ -72,8 +73,8 @@ describe('/v2/login', () => {
       it('returns response', () => {
         expect(res.body).to.deep.eq({
           user: {
-            id: 'twigtest@corp.riglet.io',
-            name: 'twigtest@corp.riglet.io'
+            id: 'local@user',
+            name: 'local@user'
           }
         });
       });
@@ -90,12 +91,12 @@ describe('/logout', () => {
         const agent = chai.request.agent(url);
         yield agent.post('/v2/login')
           .send({
-            email: 'twigtest@corp.riglet.io',
-            password: '978f9YYX2n&b',
+            email: 'local@user',
+            password: 'password',
           });
 
         // act
-        response = yield agent.post('/logout');
+        response = yield agent.post('/v2/logout');
       });
 
       it('returns 204', () => {
@@ -109,7 +110,7 @@ describe('/logout', () => {
 
     describe('Unauthenticated agent', () => {
       before(function* () {
-        response = yield anonAgent.post('/logout');
+        response = yield anonAgent.post('/v2/logout');
       });
 
       it('returns 204', () => {

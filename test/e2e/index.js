@@ -11,10 +11,10 @@ const authAgent = chai.request.agent(url);
 const anonAgent = chai.request(url);
 
 before(function* () {
-  yield authAgent.post('/login')
+  yield authAgent.post('/v2/login')
     .send({
-      email: 'twigtest@corp.riglet.io',
-      password: '978f9YYX2n&b',
+      email: 'local@user',
+      password: 'password',
     });
 });
 
