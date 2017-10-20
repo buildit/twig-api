@@ -403,7 +403,7 @@ describe('GET /v2/twiglets/{name}', () => {
           links: [],
           latestCommit: {
             message: 'fee fie fo fum',
-            user: 'twigtest@corp.riglet.io',
+            user: 'local@user',
           }
         }
       ));

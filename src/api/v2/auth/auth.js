@@ -1,6 +1,5 @@
 'use strict';
 
-const ldap = require('ldapjs');
 const Boom = require('boom');
 const Joi = require('joi');
 const config = require('../../../config');
@@ -22,28 +21,6 @@ jwt.verify = (token, cert, callback) => {
       return resolve(verified);
     });
   });
-};
-
-const validate = (email, password) => {
-  const client = ldap.createClient({
-    url: config.LDAP_URL,
-    timeout: 5000,
-    connectTimeout: 10000
-  });
-  return new Promise((resolve, reject) =>
-    client.bind(email, password, (err) => {
-      const status = (err ? err.message : false) || 'OK';
-      client.unbind();
-      if (status !== 'OK') {
-        logger.log(status);
-        return reject();
-      }
-
-      return resolve({
-        id: email,
-        name: email
-      });
-    }));
 };
 
 const validateMothershipJwt = (token) => {
@@ -71,26 +48,9 @@ ${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
     }));
 };
 
-const validateHeimdall = (email, password) =>
-  rp({
-    method: 'POST',
-    url: 'http://staging.heimdall.riglet/auth/local',
-    form: {
-      username: email,
-      password,
-    },
-  })
-    .then(user => JSON.parse(user))
-    .then(user =>
-      ({
-        id: user.emails[0].value,
-        name: `${user.name.familyName}, ${user.name.givenName}`
-      })
-    );
-
 const validateLocal = (email, password) =>
   new Promise((resolve, reject) => {
-    if (password !== 'password') {
+    if (email !== 'local@user' || password !== 'password') {
       return reject();
     }
 
@@ -103,13 +63,10 @@ const validateLocal = (email, password) =>
 const login = (request, reply) =>
   Promise.resolve()
     .then(() => {
-      if (request.payload.email === 'testuser@test.com') {
-        return validateHeimdall(request.payload.email, request.payload.password);
-      }
-      if (request.payload.email === 'local@user' && config.DB_URL.includes('localhost')) {
+      if (config.DB_URL.includes('localhost') || process.env.ENABLE_TEST_USER === true) {
         return validateLocal(request.payload.email, request.payload.password);
       }
-      return validate(request.payload.email, request.payload.password);
+      throw new Error('Please login via mothership');
     })
     .then((user) => {
     // put user in cache w/ a session id as key..put session id in cookie
@@ -127,7 +84,10 @@ const login = (request, reply) =>
         user
       });
     })
-    .catch(() => reply(Boom.unauthorized('Invalid email/password')));
+    .catch((error) => {
+      logger.log(error);
+      reply(Boom.unauthorized('Please login with mothership credentials'));
+    });
 
 const validateJwt = (request, reply) => {
   validateMothershipJwt(request.payload.jwt)

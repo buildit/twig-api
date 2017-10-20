@@ -10,7 +10,6 @@ services:
       - 443:3000
     environment:
       - NODE_ENV=production
-      - TWIG_API_LDAP_URL=ldap://${ad_ip_address}
       - TWIG_API_LOG_CONSOLE=true
       - TWIG_API_LOG_FILE=true
       - TWIG_API_LOG_LEVEL=info
