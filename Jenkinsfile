@@ -94,7 +94,7 @@ pipeline {
 
           def tmpFile = UUID.randomUUID().toString() + ".tmp"
           def ymlData = templateInst.transform(readFile("docker-compose.yml.template"),
-            [tag: tag, registryBase: registryBase, ad_ip_address: ad_ip_address, ENABLE_TEST_USER: true])
+            [tag: tag, registryBase: registryBase, ad_ip_address: ad_ip_address, ENABLE_TEST_USER: "true"])
           writeFile(file: tmpFile, text: ymlData)
 
           convoxInst.login("${env.CONVOX_RACKNAME}")
@@ -140,23 +140,23 @@ pipeline {
         slackChannel
       )
     }
-    failure {
-      slackNotify(
-        "Build Failed - Staging - Branch: ${env.BRANCH_NAME}",
-        "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
-        "danger",
-        "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
-        slackChannel
-      )
-    }
-    unstable {
-      slackNotify(
-        "Build Failed - Staging - Branch: ${env.BRANCH_NAME}",
-        "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
-        "danger",
-        "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
-        slackChannel
-      )
-    }
+    // failure {
+    //   slackNotify(
+    //     "Build Failed - Staging - Branch: ${env.BRANCH_NAME}",
+    //     "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
+    //     "danger",
+    //     "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
+    //     slackChannel
+    //   )
+    // }
+    // unstable {
+    //   slackNotify(
+    //     "Build Failed - Staging - Branch: ${env.BRANCH_NAME}",
+    //     "(<${env.BUILD_URL}|Failed Job>) Commit '<${gitUrl}/commits/${shortCommitHash}|${shortCommitHash}>' failed.\n\n${commitMessage}",
+    //     "danger",
+    //     "http://i296.photobucket.com/albums/mm200/kingzain/the_eye_of_sauron_by_stirzocular-d86f0oo_zpslnqbwhv2.png",
+    //     slackChannel
+    //   )
+    // }
   }
 }
