@@ -94,7 +94,7 @@ pipeline {
 
           def tmpFile = UUID.randomUUID().toString() + ".tmp"
           def ymlData = templateInst.transform(readFile("docker-compose.yml.template"),
-            [tag: tag, registryBase: registryBase, ad_ip_address: ad_ip_address])
+            [tag: tag, registryBase: registryBase, ad_ip_address: ad_ip_address, ENABLE_TEST_USER: true])
           writeFile(file: tmpFile, text: ymlData)
 
           convoxInst.login("${env.CONVOX_RACKNAME}")
