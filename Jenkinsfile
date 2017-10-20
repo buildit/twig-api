@@ -11,6 +11,7 @@ def ad_ip_address
 def shortCommitHash
 def commitMessage
 def image
+def ENABLE_TEST_USER = "true";
 
 pipeline {
   agent any
@@ -94,7 +95,7 @@ pipeline {
 
           def tmpFile = UUID.randomUUID().toString() + ".tmp"
           def ymlData = templateInst.transform(readFile("docker-compose.yml.template"),
-            [tag: tag, registryBase: registryBase, ad_ip_address: ad_ip_address, ENABLE_TEST_USER: "true"])
+            [tag: tag, registryBase: registryBase, ad_ip_address: ad_ip_address, ENABLE_TEST_USER: ENABLE_TEST_USER])
           writeFile(file: tmpFile, text: ymlData)
 
           convoxInst.login("${env.CONVOX_RACKNAME}")
