@@ -63,7 +63,7 @@ const validateLocal = (email, password) =>
 const login = (request, reply) =>
   Promise.resolve()
     .then(() => {
-      if (config.DB_URL.includes('localhost') || process.env.ENABLE_TEST_USER === true) {
+      if (config.DB_URL.includes('localhost') || process.env.ENABLE_TEST_USER === true || process.env.ENABLE_TEST_USER === 'true') {
         return validateLocal(request.payload.email, request.payload.password);
       }
       throw new Error(`Please login via mothership: ${JSON.stringify(process.env)}`);
