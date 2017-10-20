@@ -66,7 +66,7 @@ const login = (request, reply) =>
       if (config.DB_URL.includes('localhost') || process.env.ENABLE_TEST_USER === true) {
         return validateLocal(request.payload.email, request.payload.password);
       }
-      throw new Error('Please login via mothership', JSON.stringify(process.env));
+      throw new Error(`Please login via mothership: ${JSON.stringify(process.env)}`);
     })
     .then((user) => {
     // put user in cache w/ a session id as key..put session id in cookie
