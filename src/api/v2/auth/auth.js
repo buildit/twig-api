@@ -51,7 +51,7 @@ ${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
 const validateLocal = (email, password) =>
   new Promise((resolve, reject) => {
     if (email !== 'local@user' || password !== 'password') {
-      return reject();
+      return reject('Bad local username/password');
     }
 
     return resolve({
@@ -86,7 +86,7 @@ const login = (request, reply) =>
     })
     .catch((error) => {
       logger.log(error);
-      reply(Boom.unauthorized('Please login with mothership credentials'));
+      reply(Boom.unauthorized(error.message));
     });
 
 const validateJwt = (request, reply) => {

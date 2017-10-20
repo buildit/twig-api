@@ -11,7 +11,7 @@ def ad_ip_address
 def shortCommitHash
 def commitMessage
 def image
-def ENABLE_TEST_USER = "true";
+def ENABLE_TEST_USER
 
 pipeline {
   agent any
@@ -84,6 +84,7 @@ pipeline {
       when { branch 'master' }
       steps {
         script {
+          ENABLE_TEST_USER = true;
           def convoxInst = new convox()
           def templateInst = new template()
           def ecrInst = new ecr()
