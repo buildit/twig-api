@@ -64,6 +64,31 @@ const getSequence = (twigletName, sequenceId) =>
       throw error;
     });
 
+const getSequenceDetails = (twigletName, sequenceId) =>
+  getSequence(twigletName, sequenceId)
+    .then((sequence) => {
+      const eventsMap = sequence.events.reduce((map, eventId) => {
+        map[eventId] = true;
+        return map;
+      }, {});
+
+      return getTwigletInfoByName(twigletName)
+        .then((twigletInfo) => {
+          const db =
+            new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+          return db.get('events');
+        })
+        .then((eventsRaw) => {
+          if (eventsRaw.data) {
+            sequence.events = eventsRaw.data.filter(row => eventsMap[row.id]);
+            return sequence;
+          }
+          const error = Error('Not found');
+          error.status = 404;
+          throw error;
+        });
+    });
+
 const getSequencesHandler = (request, reply) =>
   getTwigletInfoByName(request.params.twigletName)
     .then((twigletInfo) => {
@@ -93,6 +118,25 @@ const getSequencesHandler = (request, reply) =>
 
 const getSequenceHandler = (request, reply) =>
   getSequence(request.params.twigletName, request.params.sequenceId)
+    .then((sequence) => {
+      const sequenceId = request.params.sequenceId;
+      const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
+      const sequenceResponse = {
+        id: sequence.id,
+        description: sequence.description,
+        name: sequence.name,
+        events: sequence.events,
+        url: request.buildUrl(sequenceUrl)
+      };
+      return reply(sequenceResponse);
+    })
+    .catch((error) => {
+      logger.error(JSON.stringify(error));
+      return reply(Boom.create(error.status || 500, error.message, error));
+    });
+
+const getSequenceDetailsHandler = (request, reply) =>
+  getSequenceDetails(request.params.twigletName, request.params.sequenceId)
     .then((sequence) => {
       const sequenceId = request.params.sequenceId;
       const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
@@ -245,6 +289,16 @@ module.exports.routes = [
     config: {
       auth: { mode: 'optional' },
       response: { schema: getSequenceResponse },
+      tags: ['api'],
+    }
+  },
+  {
+    method: ['GET'],
+    path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}/details',
+    handler: getSequenceDetailsHandler,
+    config: {
+      auth: { mode: 'optional' },
+      // response: { schema: getSequenceResponse },
       tags: ['api'],
     }
   },

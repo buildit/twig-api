@@ -8,22 +8,6 @@ const logger = require('../../../../log')('EVENTS');
 const uuidV4 = require('uuid/v4');
 const R = require('ramda');
 
-const eventsCache = {};
-const eventsCacheTimers = {};
-let cacheTime = 1000;
-
-function clearCacheForTesting () {
-  Reflect.ownKeys(eventsCache).forEach(key => delete eventsCache[key]);
-  Reflect.ownKeys(eventsCacheTimers).forEach((key) => {
-    clearTimeout(eventsCacheTimers[key]);
-    delete eventsCacheTimers[key];
-  });
-}
-
-function setCacheTimeForTesting (time) {
-  cacheTime = time;
-}
-
 const getEventsResponse = Joi.array().items(Joi.object({
   description: Joi.string().allow(''),
   id: Joi.string().required(),
@@ -89,77 +73,23 @@ const getTwigletInfoByName = (name) => {
     });
 };
 
-const getEvent = (twigletName, eventId) => {
-  function clearCache () {
-    delete eventsCache[twigletName];
-  }
-
-  function timeoutCache () {
-    if (eventsCacheTimers[twigletName]) {
-      clearTimeout(eventsCacheTimers[twigletName]);
-    }
-    eventsCacheTimers[twigletName] =
-      setTimeout(clearCache, cacheTime);
-  }
-
-  function getEvents () {
-    if (eventsCache[twigletName]) {
-      timeoutCache();
-      return Promise.resolve(eventsCache[twigletName]);
-    }
-
-    return getTwigletInfoByName(twigletName)
-      .then((twigletInfo) => {
-        const db =
-          new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-        return db.get('events');
-      })
-      .then((eventsRaw) => {
-        eventsCache[twigletName] = eventsRaw;
-        timeoutCache();
-        return eventsCache[twigletName];
-      });
-  }
-
-  function filterEvent (eventsRaw) {
-    const eventArray = eventsRaw.data.filter(row => row.id === eventId);
-    if (eventArray.length) {
-      return eventArray[0];
-    }
-    return undefined;
-  }
-
-  function doFiltering () {
-    return getEvents()
-      .then((eventsRaw) => {
-        if (eventsRaw.data) {
-          const event = filterEvent(eventsRaw, eventId);
-          if (event) {
-            return event;
-          }
+const getEvent = (twigletName, eventId) =>
+  getTwigletInfoByName(twigletName)
+    .then((twigletInfo) => {
+      const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+      return db.get('events');
+    })
+    .then((eventsRaw) => {
+      if (eventsRaw.data) {
+        const eventArray = eventsRaw.data.filter(row => row.id === eventId);
+        if (eventArray.length) {
+          return eventArray[0];
         }
-        return undefined;
-      });
-  }
-
-  return doFiltering()
-    .then((eventFirstTry) => {
-      if (eventFirstTry) {
-        return eventFirstTry;
       }
-      clearCache();
-      return doFiltering()
-        .then((eventSecondTry) => {
-          if (eventSecondTry) {
-            return eventSecondTry;
-          }
-
-          const error = Error('Not Found');
-          error.status = 404;
-          throw error;
-        });
+      const error = Error('Not Found');
+      error.status = 404;
+      throw error;
     });
-};
 
 const getEventsHandler = (request, reply) =>
   getTwigletInfoByName(request.params.twigletName)
@@ -309,8 +239,6 @@ const deleteAllEventsHandler = (request, reply) => {
 };
 
 module.exports = {
-  clearCacheForTesting,
-  setCacheTimeForTesting,
   routes: [
     {
       method: ['GET'],
