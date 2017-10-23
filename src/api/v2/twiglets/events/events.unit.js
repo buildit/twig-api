@@ -93,14 +93,18 @@ describe('/v2/Twiglet::Events', () => {
 
     beforeEach(() => {
       const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
-      allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
+      allDocs.resolves({ rows: [{ doc: (twigletInfo()) }] });
     });
 
     describe('success', () => {
       let response;
+      let get = sandbox.stub();
+      const cacheTime = 100;
 
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
+        Events.setCacheTimeForTesting(cacheTime);
+        Events.clearCacheForTesting();
+        get = sandbox.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
         response = yield server.inject(req());
       });
 
@@ -129,16 +133,29 @@ describe('/v2/Twiglet::Events', () => {
         const eventUrl = '/twiglets/Some%20Twiglet/events/bd79213c-8e17-49bc-9fc2-392f3c5acd28';
         expect(response.result.url).to.exist.and.endsWith(eventUrl);
       });
+
+      it('uses the cache for future requests', function* foo () {
+        yield server.inject(req());
+        expect(get.callCount).to.equal(1);
+      });
+
+      it('expires the cache', function* foo () {
+        yield new Promise(resolve => setTimeout(resolve, cacheTime));
+        yield server.inject(req());
+        expect(get.callCount).to.equal(2);
+      });
     });
 
     describe('errors', () => {
       it('relays errors', function* foo () {
+        Events.clearCacheForTesting();
         sandbox.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
         const response = yield server.inject(req());
         expect(response.statusCode).to.equal(420);
       });
 
       it('passes 500 for unknown errors', function* foo () {
+        Events.clearCacheForTesting();
         sandbox.stub(PouchDb.prototype, 'get').rejects({ message: 'some message' });
         const response = yield server.inject(req());
         expect(response.statusCode).to.equal(500);
