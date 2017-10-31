@@ -140,8 +140,11 @@ describe('POST /v2/models', () => {
     let res;
 
     before(function* foo () {
+      console.log('baseModel');
       yield createModel(baseModel());
+      console.log('cloneModel');
       res = yield createModel(cloneModel());
+      console.log('done with clone before');
     });
 
     after(function* foo () {

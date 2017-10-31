@@ -221,7 +221,8 @@ const putModelHandler = (request, reply) => {
 const deleteModelsHandler = (request, reply) => {
   const db = new PouchDB(config.getTenantDatabaseString('organisation-models'));
   return getModel(request.params.name)
-    .then(model => db.remove(model._id, model._rev).then(() => reply().code(204)))
+    .then(model => db.remove(model._id, model._rev))
+    .then(() => reply().code(204))
     .catch((error) => {
       logger.error(JSON.stringify(error));
       return reply(Boom.create(error.status || 500, error.message, error));
