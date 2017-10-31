@@ -131,7 +131,9 @@ describe('POST /v2/models', () => {
       });
     });
 
-    after(() => deleteModel(baseModel()));
+    after(function* foo () {
+      yield deleteModel(baseModel());
+    });
   });
 
   describe('(Clone)', () => {
@@ -232,7 +234,9 @@ describe('GET /models/{name}', () => {
       expect(res.body.changelog_url).to.endsWith('/models/model1/changelog');
     });
 
-    after(() => deleteModel(baseModel()));
+    after(function* foo () {
+      yield deleteModel(baseModel());
+    });
   });
 
   describe('(Error)', () => {
@@ -273,7 +277,9 @@ describe('PUT /models/{name}', () => {
       expect(res.body.changelog_url).to.endsWith('/models/model2/changelog');
     });
 
-    after(() => deleteModel(baseModel2()));
+    after(function* foo () {
+      yield deleteModel(baseModel2());
+    });
   });
 
   describe('(Error)', () => {
