@@ -3,13 +3,17 @@
 const ramda = require('ramda');
 const config = require('../../../config');
 const version = require('../../../../package').version;
+const rp = require('request-promise');
 
 const ping = (request, reply) =>
-  reply({
-    version,
-    config: ramda.omit('_secrets')(config),
-    authenticated: request.auth.credentials,
-  });
+  rp.get(config.DB_URL)
+    .then(couchdbResponse => JSON.parse(couchdbResponse))
+    .then(couchdbResponse => reply({
+      version,
+      couchdbVersion: couchdbResponse.version,
+      config: ramda.omit('_secrets')(config),
+      authenticated: request.auth.credentials,
+    }));
 
 module.exports.routes = [
   {
