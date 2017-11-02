@@ -7,6 +7,7 @@ const rp = require('request-promise');
 
 const ping = (request, reply) =>
   rp.get(config.DB_URL)
+    .catch(() => JSON.stringify({ version: 'COUCH NOT UP' }))
     .then(couchdbResponse => JSON.parse(couchdbResponse))
     .then(couchdbResponse => reply({
       version,
