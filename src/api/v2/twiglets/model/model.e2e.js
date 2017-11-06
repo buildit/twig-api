@@ -5,9 +5,13 @@
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const { authAgent } = require('../../../../../test/e2e');
+const { authAgent, addWait } = require('../../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
+
+function updateModel (twigletName, data) {
+  return addWait(authAgent.put(`/v2/twiglets/${twigletName}/model`).send(data));
+}
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -28,55 +32,53 @@ describe('/v2/twiglets/{name}/model', () => {
       });
 
       it('updates a model', function* () {
-        const res = yield authAgent.put(`/v2/twiglets/${baseTwiglet().name}/model`)
-          .send({
-            _rev,
-            entities: {
-              some: {
-                type: 'some',
-                color: '#008800',
-                size: '40',
-                class: 'idk',
-                image: 'S',
-                attributes: [],
-              },
-              entity: {
-                type: 'entity',
-                color: '#880000',
-                size: '30',
-                class: 'still do not know',
-                image: 'E',
-                attributes: [],
-              }
+        const res = yield updateModel(baseTwiglet().name, {
+          _rev,
+          entities: {
+            some: {
+              type: 'some',
+              color: '#008800',
+              size: '40',
+              class: 'idk',
+              image: 'S',
+              attributes: [],
             },
-            nameChanges: [],
-          });
+            entity: {
+              type: 'entity',
+              color: '#880000',
+              size: '30',
+              class: 'still do not know',
+              image: 'E',
+              attributes: [],
+            }
+          },
+          nameChanges: [],
+        });
         expect(res).to.have.status(200);
       });
 
       it('updates a model (without nameChanges coming in)', function* () {
-        const res = yield authAgent.put(`/v2/twiglets/${baseTwiglet().name}/model`)
-          .send({
-            _rev,
-            entities: {
-              some: {
-                type: 'some',
-                color: '#008800',
-                size: '40',
-                class: 'idk',
-                image: 'S',
-                attributes: [],
-              },
-              entity: {
-                type: 'entity',
-                color: '#880000',
-                size: '30',
-                class: 'still do not know',
-                image: 'E',
-                attributes: [],
-              }
+        const res = yield updateModel(baseTwiglet().name, {
+          _rev,
+          entities: {
+            some: {
+              type: 'some',
+              color: '#008800',
+              size: '40',
+              class: 'idk',
+              image: 'S',
+              attributes: [],
             },
-          });
+            entity: {
+              type: 'entity',
+              color: '#880000',
+              size: '30',
+              class: 'still do not know',
+              image: 'E',
+              attributes: [],
+            }
+          },
+        });
         expect(res).to.have.status(200);
       });
     });

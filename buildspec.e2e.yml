@@ -15,4 +15,5 @@ phases:
       - npm install
   build:
     commands:
-      - npm run test:e2e:ci
+      # seem to be having some sync issues with couchdb.
+      - HTTP_WAIT_TIME=100 npm run test:e2e:ci

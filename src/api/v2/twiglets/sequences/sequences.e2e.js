@@ -6,7 +6,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
-const { authAgent, anonAgent, url } = require('../../../../../test/e2e');
+const { authAgent, anonAgent, url, addWait } = require('../../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
@@ -15,7 +15,7 @@ chai.use(chaiHttp);
 chai.use(chaiSubset);
 
 function createSequence (twigletName, sequence) {
-  return authAgent.post(`/v2/twiglets/${twigletName}/sequences`).send(sequence);
+  return addWait(authAgent.post(`/v2/twiglets/${twigletName}/sequences`).send(sequence));
 }
 
 function hitUrl (firstUrl, type = 'get', auth = false) {
@@ -35,7 +35,7 @@ function getSequences (twigletName) {
 }
 
 function updateSequence (twigletName, sequenceId, sequence) {
-  return authAgent.put(`/v2/twiglets/${twigletName}/sequences/${sequenceId}`).send(sequence);
+  return addWait(authAgent.put(`/v2/twiglets/${twigletName}/sequences/${sequenceId}`).send(sequence));
 }
 
 function baseSequence () {

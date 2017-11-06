@@ -7,7 +7,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
 const R = require('ramda');
-const { authAgent, anonAgent, url } = require('../../../../test/e2e');
+const { authAgent, anonAgent, url, addWait } = require('../../../../test/e2e');
 const { createModel, deleteModel, baseModel } = require('../models/models.e2e.js');
 
 const expect = chai.expect;
@@ -15,11 +15,11 @@ chai.use(chaiHttp);
 chai.use(chaiSubset);
 
 function createTwiglet (twiglet) {
-  return authAgent.post('/v2/twiglets').send(twiglet);
+  return addWait(authAgent.post('/v2/twiglets').send(twiglet));
 }
 
 function updateTwiglet (name, twiglet) {
-  return authAgent.put(`/v2/twiglets/${name}`).send(twiglet);
+  return addWait(authAgent.put(`/v2/twiglets/${name}`).send(twiglet));
 }
 
 function patchTwiglet (name, twiglet) {
@@ -52,7 +52,7 @@ function getTwiglets () {
 }
 
 function deleteTwiglet ({ name }) {
-  return authAgent.delete(`/v2/twiglets/${name}`);
+  return addWait(authAgent.delete(`/v2/twiglets/${name}`));
 }
 
 function baseTwiglet () {
@@ -758,8 +758,8 @@ describe('DELETE /v2/twiglets/{name}', () => {
 
     it('returns 404 when twiglet doesnt exist', (done) => {
       deleteTwiglet(baseTwiglet())
-        .end((err, response) => {
-          expect(response).to.have.status(404);
+        .catch((error) => {
+          expect(error).to.have.status(404);
           done();
         });
     });

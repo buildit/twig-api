@@ -6,7 +6,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
-const { authAgent, anonAgent } = require('../../../../../test/e2e');
+const { authAgent, anonAgent, addWait } = require('../../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
@@ -15,7 +15,7 @@ chai.use(chaiHttp);
 chai.use(chaiSubset);
 
 function createEvent (twigletName, event) {
-  return authAgent.post(`/v2/twiglets/${twigletName}/events`).send(event);
+  return addWait(authAgent.post(`/v2/twiglets/${twigletName}/events`).send(event));
 }
 
 function hitUrl (url, type = 'get', auth = false) {

@@ -5,18 +5,18 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 chai.use(require('chai-string'));
-const { anonAgent, authAgent, url } = require('../../../../test/e2e');
+const { anonAgent, authAgent, url, addWait } = require('../../../../test/e2e');
 const R = require('ramda');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
 
 function createModel (model) {
-  return authAgent.post('/v2/models').send(model);
+  return addWait(authAgent.post('/v2/models').send(model));
 }
 
 function updateModel (name, model) {
-  return authAgent.put(`/v2/models/${name}`).send(model);
+  return addWait(authAgent.put(`/v2/models/${name}`).send(model));
 }
 
 function getModel ({ name }) {
@@ -28,7 +28,7 @@ function getModels () {
 }
 
 function deleteModel ({ name }) {
-  return authAgent.delete(`/v2/models/${name}`);
+  return addWait(authAgent.delete(`/v2/models/${name}`));
 }
 
 function baseModel () {
