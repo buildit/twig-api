@@ -595,6 +595,7 @@ const getTwigletJsonHandler = (request, reply) =>
 
 module.exports = {
   getTwigletInfoByName,
+  checkNodesAreInModel,
   routes: [
     {
       method: ['POST'],
