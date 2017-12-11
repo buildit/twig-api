@@ -6,10 +6,10 @@ services:
     build:
       context: .
       dockerfile: local.Dockerfile
+    environment:
+      TWIG_API_DB_URL: http://couchdb:5984
     ports:
       - 3000:3000
-    environment:
-      - TWIG_API_DB_URL=http://couchdb:5984
     links:
       - couchdb
     depends_on: 

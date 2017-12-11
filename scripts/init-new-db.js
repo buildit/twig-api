@@ -9,8 +9,6 @@ const { checkNodesAreInModel } = require('../src/api/v2/twiglets');
 const env = process.env.MODE || process.env.NODE_ENV || 'local';
 let dbURL = '';
 
-console.log(process.env, process.env.TWIG_API_DB_URL)
-
 if (process.env.TWIG_API_DB_URL) {
   dbURL = process.env.TWIG_API_DB_URL
 } else {
