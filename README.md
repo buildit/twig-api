@@ -37,10 +37,8 @@ brew install couchdb
 
 To install/run with Docker:
 ```bash
-docker pull couchdb:1
-
 # expose it to the world on port 5984
-docker run -d -p 5984:5984 --name couchdb couchdb:1
+docker run -d --rm -p 5984:5984 --name couchdb couchdb:1
 ```
 
 Once CouchDB is installed, it should be running at [http://localhost:5984](http://localhost:5984). If you open
