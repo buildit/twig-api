@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 COPY package.json /usr/src/app/
 RUN npm install --production
 COPY scripts/ /usr/src/app/scripts
-COPY handle-couch-cors.sh ./
+COPY docker/handle-couch-cors.sh ./
 
 # Bundle app source
 COPY src/ /usr/src/app/src/
