@@ -76,6 +76,19 @@ To see a list of twiglets, navigate to http://localhost:3000/v2/twiglets.
 
 To see a list of models, navigate to http://localhost:3000/v2/models.
 
+#### Docker Run
+
+To run this project with no environment setup, you can run the following command from the root.
+
+`docker-compose up`
+
+When done run the following to teardown the contents running in the background.
+
+`docker-compose down`
+
+This version of docker is purely meant for running this repo. It is not intended for live development
+and runs a production version of the project.
+
 #### Documentation
 
 Twig API is documented using [Swagger](http://swagger.io/). If running Twig API locally, navigate to http://localhost:3000/documentation to view the documentation.

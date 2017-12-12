@@ -1,0 +1,16 @@
+version: "3"
+services:
+  couchdb:
+    image: couchdb:1
+  twig-api:
+    build:
+      context: .
+      dockerfile: docker/local.Dockerfile
+    environment:
+      TWIG_API_DB_URL: http://couchdb:5984
+    ports:
+      - 3000:3000
+    links:
+      - couchdb
+    depends_on: 
+      - couchdb
