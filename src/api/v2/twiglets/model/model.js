@@ -6,10 +6,12 @@ const config = require('../../../../config');
 const logger = require('../../../../log')('MODEL');
 const Joi = require('joi');
 const R = require('ramda');
-const { addCommitMessage } = require('../changelog');
+const {
+  addCommitMessage
+} = require('../changelog');
 
-function updateNode (oldNameMap) {
-  return function map (node) {
+function updateNode(oldNameMap) {
+  return function map(node) {
     const updatedNode = Object.assign({}, node);
     if (oldNameMap[updatedNode.type]) {
       updatedNode.type = oldNameMap[updatedNode.type];
@@ -32,7 +34,7 @@ const twigletModelBase = Joi.object({
       required: Joi.bool().required(),
     })).required(),
   })),
-  nameChanges: Joi.array(Joi.object({
+  nameChanges: Joi.array().items(Joi.object({
     originalType: Joi.string(),
     currentType: Joi.string(),
   })),
@@ -41,7 +43,9 @@ const twigletModelBase = Joi.object({
 
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
-  return twigletLookupDb.allDocs({ include_docs: true })
+  return twigletLookupDb.allDocs({
+      include_docs: true
+    })
     .then((twigletsRaw) => {
       const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
       if (modelArray.length) {
@@ -56,16 +60,22 @@ const getTwigletInfoByName = (name) => {
     });
 };
 
-function ensureEntitiesHaveAttributesAndType (entities) {
+function ensureEntitiesHaveAttributesAndType(entities) {
   return Reflect.ownKeys(entities).reduce((object, key) => {
     let entity = entities[key];
     if (!entity.attributes) {
-      entity = R.merge(entity, { attributes: [] });
+      entity = R.merge(entity, {
+        attributes: []
+      });
     }
     if (!entity.type) {
-      entity = R.merge(entity, { type: key });
+      entity = R.merge(entity, {
+        type: key
+      });
     }
-    return R.merge(object, { [key]: entity });
+    return R.merge(object, {
+      [key]: entity
+    });
   }, {});
 }
 
@@ -73,7 +83,9 @@ function ensureEntitiesHaveAttributesAndType (entities) {
 const getModelHandler = (request, reply) => {
   getTwigletInfoByName(request.params.name)
     .then((twigletInfo) => {
-      const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+      const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), {
+        skip_setup: true
+      });
       return db.get('model');
     })
     .then((doc) => {
@@ -100,7 +112,9 @@ const putModelHandler = (request, reply) => {
   }
   getTwigletInfoByName(request.params.name)
     .then((twigletInfo) => {
-      const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+      const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), {
+        skip_setup: true
+      });
       return db.get('model')
         .then((doc) => {
           if (doc._rev === request.payload._rev) {
@@ -163,14 +177,17 @@ const putModelHandler = (request, reply) => {
     });
 };
 
-module.exports.routes = [
-  {
+module.exports.routes = [{
     method: ['GET'],
     path: '/v2/twiglets/{name}/model',
     handler: getModelHandler,
     config: {
-      auth: { mode: 'optional' },
-      response: { schema: twigletModelBase },
+      auth: {
+        mode: 'optional'
+      },
+      response: {
+        schema: twigletModelBase
+      },
       tags: ['api'],
     }
   },
@@ -182,7 +199,9 @@ module.exports.routes = [
       validate: {
         payload: twigletModelBase,
       },
-      response: { schema: twigletModelBase },
+      response: {
+        schema: twigletModelBase
+      },
       tags: ['api'],
     }
   },

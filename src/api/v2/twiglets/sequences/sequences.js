@@ -17,7 +17,7 @@ const getSequenceResponse = Joi.object({
 
 const getSequencesResponse = Joi.array().items(Joi.object({
   description: Joi.string().allow(''),
-  events: Joi.array(Joi.string()).required(),
+  events: Joi.array().items(Joi.string()).required(),
   name: Joi.string().required(),
   id: Joi.string().required(),
   url: Joi.string().uri().required(),
@@ -31,7 +31,9 @@ const createSequenceRequest = Joi.object({
 
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
-  return twigletLookupDb.allDocs({ include_docs: true })
+  return twigletLookupDb.allDocs({
+      include_docs: true
+    })
     .then((twigletsRaw) => {
       const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
       if (modelArray.length) {
@@ -48,124 +50,133 @@ const getTwigletInfoByName = (name) => {
 
 const getSequence = (twigletName, sequenceId) =>
   getTwigletInfoByName(twigletName)
-    .then((twigletInfo) => {
-      const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-      return db.get('sequences');
-    })
-    .then((sequencesRaw) => {
-      if (sequencesRaw.data) {
-        const sequenceArray = sequencesRaw.data.filter(row => row.id === sequenceId);
-        if (sequenceArray.length) {
-          return sequenceArray[0];
-        }
-      }
-      const error = Error('Not found');
-      error.status = 404;
-      throw error;
+  .then((twigletInfo) => {
+    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), {
+      skip_setup: true
     });
+    return db.get('sequences');
+  })
+  .then((sequencesRaw) => {
+    if (sequencesRaw.data) {
+      const sequenceArray = sequencesRaw.data.filter(row => row.id === sequenceId);
+      if (sequenceArray.length) {
+        return sequenceArray[0];
+      }
+    }
+    const error = Error('Not found');
+    error.status = 404;
+    throw error;
+  });
 
 const getSequenceDetails = (twigletName, sequenceId) =>
   getSequence(twigletName, sequenceId)
-    .then((sequence) => {
-      const eventsMap = sequence.events.reduce((map, eventId) => {
-        map[eventId] = true;
-        return map;
-      }, {});
+  .then((sequence) => {
+    const eventsMap = sequence.events.reduce((map, eventId) => {
+      map[eventId] = true;
+      return map;
+    }, {});
 
-      return getTwigletInfoByName(twigletName)
-        .then((twigletInfo) => {
-          const db =
-            new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-          return db.get('events');
-        })
-        .then((eventsRaw) => {
-          if (eventsRaw.data) {
-            sequence.events = eventsRaw.data.filter(row => eventsMap[row.id]);
-            return sequence;
-          }
-          const error = Error('Not found');
-          error.status = 404;
-          throw error;
-        });
-    });
+    return getTwigletInfoByName(twigletName)
+      .then((twigletInfo) => {
+        const db =
+          new PouchDb(config.getTenantDatabaseString(twigletInfo._id), {
+            skip_setup: true
+          });
+        return db.get('events');
+      })
+      .then((eventsRaw) => {
+        if (eventsRaw.data) {
+          sequence.events = eventsRaw.data.filter(row => eventsMap[row.id]);
+          return sequence;
+        }
+        const error = Error('Not found');
+        error.status = 404;
+        throw error;
+      });
+  });
 
 const getSequencesHandler = (request, reply) =>
   getTwigletInfoByName(request.params.twigletName)
-    .then((twigletInfo) => {
-      const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-      return db.get('sequences');
-    })
-    .then((sequences) => {
-      const sequencesArray = sequences.data
-        .map(item =>
-          ({
-            description: item.description,
-            events: item.events,
-            id: item.id,
-            name: item.name,
-            url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/sequences/${item.id}`)
-          })
-        );
-      return reply(sequencesArray);
-    })
-    .catch((error) => {
-      if (error.status === 404) {
-        return reply([]).code(200);
-      }
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
+  .then((twigletInfo) => {
+    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), {
+      skip_setup: true
     });
+    return db.get('sequences');
+  })
+  .then((sequences) => {
+    const sequencesArray = sequences.data
+      .map(item =>
+        ({
+          description: item.description,
+          events: item.events,
+          id: item.id,
+          name: item.name,
+          url: request.buildUrl(
+            `/v2/twiglets/${request.params.twigletName}/sequences/${item.id}`)
+        })
+      );
+    return reply(sequencesArray);
+  })
+  .catch((error) => {
+    if (error.status === 404) {
+      return reply([]).code(200);
+    }
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
+  });
 
 const getSequenceHandler = (request, reply) =>
   getSequence(request.params.twigletName, request.params.sequenceId)
-    .then((sequence) => {
-      const sequenceId = request.params.sequenceId;
-      const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
-      const sequenceResponse = {
-        id: sequence.id,
-        description: sequence.description,
-        name: sequence.name,
-        events: sequence.events,
-        url: request.buildUrl(sequenceUrl)
-      };
-      return reply(sequenceResponse);
-    })
-    .catch((error) => {
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
+  .then((sequence) => {
+    const sequenceId = request.params.sequenceId;
+    const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
+    const sequenceResponse = {
+      id: sequence.id,
+      description: sequence.description,
+      name: sequence.name,
+      events: sequence.events,
+      url: request.buildUrl(sequenceUrl)
+    };
+    return reply(sequenceResponse);
+  })
+  .catch((error) => {
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
+  });
 
 const getSequenceDetailsHandler = (request, reply) =>
   getSequenceDetails(request.params.twigletName, request.params.sequenceId)
-    .then((sequence) => {
-      const sequenceId = request.params.sequenceId;
-      const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
-      const sequenceResponse = {
-        id: sequence.id,
-        description: sequence.description,
-        name: sequence.name,
-        events: sequence.events,
-        url: request.buildUrl(sequenceUrl)
-      };
-      return reply(sequenceResponse);
-    })
-    .catch((error) => {
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
+  .then((sequence) => {
+    const sequenceId = request.params.sequenceId;
+    const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
+    const sequenceResponse = {
+      id: sequence.id,
+      description: sequence.description,
+      name: sequence.name,
+      events: sequence.events,
+      url: request.buildUrl(sequenceUrl)
+    };
+    return reply(sequenceResponse);
+  })
+  .catch((error) => {
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
+  });
 
 const postSequencesHanlder = (request, reply) => {
   let db;
   return getTwigletInfoByName(request.params.twigletName)
     .then((twigletInfo) => {
-      db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+      db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), {
+        skip_setup: true
+      });
       return db.get('sequences')
         .catch((error) => {
           if (error.status === 404) {
             return db.put({
-              _id: 'sequences',
-              data: [],
-            })
+                _id: 'sequences',
+                data: [],
+              })
               .then(() => db.get('sequences'));
           }
           throw error;
@@ -186,7 +197,8 @@ const postSequencesHanlder = (request, reply) => {
     })
     .then(() => getSequence(request.params.twigletName, request.payload.id))
     .then((newSequence) => {
-      const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${newSequence.id}`;
+      const sequenceUrl =
+        `/v2/twiglets/${request.params.twigletName}/sequences/${newSequence.id}`;
       const sequenceResponse = {
         id: newSequence.id,
         description: newSequence.description,
@@ -208,7 +220,9 @@ const putSequenceHandler = (request, reply) => {
   getTwigletInfoByName(request.params.twigletName)
     .then((twigletInfo) => {
       twigletId = twigletInfo._id;
-      db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
+      db = new PouchDb(config.getTenantDatabaseString(twigletId), {
+        skip_setup: true
+      });
       return db.get('sequences');
     })
     .then((doc) => {
@@ -252,7 +266,9 @@ const deleteSequenceHandler = (request, reply) => {
   getTwigletInfoByName(request.params.twigletName)
     .then((twigletInfo) => {
       twigletId = twigletInfo._id;
-      db = new PouchDb(config.getTenantDatabaseString(twigletId), { skip_setup: true });
+      db = new PouchDb(config.getTenantDatabaseString(twigletId), {
+        skip_setup: true
+      });
       return db.get('sequences');
     })
     .then((doc) => {
@@ -271,14 +287,17 @@ const deleteSequenceHandler = (request, reply) => {
     });
 };
 
-module.exports.routes = [
-  {
+module.exports.routes = [{
     method: ['GET'],
     path: '/v2/twiglets/{twigletName}/sequences',
     handler: getSequencesHandler,
     config: {
-      auth: { mode: 'optional' },
-      response: { schema: getSequencesResponse },
+      auth: {
+        mode: 'optional'
+      },
+      response: {
+        schema: getSequencesResponse
+      },
       tags: ['api'],
     }
   },
@@ -287,8 +306,12 @@ module.exports.routes = [
     path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}',
     handler: getSequenceHandler,
     config: {
-      auth: { mode: 'optional' },
-      response: { schema: getSequenceResponse },
+      auth: {
+        mode: 'optional'
+      },
+      response: {
+        schema: getSequenceResponse
+      },
       tags: ['api'],
     }
   },
@@ -297,7 +320,9 @@ module.exports.routes = [
     path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}/details',
     handler: getSequenceDetailsHandler,
     config: {
-      auth: { mode: 'optional' },
+      auth: {
+        mode: 'optional'
+      },
       // response: { schema: getSequenceResponse },
       tags: ['api'],
     }
@@ -310,7 +335,9 @@ module.exports.routes = [
       validate: {
         payload: createSequenceRequest,
       },
-      response: { schema: getSequenceResponse },
+      response: {
+        schema: getSequenceResponse
+      },
       tags: ['api'],
     }
   },
@@ -322,7 +349,9 @@ module.exports.routes = [
       validate: {
         payload: createSequenceRequest,
       },
-      response: { schema: getSequenceResponse },
+      response: {
+        schema: getSequenceResponse
+      },
       tags: ['api'],
     }
   },
