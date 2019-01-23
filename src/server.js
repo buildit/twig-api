@@ -2,11 +2,10 @@
 
 const Hapi = require('hapi');
 const cookieAuth = require('hapi-auth-cookie');
-const cls = require('continuation-local-storage');
-const logger = require('./log')('SERVER');
 const Inert = require('inert');
 const Vision = require('vision');
 const HapiSwagger = require('hapi-swagger');
+const semver = require('semver');
 const {
   version,
   engines
@@ -14,7 +13,7 @@ const {
 const helpers = require('./server.helpers');
 const v2 = require('./api/v2');
 const config = require('./config');
-const semver = require('semver');
+const logger = require('./log')('SERVER');
 
 const options = {
   info: {
@@ -29,8 +28,6 @@ const options = {
 if (!semver.satisfies(process.version, engines.node)) {
   throw new Error(`Node version '${process.version}' does not satisfy range '${engines.node}'`);
 }
-
-const ns = cls.createNamespace('hapi-request');
 
 const server = new Hapi.Server({
   port: 3000,
@@ -66,7 +63,7 @@ server.ext('onRequest', (req, reply) => {
     .permanent();
 });
 
-async function init() {
+async function init () {
   try {
     await server.register(
       [
@@ -85,15 +82,17 @@ async function init() {
       isSecure: config.SECURE_COOKIES
     });
 
-    server.auth.default('session')
+    server.auth.default('session');
 
     Reflect.ownKeys(v2).forEach(key => server.route(v2[key].routes));
     await server.start();
     logger.log('Server running at:', server.info.uri);
-  } catch (error) {
-    console.error(error)
-    process.exit(1)
+  }
+  catch (error) {
+    logger.error(error);
+    // eslint-disable-next-line no-process-exit
+    process.exit(1);
   }
 }
 
-init()
+init();

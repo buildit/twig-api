@@ -9,7 +9,7 @@ const PouchDb = require('pouchdb');
 const Models = require('./models');
 const server = require('../../../../test/unit/test-server');
 
-const expect = chai.expect;
+const { expect } = chai;
 server.route(Models.routes);
 
 function stubModel () {

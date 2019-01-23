@@ -1,7 +1,7 @@
 'use strict';
 
 /* eslint no-unused-expressions: 0 */
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const cls = require('continuation-local-storage');
 const config = require('../config');
 

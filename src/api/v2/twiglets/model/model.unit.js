@@ -1,13 +1,13 @@
 'use strict';
 
 /* eslint no-unused-expressions: 0 */
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const sinon = require('sinon');
 require('sinon-as-promised');
 const PouchDb = require('pouchdb');
 const Model = require('./model');
 const server = require('../../../../../test/unit/test-server');
-const twigletInfo = require('../twiglets.unit').twigletInfo;
+const { twigletInfo } = require('../twiglets.unit');
 
 server.route(Model.routes);
 
@@ -112,7 +112,7 @@ describe('/v2/Twiglet::Models', () => {
 
       beforeEach(function* foo () {
         sandbox.stub(PouchDb.prototype, 'get').resolves(getModelResults());
-        result = (yield server.inject(req())).result;
+        ({ result } = (yield server.inject(req())));
       });
 
       it('adds a type if it does not exist', () => {

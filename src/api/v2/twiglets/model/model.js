@@ -2,16 +2,16 @@
 
 const Boom = require('boom');
 const PouchDb = require('pouchdb');
-const config = require('../../../../config');
-const logger = require('../../../../log')('MODEL');
 const Joi = require('joi');
 const R = require('ramda');
+const config = require('../../../../config');
+const logger = require('../../../../log')('MODEL');
 const {
   addCommitMessage
 } = require('../changelog');
 
-function updateNode(oldNameMap) {
-  return function map(node) {
+function updateNode (oldNameMap) {
+  return function map (node) {
     const updatedNode = Object.assign({}, node);
     if (oldNameMap[updatedNode.type]) {
       updatedNode.type = oldNameMap[updatedNode.type];
@@ -44,8 +44,8 @@ const twigletModelBase = Joi.object({
 const getTwigletInfoByName = (name) => {
   const twigletLookupDb = new PouchDb(config.getTenantDatabaseString('twiglets'));
   return twigletLookupDb.allDocs({
-      include_docs: true
-    })
+    include_docs: true
+  })
     .then((twigletsRaw) => {
       const modelArray = twigletsRaw.rows.filter(row => row.doc.name === name);
       if (modelArray.length) {
@@ -60,7 +60,7 @@ const getTwigletInfoByName = (name) => {
     });
 };
 
-function ensureEntitiesHaveAttributesAndType(entities) {
+function ensureEntitiesHaveAttributesAndType (entities) {
   return Reflect.ownKeys(entities).reduce((object, key) => {
     let entity = entities[key];
     if (!entity.attributes) {
@@ -163,12 +163,10 @@ const putModelHandler = (request, reply) => {
           throw error;
         });
     })
-    .then(doc =>
-      reply({
-        _rev: doc._rev,
-        entities: doc.data.entities,
-      }).code(200)
-    )
+    .then(doc => reply({
+      _rev: doc._rev,
+      entities: doc.data.entities,
+    }).code(200))
     .catch((error) => {
       logger.error(JSON.stringify(error));
       const boomError = Boom.create(error.status || 500, error.message);
@@ -178,31 +176,31 @@ const putModelHandler = (request, reply) => {
 };
 
 module.exports.routes = [{
-    method: ['GET'],
-    path: '/v2/twiglets/{name}/model',
-    handler: getModelHandler,
-    config: {
-      auth: {
-        mode: 'optional'
-      },
-      response: {
-        schema: twigletModelBase
-      },
-      tags: ['api'],
-    }
-  },
-  {
-    method: ['PUT'],
-    path: '/v2/twiglets/{name}/model',
-    handler: putModelHandler,
-    config: {
-      validate: {
-        payload: twigletModelBase,
-      },
-      response: {
-        schema: twigletModelBase
-      },
-      tags: ['api'],
-    }
-  },
+  method: ['GET'],
+  path: '/v2/twiglets/{name}/model',
+  handler: getModelHandler,
+  config: {
+    auth: {
+      mode: 'optional'
+    },
+    response: {
+      schema: twigletModelBase
+    },
+    tags: ['api'],
+  }
+},
+{
+  method: ['PUT'],
+  path: '/v2/twiglets/{name}/model',
+  handler: putModelHandler,
+  config: {
+    validate: {
+      payload: twigletModelBase,
+    },
+    response: {
+      schema: twigletModelBase
+    },
+    tags: ['api'],
+  }
+},
 ];

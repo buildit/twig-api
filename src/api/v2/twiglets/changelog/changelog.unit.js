@@ -1,12 +1,12 @@
 'use strict';
 
 /* eslint no-unused-expressions: 0 */
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const sinon = require('sinon');
 const PouchDb = require('pouchdb');
+const { twigletInfo } = require('../twiglets.unit');
 const Changelog = require('./changelog');
 const server = require('../../../../../test/unit/test-server');
-const twigletInfo = require('../twiglets.unit').twigletInfo;
 
 server.route(Changelog.routes);
 
@@ -30,7 +30,7 @@ describe('/v2/twiglets/{name}/changelog', () => {
       // arrange
       const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
       allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-      sandbox.stub(PouchDb.prototype, 'get').returns(Promise.reject({ status: 404 }));
+      sandbox.stub(PouchDb.prototype, 'get').returns(Promise.reject(new Error({ status: 404 })));
       // act
       return server.inject(req)
         .then((response) => {

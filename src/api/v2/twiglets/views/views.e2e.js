@@ -6,11 +6,13 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
-const { authAgent, anonAgent, url, addWait } = require('../../../../../test/e2e');
+const {
+  authAgent, anonAgent, url, addWait
+} = require('../../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 chai.use(chaiSubset);
 

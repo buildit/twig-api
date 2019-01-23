@@ -10,7 +10,7 @@ const { authAgent, anonAgent, addWait } = require('../../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 chai.use(chaiSubset);
 
@@ -136,7 +136,7 @@ describe('events', () => {
         yield createModel(baseModel());
         yield createTwiglet(baseTwiglet());
         yield createEvent(baseTwiglet().name, baseEvent());
-        eventSnapshot = (yield getEvents(baseTwiglet().name)).body[0];
+        [eventSnapshot] = (yield getEvents(baseTwiglet().name)).body;
         res = yield hitUrl(eventSnapshot.url);
       });
 
@@ -180,7 +180,7 @@ describe('events', () => {
         yield createModel(baseModel());
         yield createTwiglet(baseTwiglet());
         yield createEvent(baseTwiglet().name, baseEvent());
-        eventSnapshot = (yield getEvents(baseTwiglet().name)).body[0];
+        [eventSnapshot] = (yield getEvents(baseTwiglet().name)).body;
         res = yield hitUrl(eventSnapshot.url, 'delete', true);
       });
 

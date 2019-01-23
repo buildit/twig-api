@@ -9,7 +9,7 @@ const config = require('./config');
 
 const LOG_FOLDER = join(__dirname, '../../logs');
 
-function transportFactory(fileName) {
+function transportFactory (fileName) {
   const transports = [];
 
   if (config.LOG_FILE) {
@@ -24,7 +24,7 @@ function transportFactory(fileName) {
   }
 
   if (config.LOG_CONSOLE) {
-    transports.push(new(winston.transports.Console)({
+    transports.push(new (winston.transports.Console)({
       prettyPrint: true,
       colorize: true,
       json: false,
@@ -37,7 +37,7 @@ function transportFactory(fileName) {
   };
 }
 
-const logger = winston.createLogger(transportFactory('all.log'))
+const logger = winston.createLogger(transportFactory('all.log'));
 
 /**
  * Main Log function. By default, it uses the 'all' winston logger defined above.
@@ -68,7 +68,7 @@ const logger = winston.createLogger(transportFactory('all.log'))
  * @returns {*}
  * @constructor
  */
-function Log(ns = 'Logger', log = logger) {
+function Log (ns = 'Logger', log = logger) {
   ns += '::';
   return [
     'log', 'error', 'warn', 'info', 'debug'
@@ -77,16 +77,19 @@ function Log(ns = 'Logger', log = logger) {
       type[fn] = (err) => {
         if (err.message && err.stack) {
           log.error(`${ns} ${err.message}`, err.stack);
-        } else {
+        }
+        else {
           log.error(`${ns} ${err}`);
         }
       };
-    } else {
+    }
+    else {
       type[fn] = (...messages) => {
         const arr = [ns].concat(messages);
         if (fn === 'log') {
           log.info(arr);
-        } else {
+        }
+        else {
           log[fn].call(null, arr);
         }
       };

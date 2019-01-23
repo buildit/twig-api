@@ -5,10 +5,12 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 chai.use(require('chai-string'));
-const { anonAgent, authAgent, url, addWait } = require('../../../../test/e2e');
 const R = require('ramda');
+const {
+  anonAgent, authAgent, url, addWait
+} = require('../../../../test/e2e');
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 
 function createModel (model) {
@@ -240,12 +242,10 @@ describe('GET /models/{name}', () => {
   });
 
   describe('(Error)', () => {
-    it('returns 404', () =>
-      getModel({ name: 'non-existant-name' })
-        .catch((res) => {
-          expect(res).to.have.status(404);
-        })
-    );
+    it('returns 404', () => getModel({ name: 'non-existant-name' })
+      .catch((res) => {
+        expect(res).to.have.status(404);
+      }));
   });
 });
 
@@ -306,12 +306,10 @@ describe('DELETE /models/{name}', () => {
       expect(res).to.have.status(204);
     });
 
-    it('GET model returns 404', () =>
-      getModel(baseModel())
-        .catch((response) => {
-          expect(response).to.have.status(404);
-        })
-    );
+    it('GET model returns 404', () => getModel(baseModel())
+      .catch((response) => {
+        expect(response).to.have.status(404);
+      }));
 
     it('not included in the list of models', function* () {
       const models = yield getModels();
@@ -320,12 +318,10 @@ describe('DELETE /models/{name}', () => {
   });
 
   describe('(Error)', () => {
-    it('returns 404 when models doesnt exist', () =>
-      deleteModel(baseModel())
-        .catch((response) => {
-          expect(response).to.have.status(404);
-        })
-    );
+    it('returns 404 when models doesnt exist', () => deleteModel(baseModel())
+      .catch((response) => {
+        expect(response).to.have.status(404);
+      }));
   });
 });
 

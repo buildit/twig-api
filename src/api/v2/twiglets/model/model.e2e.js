@@ -13,7 +13,7 @@ function updateModel (twigletName, data) {
   return addWait(authAgent.put(`/v2/twiglets/${twigletName}/model`).send(data));
 }
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 
 describe('/v2/twiglets/{name}/model', () => {
@@ -23,7 +23,7 @@ describe('/v2/twiglets/{name}/model', () => {
       beforeEach('Create new twiglet', function* foo () {
         yield createModel(baseModel());
         yield createTwiglet(baseTwiglet());
-        _rev = (yield authAgent.get(`/v2/twiglets/${baseTwiglet().name}/model`)).body._rev;
+        ({ _rev } = (yield authAgent.get(`/v2/twiglets/${baseTwiglet().name}/model`)).body);
       });
 
       afterEach('Delete new twiglet', function* foo () {

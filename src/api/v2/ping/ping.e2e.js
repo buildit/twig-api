@@ -4,9 +4,9 @@
 /* eslint no-unused-expressions: 0 */
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const anonAgent = require('../../../../test/e2e').anonAgent;
+const { anonAgent } = require('../../../../test/e2e');
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 
 describe('/v2/ping', () => {

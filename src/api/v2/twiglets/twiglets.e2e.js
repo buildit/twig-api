@@ -7,10 +7,12 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
 const R = require('ramda');
-const { authAgent, anonAgent, url, addWait } = require('../../../../test/e2e');
+const {
+  authAgent, anonAgent, url, addWait
+} = require('../../../../test/e2e');
 const { createModel, deleteModel, baseModel } = require('../models/models.e2e.js');
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 chai.use(chaiSubset);
 
@@ -32,19 +34,17 @@ function getTwiglet ({ name }) {
 
 function getEntireTwiglet ({ name }) {
   return getTwiglet({ name })
-    .then(response =>
-      Promise.all([
-        anonAgent.get(`/v2/twiglets/${name}/model`),
-        anonAgent.get(`/v2/twiglets/${name}/changelog`),
-        anonAgent.get(`/v2/twiglets/${name}/views`),
-      ])
-        .then(([model, changelog, views]) => {
-          response.body.model = model.body;
-          response.body.changelog = changelog.body.changelog;
-          response.body.views = views.body.views;
-          return response.body;
-        })
-    );
+    .then(response => Promise.all([
+      anonAgent.get(`/v2/twiglets/${name}/model`),
+      anonAgent.get(`/v2/twiglets/${name}/changelog`),
+      anonAgent.get(`/v2/twiglets/${name}/views`),
+    ])
+      .then(([model, changelog, views]) => {
+        response.body.model = model.body;
+        response.body.changelog = changelog.body.changelog;
+        response.body.views = views.body.views;
+        return response.body;
+      }));
 }
 
 function getTwiglets () {
@@ -767,4 +767,6 @@ describe('DELETE /v2/twiglets/{name}', () => {
 });
 
 
-module.exports = { createTwiglet, deleteTwiglet, getTwiglet, baseTwiglet };
+module.exports = {
+  createTwiglet, deleteTwiglet, getTwiglet, baseTwiglet
+};

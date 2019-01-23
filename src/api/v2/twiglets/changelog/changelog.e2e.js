@@ -7,7 +7,7 @@ const chaiHttp = require('chai-http');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 
 describe('/v2/twiglets/{name}/changelog', () => {

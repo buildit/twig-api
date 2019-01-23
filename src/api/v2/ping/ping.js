@@ -1,20 +1,19 @@
 'use strict';
 
 const ramda = require('ramda');
-const config = require('../../../config');
-const version = require('../../../../package').version;
 const rp = require('request-promise');
+const config = require('../../../config');
+const { version } = require('../../../../package');
 
-const ping = (request, reply) =>
-  rp.get(config.DB_URL)
-    .catch(() => JSON.stringify({ version: 'COUCH NOT UP' }))
-    .then(couchdbResponse => JSON.parse(couchdbResponse))
-    .then(couchdbResponse => reply({
-      version,
-      couchdbVersion: couchdbResponse.version,
-      config: ramda.omit('_secrets')(config),
-      authenticated: request.auth.credentials,
-    }));
+const ping = (request, reply) => rp.get(config.DB_URL)
+  .catch(() => JSON.stringify({ version: 'COUCH NOT UP' }))
+  .then(couchdbResponse => JSON.parse(couchdbResponse))
+  .then(couchdbResponse => reply({
+    version,
+    couchdbVersion: couchdbResponse.version,
+    config: ramda.omit('_secrets')(config),
+    authenticated: request.auth.credentials,
+  }));
 
 module.exports.routes = [
   {
@@ -36,4 +35,3 @@ module.exports.routes = [
     }
   },
 ];
-

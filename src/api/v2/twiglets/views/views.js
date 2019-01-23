@@ -103,13 +103,11 @@ const getViewsHandler = (request, reply) => {
     })
     .then((viewsRaw) => {
       const views = viewsRaw.data
-        .map(item =>
-          ({
-            description: item.description,
-            name: item.name,
-            url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/views/${item.name}`)
-          })
-        );
+        .map(item => ({
+          description: item.description,
+          name: item.name,
+          url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/views/${item.name}`)
+        }));
       return reply(views);
     })
     .catch((error) => {

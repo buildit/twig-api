@@ -2,10 +2,10 @@
 
 const Boom = require('boom');
 const Joi = require('joi');
-const config = require('../../../config');
-const logger = require('../../../log')('AUTH');
 const rp = require('request-promise');
 const jwt = require('jsonwebtoken');
+const config = require('../../../config');
+const logger = require('../../../log')('AUTH');
 
 const oldVerify = jwt.verify;
 
@@ -26,7 +26,9 @@ jwt.verify = (token, cert, callback) => {
 const validateMothershipJwt = (token) => {
   const oidConfigUrl = 'https://login.microsoftonline.com/258ac4e4-146a-411e-9dc8-79a9e12fd6da/.well-known/openid-configuration';
 
-  const decodedJwt = jwt.decode(token, { complete: true });
+  const decodedJwt = jwt.decode(token, {
+    complete: true
+  });
 
   function findKeyAsCert (keys, jwtKid) {
     return `-----BEGIN CERTIFICATE-----
@@ -34,9 +36,13 @@ ${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
 -----END CERTIFICATE-----`;
   }
 
-  return rp.get({ url: oidConfigUrl })
+  return rp.get({
+    url: oidConfigUrl
+  })
     .then(oidConfig => JSON.parse(oidConfig))
-    .then(oidConfig => rp.get({ url: oidConfig.jwks_uri }))
+    .then(oidConfig => rp.get({
+      url: oidConfig.jwks_uri
+    }))
     .then(keys => JSON.parse(keys))
     .then((keys) => {
       const cert = findKeyAsCert(keys, decodedJwt.header.kid);
@@ -48,27 +54,26 @@ ${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
     }));
 };
 
-const validateLocal = (email, password) =>
-  new Promise((resolve, reject) => {
-    if (email !== 'local@user' || password !== 'password') {
-      return reject('Bad local username/password');
-    }
+const validateLocal = (email, password) => new Promise((resolve, reject) => {
+  if (email !== 'local@user' || password !== 'password') {
+    return reject(new Error('Bad local username/password'));
+  }
 
-    return resolve({
-      id: email,
-      name: email
-    });
+  return resolve({
+    id: email,
+    name: email
   });
+});
 
-const login = (request, reply) =>
-  Promise.resolve()
-    .then(() => {
-      if (config.DB_URL.includes('localhost') || process.env.ENABLE_TEST_USER === true || process.env.ENABLE_TEST_USER === 'true') {
-        return validateLocal(request.payload.email, request.payload.password);
-      }
-      throw new Error('Please login via mothership');
-    })
-    .then((user) => {
+const login = (request, reply) => Promise.resolve()
+  .then(() => {
+    if (config.DB_URL.includes('localhost') || process.env.ENABLE_TEST_USER === true || process.env
+      .ENABLE_TEST_USER === 'true') {
+      return validateLocal(request.payload.email, request.payload.password);
+    }
+    throw new Error('Please login via mothership');
+  })
+  .then((user) => {
     // put user in cache w/ a session id as key..put session id in cookie
     // const sid = String(++this.uuid);
     // request.server.app.cache.set(sid, { user }, 0, (error) => {
@@ -79,20 +84,24 @@ const login = (request, reply) =>
     //   request.cookieAuth.set({ sid });
     //   return reply.redirect('/');
     // });
-      request.cookieAuth.set({ user });
-      return reply({
-        user
-      });
-    })
-    .catch((error) => {
-      logger.log(error);
-      reply(Boom.unauthorized(error.message));
+    request.cookieAuth.set({
+      user
     });
+    return reply({
+      user
+    });
+  })
+  .catch((error) => {
+    logger.log(error);
+    reply(Boom.unauthorized(error.message));
+  });
 
 const validateJwt = (request, reply) => {
   validateMothershipJwt(request.payload.jwt)
     .then((user) => {
-      request.cookieAuth.set({ user });
+      request.cookieAuth.set({
+        user
+      });
       return reply({
         user
       });
@@ -148,4 +157,5 @@ module.exports.routes = [{
     auth: false,
     tags: ['api'],
   }
-}];
+}
+];

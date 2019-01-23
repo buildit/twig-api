@@ -3,10 +3,10 @@
 const Boom = require('boom');
 const Joi = require('joi');
 const PouchDb = require('pouchdb');
-const config = require('../../../../config');
-const logger = require('../../../../log')('EVENTS');
 const uuidV4 = require('uuid/v4');
 const R = require('ramda');
+const config = require('../../../../config');
+const logger = require('../../../../log')('EVENTS');
 
 const getEventsResponse = Joi.array().items(Joi.object({
   description: Joi.string().allow(''),
@@ -73,68 +73,65 @@ const getTwigletInfoByName = (name) => {
     });
 };
 
-const getEvent = (twigletName, eventId) =>
-  getTwigletInfoByName(twigletName)
-    .then((twigletInfo) => {
-      const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-      return db.get('events');
-    })
-    .then((eventsRaw) => {
-      if (eventsRaw.data) {
-        const eventArray = eventsRaw.data.filter(row => row.id === eventId);
-        if (eventArray.length) {
-          return eventArray[0];
-        }
+const getEvent = (twigletName, eventId) => getTwigletInfoByName(twigletName)
+  .then((twigletInfo) => {
+    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+    return db.get('events');
+  })
+  .then((eventsRaw) => {
+    if (eventsRaw.data) {
+      const eventArray = eventsRaw.data.filter(row => row.id === eventId);
+      if (eventArray.length) {
+        return eventArray[0];
       }
-      const error = Error('Not Found');
-      error.status = 404;
-      throw error;
-    });
+    }
+    const error = Error('Not Found');
+    error.status = 404;
+    throw error;
+  });
 
-const getEventsHandler = (request, reply) =>
-  getTwigletInfoByName(request.params.twigletName)
-    .then((twigletInfo) => {
-      const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
-      return db.get('events');
-    })
-    .then((events) => {
-      const eventsArray = events.data
-        .map(item =>
-          ({
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/events/${item.id}`)
-          })
-        );
-      return reply(eventsArray);
-    })
-    .catch((error) => {
-      if (error.status === 404) {
-        return reply([]).code(200);
-      }
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
+const getEventsHandler = (request, reply) => getTwigletInfoByName(request.params.twigletName)
+  .then((twigletInfo) => {
+    const db = new PouchDb(config.getTenantDatabaseString(twigletInfo._id), { skip_setup: true });
+    return db.get('events');
+  })
+  .then((events) => {
+    const eventsArray = events.data
+      .map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/events/${item.id}`)
+      }));
+    return reply(eventsArray);
+  })
+  .catch((error) => {
+    if (error.status === 404) {
+      return reply([]).code(200);
+    }
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
+  });
 
-const getEventHandler = (request, reply) =>
-  getEvent(request.params.twigletName, request.params.eventId)
-    .then((event) => {
-      const eventUrl = `/v2/twiglets/${request.params.twigletName}/events/${request.params.eventId}`;
-      const eventResponse = {
-        id: event.id,
-        description: event.description,
-        links: event.links,
-        name: event.name,
-        nodes: event.nodes,
-        url: request.buildUrl(eventUrl)
-      };
-      return reply(eventResponse);
-    })
-    .catch((error) => {
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
+const getEventHandler = (request, reply) => getEvent(
+  request.params.twigletName, request.params.eventId
+)
+  .then((event) => {
+    const eventUrl = `/v2/twiglets/${request.params.twigletName}/events/${request.params.eventId}`;
+    const eventResponse = {
+      id: event.id,
+      description: event.description,
+      links: event.links,
+      name: event.name,
+      nodes: event.nodes,
+      url: request.buildUrl(eventUrl)
+    };
+    return reply(eventResponse);
+  })
+  .catch((error) => {
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
+  });
 
 const postEventsHandler = (request, reply) => {
   let db;

@@ -3,7 +3,7 @@
 const Boom = require('boom');
 const Joi = require('joi');
 const logger = require('../../../../log')('CHANGELOG');
-const getModel = require('../models.js').getModel;
+const { getModel } = require('../models.js');
 
 // probably want to return raw array rather than object (been flipping on this)
 // but that would now be a breaking change
@@ -18,13 +18,12 @@ const getChangelogResponse = Joi.object({
   }))
 });
 
-const getChangelogHandler = (request, reply) =>
-  getModel(request.params.name)
-    .then(doc => reply({ changelog: doc.data.changelog }))
-    .catch((error) => {
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
+const getChangelogHandler = (request, reply) => getModel(request.params.name)
+  .then(doc => reply({ changelog: doc.data.changelog }))
+  .catch((error) => {
+    logger.error(JSON.stringify(error));
+    return reply(Boom.create(error.status || 500, error.message, error));
+  });
 
 const routes = [
   {

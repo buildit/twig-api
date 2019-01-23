@@ -14,8 +14,9 @@ const anonAgent = chai.request(url);
 function addWait (promise) {
   if (process.env.HTTP_WAIT_TIME) {
     return promise
-      .then(result => new Promise(resolve =>
-        setTimeout(() => resolve(result), process.env.HTTP_WAIT_TIME)));
+      .then(result => new Promise(resolve => setTimeout(
+        () => resolve(result), process.env.HTTP_WAIT_TIME
+      )));
   }
   return promise;
 }
@@ -28,4 +29,6 @@ before(function* () {
     });
 });
 
-module.exports = { authAgent, anonAgent, url, addWait };
+module.exports = {
+  authAgent, anonAgent, url, addWait
+};

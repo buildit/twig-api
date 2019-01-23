@@ -1,14 +1,14 @@
 'use strict';
 
 /* eslint no-unused-expressions: 0 */
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const sinon = require('sinon');
 require('sinon-as-promised');
 const PouchDb = require('pouchdb');
 const Sequences = require('./sequences');
 const server = require('../../../../../test/unit/test-server');
-const twigletInfo = require('../twiglets.unit').twigletInfo;
-const twigletDocs = require('../twiglets.unit').twigletDocs;
+const { twigletInfo } = require('../twiglets.unit');
+const { twigletDocs } = require('../twiglets.unit');
 
 server.route(Sequences.routes);
 

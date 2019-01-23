@@ -124,12 +124,10 @@ const getModelsHandler = (request, reply) => {
   return db.allDocs({ include_docs: true })
     .then((modelsRaw) => {
       const orgModels = modelsRaw.rows
-        .map(row =>
-          ({
-            name: row.doc.data.name,
-            url: request.buildUrl(`/v2/models/${row.doc.data.name}`),
-          })
-        );
+        .map(row => ({
+          name: row.doc.data.name,
+          url: request.buildUrl(`/v2/models/${row.doc.data.name}`),
+        }));
       return reply(orgModels);
     })
     .catch((error) => {
