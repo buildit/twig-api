@@ -2,12 +2,14 @@
 
 const winston = require('winston');
 const WinstonDailyRotateFile = require('winston-daily-rotate-file');
-const { join } = require('path');
+const {
+  join
+} = require('path');
 const config = require('./config');
 
 const LOG_FOLDER = join(__dirname, '../../logs');
 
-function transportFactory (fileName) {
+function transportFactory(fileName) {
   const transports = [];
 
   if (config.LOG_FILE) {
@@ -22,7 +24,7 @@ function transportFactory (fileName) {
   }
 
   if (config.LOG_CONSOLE) {
-    transports.push(new (winston.transports.Console)({
+    transports.push(new(winston.transports.Console)({
       prettyPrint: true,
       colorize: true,
       json: false,
@@ -30,10 +32,12 @@ function transportFactory (fileName) {
     }));
   }
 
-  return { transports };
+  return {
+    transports
+  };
 }
 
-const logger = winston.loggers.get('all');
+const logger = winston.createLogger(transportFactory('all.log'))
 
 /**
  * Main Log function. By default, it uses the 'all' winston logger defined above.
@@ -64,7 +68,7 @@ const logger = winston.loggers.get('all');
  * @returns {*}
  * @constructor
  */
-function Log (ns = 'Logger', log = logger) {
+function Log(ns = 'Logger', log = logger) {
   ns += '::';
   return [
     'log', 'error', 'warn', 'info', 'debug'
@@ -73,29 +77,22 @@ function Log (ns = 'Logger', log = logger) {
       type[fn] = (err) => {
         if (err.message && err.stack) {
           log.error(`${ns} ${err.message}`, err.stack);
-        }
-        else {
+        } else {
           log.error(`${ns} ${err}`);
         }
       };
-    }
-    else {
+    } else {
       type[fn] = (...messages) => {
         const arr = [ns].concat(messages);
         if (fn === 'log') {
-          log.info.apply(null, arr);
-        }
-        else {
-          log[fn].apply(null, arr);
+          log.info(arr);
+        } else {
+          log[fn].call(null, arr);
         }
       };
     }
     return type;
   }, {});
 }
-
-winston.loggers.add('all', transportFactory('all.log'));
-winston.loggers.add('db', transportFactory('db.log'));
-winston.loggers.add('routes', transportFactory('routes.log'));
 
 module.exports = Log;
