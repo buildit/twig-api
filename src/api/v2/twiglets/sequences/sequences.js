@@ -287,7 +287,7 @@ module.exports.routes = [{
   method: ['GET'],
   path: '/v2/twiglets/{twigletName}/sequences',
   handler: getSequencesHandler,
-  config: {
+  options: {
     auth: {
       mode: 'optional'
     },
@@ -301,7 +301,7 @@ module.exports.routes = [{
   method: ['GET'],
   path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}',
   handler: getSequenceHandler,
-  config: {
+  options: {
     auth: {
       mode: 'optional'
     },
@@ -315,7 +315,7 @@ module.exports.routes = [{
   method: ['GET'],
   path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}/details',
   handler: getSequenceDetailsHandler,
-  config: {
+  options: {
     auth: {
       mode: 'optional'
     },
@@ -327,7 +327,7 @@ module.exports.routes = [{
   method: ['POST'],
   path: '/v2/twiglets/{twigletName}/sequences',
   handler: postSequencesHanlder,
-  config: {
+  options: {
     validate: {
       payload: createSequenceRequest,
     },
@@ -341,7 +341,7 @@ module.exports.routes = [{
   method: ['PUT'],
   path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}',
   handler: putSequenceHandler,
-  config: {
+  options: {
     validate: {
       payload: createSequenceRequest,
     },
@@ -355,7 +355,7 @@ module.exports.routes = [{
   method: ['DELETE'],
   path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}',
   handler: deleteSequenceHandler,
-  config: {
+  options: {
     tags: ['api']
   }
 }

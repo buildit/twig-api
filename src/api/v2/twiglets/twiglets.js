@@ -665,7 +665,7 @@ module.exports = {
     method: ['POST'],
     path: '/v2/twiglets',
     handler: createTwigletHandler,
-    config: {
+    options: {
       validate: {
         payload: createTwigletRequest,
       },
@@ -679,7 +679,7 @@ module.exports = {
     method: ['GET'],
     path: '/v2/twiglets',
     handler: getTwigletsHandler,
-    config: {
+    options: {
       auth: {
         mode: 'optional'
       },
@@ -693,7 +693,7 @@ module.exports = {
     method: ['GET'],
     path: '/v2/twiglets/{name}',
     handler: getTwigletHandler,
-    config: {
+    options: {
       auth: {
         mode: 'optional'
       },
@@ -707,7 +707,7 @@ module.exports = {
     method: ['GET'],
     path: '/v2/twiglets/{name}.json',
     handler: getTwigletJsonHandler,
-    config: {
+    options: {
       auth: {
         mode: 'optional'
       },
@@ -721,7 +721,7 @@ module.exports = {
     method: ['PUT'],
     path: '/v2/twiglets/{name}',
     handler: putTwigletHandler,
-    config: {
+    options: {
       validate: {
         payload: updateTwigletRequest
       },
@@ -735,7 +735,7 @@ module.exports = {
     method: ['PATCH'],
     path: '/v2/twiglets/{name}',
     handler: patchTwigletHandler,
-    config: {
+    options: {
       validate: {
         payload: patchTwigletRequest
       },
@@ -749,7 +749,7 @@ module.exports = {
     method: ['DELETE'],
     path: '/v2/twiglets/{name}',
     handler: deleteTwigletHandler,
-    config: {
+    options: {
       tags: ['api'],
     }
   },

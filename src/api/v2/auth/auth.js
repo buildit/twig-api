@@ -121,7 +121,7 @@ module.exports.routes = [{
   method: ['POST'],
   path: '/v2/login',
   handler: login,
-  config: {
+  options: {
     auth: {
       mode: 'try',
       strategy: 'session'
@@ -144,7 +144,7 @@ module.exports.routes = [{
   method: 'POST',
   path: '/v2/logout',
   handler: logout,
-  config: {
+  options: {
     auth: false,
     tags: ['api'],
   }
@@ -153,7 +153,7 @@ module.exports.routes = [{
   method: 'POST',
   path: '/v2/validateJwt',
   handler: validateJwt,
-  config: {
+  options: {
     auth: false,
     tags: ['api'],
   }

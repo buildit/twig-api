@@ -241,7 +241,7 @@ module.exports = {
       method: ['GET'],
       path: '/v2/twiglets/{twigletName}/events',
       handler: getEventsHandler,
-      config: {
+      options: {
         auth: { mode: 'optional' },
         response: { schema: getEventsResponse },
         tags: ['api'],
@@ -251,7 +251,7 @@ module.exports = {
       method: ['GET'],
       path: '/v2/twiglets/{twigletName}/events/{eventId}',
       handler: getEventHandler,
-      config: {
+      options: {
         auth: { mode: 'optional' },
         response: { schema: getEventResponse },
         tags: ['api'],
@@ -261,7 +261,7 @@ module.exports = {
       method: ['POST'],
       path: '/v2/twiglets/{twigletName}/events',
       handler: postEventsHandler,
-      config: {
+      options: {
         validate: {
           payload: Event,
         },
@@ -273,7 +273,7 @@ module.exports = {
       method: ['DELETE'],
       path: '/v2/twiglets/{twigletName}/events/{eventId}',
       handler: deleteEventHandler,
-      config: {
+      options: {
         tags: ['api']
       }
     },
@@ -281,7 +281,7 @@ module.exports = {
       method: ['DELETE'],
       path: '/v2/twiglets/{twigletName}/events',
       handler: deleteAllEventsHandler,
-      config: {
+      options: {
         tags: ['api']
       }
     }

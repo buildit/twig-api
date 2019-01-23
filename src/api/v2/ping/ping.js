@@ -20,7 +20,7 @@ module.exports.routes = [
     method: ['GET'],
     path: '/v2/ping',
     handler: ping,
-    config: {
+    options: {
       auth: { mode: 'try' },
       tags: ['api'],
     }
@@ -29,7 +29,7 @@ module.exports.routes = [
     method: ['GET'],
     path: '/ping',
     handler: ping,
-    config: {
+    options: {
       auth: { mode: 'try' },
       tags: ['api'],
     }

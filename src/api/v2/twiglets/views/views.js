@@ -281,7 +281,7 @@ module.exports.routes = [
     method: ['GET'],
     path: '/v2/twiglets/{twigletName}/views',
     handler: getViewsHandler,
-    config: {
+    options: {
       auth: { mode: 'optional' },
       response: { schema: getViewsResponse },
       tags: ['api'],
@@ -291,7 +291,7 @@ module.exports.routes = [
     method: ['GET'],
     path: '/v2/twiglets/{twigletName}/views/{viewName}',
     handler: getViewHandler,
-    config: {
+    options: {
       auth: { mode: 'optional' },
       response: { schema: getViewResponse },
       tags: ['api'],
@@ -301,7 +301,7 @@ module.exports.routes = [
     method: ['PUT'],
     path: '/v2/twiglets/{twigletName}/views/{viewName}',
     handler: putViewHandler,
-    config: {
+    options: {
       validate: {
         payload: createViewRequest,
       },
@@ -313,7 +313,7 @@ module.exports.routes = [
     method: ['POST'],
     path: '/v2/twiglets/{twigletName}/views',
     handler: postViewsHandler,
-    config: {
+    options: {
       validate: {
         payload: createViewRequest,
       },
@@ -325,7 +325,7 @@ module.exports.routes = [
     method: ['DELETE'],
     path: '/v2/twiglets/{twigletName}/views/{viewName}',
     handler: deleteViewHandler,
-    config: {
+    options: {
       tags: ['api']
     }
   }

@@ -179,7 +179,7 @@ module.exports.routes = [{
   method: ['GET'],
   path: '/v2/twiglets/{name}/model',
   handler: getModelHandler,
-  config: {
+  options: {
     auth: {
       mode: 'optional'
     },
@@ -193,7 +193,7 @@ module.exports.routes = [{
   method: ['PUT'],
   path: '/v2/twiglets/{name}/model',
   handler: putModelHandler,
-  config: {
+  options: {
     validate: {
       payload: twigletModelBase,
     },

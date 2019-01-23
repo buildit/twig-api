@@ -92,7 +92,7 @@ const routes = [
     method: ['GET'],
     path: '/v2/twiglets/{name}/changelog',
     handler: getChangelogHandler,
-    config: {
+    options: {
       auth: { mode: 'optional' },
       response: { schema: getChangelogResponse },
       tags: ['api'],
