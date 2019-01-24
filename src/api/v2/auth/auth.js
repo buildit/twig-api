@@ -4,7 +4,7 @@ const Boom = require('boom');
 const Joi = require('joi');
 const rp = require('request-promise');
 const jwt = require('jsonwebtoken');
-const config = require('../../../config');
+const { getContextualConfig } = require('../../../config');
 const logger = require('../../../log')('AUTH');
 
 const oldVerify = jwt.verify;
@@ -54,67 +54,54 @@ ${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
     }));
 };
 
-const validateLocal = (email, password) => new Promise((resolve, reject) => {
+const validateLocal = (email, password) => {
   if (email !== 'local@user' || password !== 'password') {
-    return reject(new Error('Bad local username/password'));
+    throw new Error('Bad local username/password');
   }
 
-  return resolve({
+  return {
     id: email,
     name: email
-  });
-});
+  };
+};
 
-const login = (request, reply) => Promise.resolve()
-  .then(() => {
-    if (config.DB_URL.includes('localhost') || process.env.ENABLE_TEST_USER === true || process.env
-      .ENABLE_TEST_USER === 'true') {
-      return validateLocal(request.payload.email, request.payload.password);
-    }
-    throw new Error('Please login via mothership');
-  })
-  .then((user) => {
-    // put user in cache w/ a session id as key..put session id in cookie
-    // const sid = String(++this.uuid);
-    // request.server.app.cache.set(sid, { user }, 0, (error) => {
-    //   if (error) {
-    //     reply(error);
-    //   }
-
-    //   request.cookieAuth.set({ sid });
-    //   return reply.redirect('/');
-    // });
-    request.cookieAuth.set({
-      user
-    });
-    return reply({
-      user
-    });
-  })
-  .catch((error) => {
-    logger.log(error);
-    reply(Boom.unauthorized(error.message));
-  });
-
-const validateJwt = (request, reply) => {
-  validateMothershipJwt(request.payload.jwt)
-    .then((user) => {
+const login = (request) => {
+  const contextualConfig = getContextualConfig(request);
+  const enableTestUser = process.env.ENABLE_TEST_USER;
+  try {
+    if (contextualConfig.DB_URL.includes('localhost') || enableTestUser === true || enableTestUser === 'true') {
+      const user = validateLocal(request.payload.email, request.payload.password);
       request.cookieAuth.set({
         user
       });
-      return reply({
-        user
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      reply(Boom.unauthorized('Authentication failed'));
-    });
+      return { user };
+    }
+    throw new Error('Please login via mothership');
+  }
+  catch (error) {
+    throw Boom.unauthorized(error.message);
+  }
 };
 
-const logout = (request, reply) => {
+const validateJwt = async (request) => {
+  try {
+    const user = await validateMothershipJwt(request.payload.jwt);
+    request.cookieAuth.set({
+      user
+    });
+    return {
+      user
+    };
+  }
+  catch (error) {
+    logger.error(error);
+    throw Boom.unauthorized('Authentication failed');
+  }
+};
+
+const logout = (request, h) => {
   request.cookieAuth.clear();
-  return reply({}).code(204);
+  return h.response({}).code(204);
 };
 
 module.exports.routes = [{
