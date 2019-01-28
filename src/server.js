@@ -12,7 +12,7 @@ const {
 } = require('../package');
 const helpers = require('./server.helpers');
 const v2 = require('./api/v2');
-const config = require('./config');
+const { config } = require('./config');
 const logger = require('./log')('SERVER');
 
 const options = {

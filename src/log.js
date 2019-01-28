@@ -5,7 +5,7 @@ const WinstonDailyRotateFile = require('winston-daily-rotate-file');
 const {
   join
 } = require('path');
-const config = require('./config');
+const { config } = require('./config');
 
 const LOG_FOLDER = join(__dirname, '../../logs');
 
