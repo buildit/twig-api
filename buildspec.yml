@@ -23,7 +23,6 @@ phases:
       - cat /tmp/build.json
       - npm install
       - $(aws ecr get-login --region ${AWS_REGION} --no-include-email)
-      # - $(aws ecr get-login)
   build:
     commands:
       - npm run lint
