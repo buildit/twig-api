@@ -39,7 +39,7 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-node": "5.1.1",
     "mocha": "3.0.2",
-    "mocha-jenkins-reporter": "0.2.6",
+    "mocha-jenkins-reporter": "0.3.2",
     "nodemon": "1.10.2",
     "nsp": "2.6.3",
     "nyc": "10.0.0",
