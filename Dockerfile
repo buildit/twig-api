@@ -16,5 +16,8 @@ RUN npm install --production
 # Bundle app source
 COPY src/ /usr/src/app/src/
 
+# Bundle init scripts
+COPY scripts/ /usr/src/app/scripts/
+
 EXPOSE 3000
 CMD [ "node", "src/server.js" ]
