@@ -4,8 +4,8 @@ const PouchDB = require('pouchdb');
 const orgModelsFromJson = require('./organization-models.json');
 const twigletsFromJson = require('./twiglets.json');
 const uuidV4 = require('uuid/v4');
-const { checkNodesAreInModel } = require('../src/api/v2/twiglets');
-const config = require('../src/config');
+const { checkNodesAreInModel } = require('../api/v2/twiglets');
+const config = require('../config');
 
 const dbURL = config.DB_URL;
 
