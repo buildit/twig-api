@@ -3,7 +3,7 @@ ENV TWIG_API_LOG_CONSOLE=true
 ENV TWIG_API_LOG_FILE=true
 ENV TWIG_API_LOG_LEVEL=info
 ENV TWIG_API_TENANT=
-ENV TWIG_API_DB_URL=http://couch.bookit.internal:5984
+ENV TWIG_API_DB_URL=http://couch.twig.internal:5984
 
 # Create app directory
 WORKDIR /usr/src/app
