@@ -7,11 +7,9 @@ const config = require('../config');
 
 describe('config', () => {
   describe('db_url', () => {
-    let ns;
     let previousDbUrl;
 
     beforeEach(() => {
-      ns = cls.createNamespace('hapi-request');
       previousDbUrl = config.DB_URL;
       config.DB_URL = undefined;
     });
@@ -28,72 +26,6 @@ describe('config', () => {
       // act
       // assert
       expect(config.DB_URL).to.equal('foo');
-    });
-
-    it('returns localhost string if hostname is localhost:8080', () => {
-      ns.run(() => {
-        // arrange
-        ns.set('host', 'localhost:8080');
-
-        // act
-        // assert
-        expect(config.DB_URL).to.equal('http://localhost:5984');
-      });
-    });
-
-    it('returns couchdb.riglet string if hostname is twig-api.riglet', () => {
-      ns.run(() => {
-        // arrange
-        ns.set('host', 'twig-api.riglet');
-
-        // act
-        // assert
-        expect(config.DB_URL).to.equal('http://couchdb.riglet:5984');
-      });
-    });
-
-    it('returns couchdb.riglet string if hostname is twig-api.buildit.tools', () => {
-      ns.run(() => {
-        // arrange
-        ns.set('host', 'twig-api.buildit.tools');
-
-        // act
-        // assert
-        expect(config.DB_URL).to.equal('http://couchdb.riglet:5984');
-      });
-    });
-
-    it('chops the port', () => {
-      ns.run(() => {
-        // arrange
-        ns.set('host', 'twig-api.riglet:1234');
-
-        // act
-        // assert
-        expect(config.DB_URL).to.equal('http://couchdb.riglet:5984');
-      });
-    });
-
-    it('returns couchdb if hostname is staging.twig-api.riglet', () => {
-      ns.run(() => {
-        // arrange
-        ns.set('host', 'staging.twig-api.riglet');
-
-        // act
-        // assert
-        expect(config.DB_URL).to.equal('http://couchdb.riglet:5984');
-      });
-    });
-
-    it('returns couchdb if hostname is staging-twig-api.buildit.tools', () => {
-      ns.run(() => {
-        // arrange
-        ns.set('host', 'staging-twig-api.buildit.tools');
-
-        // act
-        // assert
-        expect(config.DB_URL).to.equal('http://couchdb.riglet:5984');
-      });
     });
   });
 

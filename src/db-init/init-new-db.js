@@ -4,34 +4,10 @@ const PouchDB = require('pouchdb');
 const orgModelsFromJson = require('./organization-models.json');
 const twigletsFromJson = require('./twiglets.json');
 const uuidV4 = require('uuid/v4');
-const { checkNodesAreInModel } = require('../src/api/v2/twiglets');
+const { checkNodesAreInModel } = require('../api/v2/twiglets');
+const config = require('../config');
 
-const env = process.env.MODE || process.env.NODE_ENV || 'local';
-let dbURL = '';
-
-if (process.env.TWIG_API_DB_URL) {
-  dbURL = process.env.TWIG_API_DB_URL
-} else {
-  switch (env) {
-    case 'local':
-      dbURL = 'http://couchdb:5984';
-      break;
-  
-    case 'development':
-      dbURL = 'https://cklattlenifecomplerstedi:9ebdadbce84b650c3b60facc73361e1606507fb4@shahzain-wipro.cloudant.com';
-      break;
-  
-    case 'production':
-      dbURL = 'http://couchdb.riglet:5984';
-      break;
-  
-    default:
-      dbURL = 'http://localhost:5984';
-      break;
-  }
-}
-
-console.warn(`Using ${env} DB URL: ${dbURL}`);
+const dbURL = config.DB_URL;
 
 function importModels (orgModels) {
   const dbName = 'organisation-models';

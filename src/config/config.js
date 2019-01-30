@@ -18,11 +18,7 @@ const config = {
     if (this._secrets._db_url) {
       return this._secrets._db_url;
     }
-    const hostname = cls.getNamespace('hapi-request').get('host');
-    if (hostname.startsWith('localhost')) {
-      return 'http://localhost:5984';
-    }
-    return 'http://couchdb.riglet:5984';
+    return 'http://localhost:5984';
   },
   set DB_URL (value) {
     this._secrets._db_url = value;
