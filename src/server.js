@@ -89,6 +89,7 @@ async function init () {
     logger.log('Server running at:', server.info.uri);
   }
   catch (error) {
+    console.error(error);
     logger.error(error);
     // eslint-disable-next-line no-process-exit
     process.exit(1);

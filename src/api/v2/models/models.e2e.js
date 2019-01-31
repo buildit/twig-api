@@ -89,7 +89,7 @@ function cloneModel () {
   };
 }
 
-describe.only('Models', () => {
+describe('Models', () => {
   describe('POST /v2/models', () => {
     describe('(Successful)', () => {
       let res;

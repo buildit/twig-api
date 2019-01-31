@@ -8,6 +8,7 @@ const { isNil } = require('ramda');
 const toJSON = require('utils-error-to-json');
 const { getContextualConfig } = require('../../../config');
 const logger = require('../../../log')('MODELS');
+const { wrapTryCatchWithBoomify } = require('../helpers');
 
 const createModelRequest = Joi.object({
   cloneModel: Joi.string().allow('').allow(null),
@@ -49,7 +50,7 @@ const getModelsResponse = Joi.array().items(Joi.object({
   url: Joi.string().required(),
 }));
 
-const getModel = async (name, db) => {
+const getModelWithDb = async (name, db) => {
   const modelsRaw = await db.allDocs({ include_docs: true });
   const modelArray = modelsRaw.rows.filter(row => row.doc.data.name === name);
   if (modelArray.length) {
@@ -57,6 +58,12 @@ const getModel = async (name, db) => {
   }
   throw Boom.notFound('Not Found');
 };
+
+const getModelWithContextualConfig = async (name, contextualConfig) => {
+  const db = new PouchDB(contextualConfig.getTenantDatabaseString('organisation-models'));
+  return getModelWithDb(name, db);
+};
+
 
 async function postModel (db, name, entities, commitMessage, userName, cloneFromName = null) {
   const modelToCreate = {
@@ -71,7 +78,7 @@ async function postModel (db, name, entities, commitMessage, userName, cloneFrom
     }
   };
   if (!isNil(cloneFromName)) {
-    const cloneSource = await getModel(cloneFromName, db);
+    const cloneSource = await getModelWithDb(cloneFromName, db);
     modelToCreate.data.entities = cloneSource.data.entities;
   }
   return db.post(modelToCreate);
@@ -95,7 +102,7 @@ const postModelsHandler = async (request, h) => {
   const db = new PouchDB(contextualConfig.getTenantDatabaseString('organisation-models'));
 
   try {
-    await getModel(request.payload.name, db);
+    await getModelWithDb(request.payload.name, db);
     throw Boom.conflict('Model name already in use');
   }
   catch (error) {
@@ -104,19 +111,13 @@ const postModelsHandler = async (request, h) => {
     }
   }
 
-  try {
-    const {
-      name, entities, commitMessage, cloneModel
-    } = request.payload;
-    await postModel(db, name, entities, commitMessage,
-      request.auth.credentials.user.name, cloneModel);
-    const newModel = await getModel(request.payload.name, db);
-    return h.response(formatModelResponse(newModel, request.buildUrl)).code(HttpStatus.CREATED);
-  }
-  catch (e) {
-    logger.error(toJSON(e));
-    throw Boom.boomify(e);
-  }
+  const {
+    name, entities, commitMessage, cloneModel
+  } = request.payload;
+  await postModel(db, name, entities, commitMessage,
+    request.auth.credentials.user.name, cloneModel);
+  const newModel = await getModelWithDb(request.payload.name, db);
+  return h.response(formatModelResponse(newModel, request.buildUrl)).code(HttpStatus.CREATED);
 };
 
 const getModelsHandler = async (request) => {
@@ -124,38 +125,26 @@ const getModelsHandler = async (request) => {
   const db = new PouchDB(contextualConfig.getTenantDatabaseString('organisation-models'));
   const modelsRaw = await db.allDocs({ include_docs: true });
 
-  try {
-    const orgModels = modelsRaw.rows
-      .map(row => ({
-        name: row.doc.data.name,
-        url: request.buildUrl(`/v2/models/${row.doc.data.name}`),
-      }));
-    return orgModels;
-  }
-  catch (error) {
-    logger.error(toJSON(error));
-    throw Boom.boomify(error);
-  }
+  const orgModels = modelsRaw.rows
+    .map(row => ({
+      name: row.doc.data.name,
+      url: request.buildUrl(`/v2/models/${row.doc.data.name}`),
+    }));
+  return orgModels;
 };
 
 const getModelHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const db = new PouchDB(contextualConfig.getTenantDatabaseString('organisation-models'));
-  try {
-    const model = await getModel(request.params.name, db);
-    return formatModelResponse(model, request.buildUrl);
-  }
-  catch (error) {
-    logger.error(toJSON(error));
-    throw Boom.boomify(error);
-  }
+  const model = await getModelWithDb(request.params.name, db);
+  return formatModelResponse(model, request.buildUrl);
 };
 
 const putModelHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const db = new PouchDB(contextualConfig.getTenantDatabaseString('organisation-models'));
   try {
-    const model = await getModel(request.params.name, db);
+    const model = await getModelWithDb(request.params.name, db);
     if (model._rev === request.payload._rev) {
       model.data.entities = request.payload.entities;
       model.data.name = request.payload.name;
@@ -174,7 +163,7 @@ const putModelHandler = async (request) => {
       }
       model.data.changelog.unshift(newLog);
       await db.put(model);
-      const updatedModel = await getModel(request.payload.name, db);
+      const updatedModel = await getModelWithDb(request.payload.name, db);
       return formatModelResponse(updatedModel, request.buildUrl);
     }
     const error = Error('Conflict, bad revision number');
@@ -205,22 +194,16 @@ const putModelHandler = async (request) => {
 const deleteModelsHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const db = new PouchDB(contextualConfig.getTenantDatabaseString('organisation-models'));
-  try {
-    const model = await getModel(request.params.name, db);
-    await db.remove(model._id, model._rev);
-    return h.response().code(HttpStatus.NO_CONTENT);
-  }
-  catch (error) {
-    logger.error(JSON.stringify(error));
-    throw Boom.boomify(error);
-  }
+  const model = await getModelWithDb(request.params.name, db);
+  await db.remove(model._id, model._rev);
+  return h.response().code(HttpStatus.NO_CONTENT);
 };
 
 const routes = [
   {
     method: ['POST'],
     path: '/v2/models',
-    handler: postModelsHandler,
+    handler: wrapTryCatchWithBoomify(logger, postModelsHandler),
     config: {
       validate: {
         payload: createModelRequest
@@ -232,7 +215,7 @@ const routes = [
   {
     method: ['GET'],
     path: '/v2/models',
-    handler: getModelsHandler,
+    handler: wrapTryCatchWithBoomify(logger, getModelsHandler),
     config: {
       auth: { mode: 'optional' },
       response: { schema: getModelsResponse },
@@ -242,7 +225,7 @@ const routes = [
   {
     method: ['GET'],
     path: '/v2/models/{name}',
-    handler: getModelHandler,
+    handler: wrapTryCatchWithBoomify(logger, getModelHandler),
     config: {
       auth: { mode: 'optional' },
       response: { schema: getModelResponse },
@@ -264,7 +247,7 @@ const routes = [
   {
     method: ['DELETE'],
     path: '/v2/models/{name}',
-    handler: deleteModelsHandler,
+    handler: wrapTryCatchWithBoomify(logger, deleteModelsHandler),
     config: {
       tags: ['api'],
     }
@@ -272,7 +255,8 @@ const routes = [
 ];
 
 module.exports = {
-  getModel,
+  getModelWithDb,
+  getModel: getModelWithContextualConfig,
   getModelResponse,
   updateModelRequest,
   routes,
