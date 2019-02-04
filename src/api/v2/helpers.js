@@ -1,7 +1,6 @@
 'use strict';
 
 const Boom = require('boom');
-const toJSON = require('utils-error-to-json');
 
 function wrapTryCatchWithBoomify (logger, handlerFn) {
   return async (request, h) => {
@@ -10,8 +9,8 @@ function wrapTryCatchWithBoomify (logger, handlerFn) {
       return response;
     }
     catch (error) {
-      console.error(error);
-      logger.error(toJSON(error));
+      console.log(error);
+      logger.error(error);
       throw Boom.boomify(error, { statusCode: error.status });
     }
   };

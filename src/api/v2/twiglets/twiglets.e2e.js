@@ -64,8 +64,8 @@ function baseTwiglet () {
   };
 }
 
-describe('twiglets', () => {
-  describe.only('POST /v2/twiglets', () => {
+describe.only('twiglets', () => {
+  describe('POST /v2/twiglets', () => {
     describe('(Successful)', () => {
       let res;
 
@@ -104,7 +104,7 @@ describe('twiglets', () => {
       });
     });
 
-    describe.only('(Clone)', () => {
+    describe('(Clone)', () => {
       let res;
 
       function cloneTwiglet () {
@@ -312,18 +312,13 @@ describe('twiglets', () => {
         });
 
         it('errors if the node.type is not in the entities', function* foo () {
-          try {
-            const illegalTwiglet = jsonRepresentationOfTwiglet();
-            illegalTwiglet.nodes[1].type = 'ent3';
-            const jsonRequest = jsonTwiglet();
-            jsonRequest.json = JSON.stringify(illegalTwiglet);
-            yield createTwiglet(jsonRequest);
-            expect(false).to.be.true; // should never be called.
-          }
-          catch (error) {
-            expect(error).to.have.status(400);
-            expect(error.response.body.message.includes('node2')).to.equal(true);
-          }
+          const illegalTwiglet = jsonRepresentationOfTwiglet();
+          illegalTwiglet.nodes[1].type = 'ent3';
+          const jsonRequest = jsonTwiglet();
+          jsonRequest.json = JSON.stringify(illegalTwiglet);
+          res = yield createTwiglet(jsonRequest);
+          expect(res).to.have.status(400);
+          expect(res.error.text.includes('node2')).to.equal(true);
         });
       });
     });
@@ -341,13 +336,8 @@ describe('twiglets', () => {
       });
 
       it('errors if the name is already being used', function* foo () {
-        try {
-          yield createTwiglet(baseTwiglet());
-          expect(false).to.be.true; // should never be called.
-        }
-        catch (error) {
-          expect(error).to.have.status(409);
-        }
+        const res = yield createTwiglet(baseTwiglet());
+        expect(res).to.have.status(409);
       });
     });
   });
@@ -425,7 +415,7 @@ describe('twiglets', () => {
       });
 
       it('returns 404', (done) => {
-        promise.catch((res) => {
+        promise.then((res) => {
           expect(res).to.have.status(404);
           done();
         });
@@ -538,27 +528,17 @@ describe('twiglets', () => {
       });
 
       it('returns 404', function* foo () {
-        try {
-          yield updateTwiglet({ name: 'non-existant-name' }, updates);
-          expect(true).to.equal(false);
-        }
-        catch (error) {
-          expect(error).to.have.status(404);
-        }
+        const res = yield updateTwiglet({ name: 'non-existant-name' }, updates);
+        expect(res).to.have.status(404);
       });
 
       it('fails if the node.type is not in the entities', function* foo () {
         updates._rev = (yield createTwiglet(baseTwiglet())).body._rev;
         updates.nodes[1].type = 'ent3';
         updates.commitMessage = 'invalid nodes';
-        try {
-          yield updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
-          expect(true).to.equal(false); // should never be called.
-        }
-        catch (error) {
-          expect(error).to.have.status(400);
-          expect(error.response.body.message.includes('node 2')).to.equal(true);
-        }
+        const res = yield updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+        expect(res).to.have.status(400);
+        expect(res.error.text.includes('node 2')).to.equal(true);
       });
     });
   });
@@ -690,24 +670,12 @@ describe('twiglets', () => {
 
       afterEach(function* foo () {
         yield deleteModel(baseModel());
-        try {
-          yield deleteTwiglet(baseTwiglet());
-        }
-        catch (error) {
-          if (error.status !== 404) {
-            throw error;
-          }
-        }
+        yield deleteTwiglet(baseTwiglet());
       });
 
       it('returns 404', function* foo () {
-        try {
-          yield patchTwiglet({ name: 'non-existant-name' }, updates);
-          expect(true).to.equal(false);
-        }
-        catch (error) {
-          expect(error).to.have.status(404);
-        }
+        const res = yield patchTwiglet({ name: 'non-existant-name' }, updates);
+        expect(res).to.have.status(404);
       });
 
       it('fails if the node.type is not in the entities', function* foo () {
@@ -717,14 +685,9 @@ describe('twiglets', () => {
         delete updates.links;
         updates.nodes[1].type = 'ent3';
         updates.commitMessage = 'invalid nodes';
-        try {
-          yield patchTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
-          expect(true).to.equal(false); // should never be called.
-        }
-        catch (error) {
-          expect(error).to.have.status(400);
-          expect(error.response.body.message.includes('node 2')).to.equal(true);
-        }
+        const res = yield patchTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
+        expect(res).to.have.status(400);
+        expect(res.error.text.includes('node 2')).to.equal(true);
       });
     });
   });
@@ -744,12 +707,9 @@ describe('twiglets', () => {
         expect(res).to.have.status(204);
       });
 
-      it('GET twiglet returns 404', (done) => {
-        getTwiglet({ name: baseTwiglet().name })
-          .end((err, response) => {
-            expect(response).to.have.status(404);
-            done();
-          });
+      it('GET twiglet returns 404', function* () {
+        res = yield getTwiglet({ name: baseTwiglet().name });
+        expect(res).to.have.status(404);
       });
 
       it('not included in the list of twiglets', function* () {
@@ -757,12 +717,9 @@ describe('twiglets', () => {
         expect(twiglets.body).to.not.deep.contains(baseTwiglet());
       });
 
-      it('returns 404 when twiglet doesnt exist', (done) => {
-        deleteTwiglet(baseTwiglet())
-          .catch((error) => {
-            expect(error).to.have.status(404);
-            done();
-          });
+      it('returns 404 when twiglet doesnt exist', function* () {
+        res = yield deleteTwiglet(baseTwiglet());
+        expect(res).to.have.status(404);
       });
     });
   });

@@ -17,7 +17,8 @@ async function getTwigletInfoByNameWithDb (name, db) {
 
 async function getTwigletInfoByName (name, contextualConfig) {
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  return getTwigletInfoByNameWithDb(name, twigletLookupDb);
+  const twiglet = await getTwigletInfoByNameWithDb(name, twigletLookupDb);
+  return twiglet;
 }
 
 async function throwIfTwigletNameNotUnique (name, db) {

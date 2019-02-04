@@ -63,7 +63,7 @@ function ensureEntitiesHaveAttributesAndType (entities) {
 
 const getModelHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfo = await getTwigletInfoByName(request.params.name);
+  const twigletInfo = await getTwigletInfoByName(request.params.name, contextualConfig);
   const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
     skip_setup: true
   });

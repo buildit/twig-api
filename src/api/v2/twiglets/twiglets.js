@@ -241,10 +241,11 @@ async function getTwiglet (name, urlBuilder, contextualConfig) {
   return R.merge(cleanedTwigletData, presentationTwigletData);
 }
 
-function getTwigletHandler (request) {
+const getTwigletHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
-  return getTwiglet(request.params.name, request.buildUrl, contextualConfig);
-}
+  const twiglet = await getTwiglet(request.params.name, request.buildUrl, contextualConfig);
+  return twiglet;
+};
 
 function ensureEntitiesHaveAttributesAndType (entities) {
   return Reflect.ownKeys(entities).reduce((object, key) => {
@@ -311,6 +312,9 @@ function seedTwiglet (createdDb, model, nodes, links, views, events, sequences) 
 
 const createTwigletHandler = async (request, h) => {
   const jsonTwiglet = checkJsonParsableIfExists(request.payload.json);
+  if (jsonTwiglet) {
+    throwIfNodesNotInModel(jsonTwiglet.model, jsonTwiglet.nodes);
+  }
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
   await throwIfTwigletNameNotUnique(request.payload.name, twigletLookupDb);
@@ -472,6 +476,7 @@ const patchTwigletHandler = async (request) => {
     db.put(twigletData.nodes),
     db.put(twigletData.links),
     Changelog.addCommitMessage(
+      contextualConfig,
       twigIdVar,
       request.payload.commitMessage,
       request.auth.credentials.user.name,

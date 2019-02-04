@@ -11,12 +11,9 @@ const url = process.env.ENDPOINT_URI || 'http://localhost:3000';
 const authAgent = chai.request.agent(url);
 const anonAgent = chai.request(url);
 
-function addWait (promise) {
+async function addWait (promise) {
   if (process.env.HTTP_WAIT_TIME) {
-    return promise
-      .then(result => new Promise(resolve => setTimeout(
-        () => resolve(result), process.env.HTTP_WAIT_TIME
-      )));
+    await new Promise(resolve => setTimeout(resolve, process.env.HTTP_WAIT_TIME));
   }
   return promise;
 }
