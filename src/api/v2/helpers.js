@@ -1,6 +1,13 @@
 'use strict';
 
 const Boom = require('boom');
+const HttpStatus = require('http-status-codes');
+
+
+function isConflictOrNotFound (error) {
+  const code = error.status || (error.output || {}).statusCode;
+  return code === HttpStatus.CONFLICT || code === HttpStatus.NOT_FOUND;
+}
 
 function wrapTryCatchWithBoomify (logger, handlerFn) {
   return async (request, h) => {
@@ -9,8 +16,9 @@ function wrapTryCatchWithBoomify (logger, handlerFn) {
       return response;
     }
     catch (error) {
-      console.log(error);
-      logger.error(error);
+      if (!isConflictOrNotFound(error)) {
+        logger.error(error);
+      }
       throw Boom.boomify(error, { statusCode: error.status });
     }
   };
