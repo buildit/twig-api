@@ -127,16 +127,14 @@ function seedWithEmptyEvents (db) {
   };
 }
 
-const postEventsHandler = async (request) => {
+const postEventsHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const twigletInfo = await getTwigletInfoByName(request.params.twigletName, contextualConfig);
   const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id),
     { skip_setup: true });
   const doc = await db.get('events').catch(seedWithEmptyEvents(db));
   if (doc.data.some(event => event.name === request.payload.name)) {
-    const error = new Error('Event Name must be unique');
-    error.status = 409;
-    throw error;
+    throw Boom.conflict('Event Name must be unique');
   }
   const newEvent = R.merge({}, request.payload);
   const twigletDocs = await db.allDocs({ include_docs: true, keys: ['nodes', 'links'] });
@@ -156,7 +154,7 @@ const postEventsHandler = async (request) => {
   newEvent.links = twigletDocs.rows[1].doc.data;
   doc.data.push(newEvent);
   await db.put(doc);
-  return 'OK';
+  return h.response('OK').code(HttpStatus.CREATED);
 };
 
 const deleteEventHandler = async (request, h) => {
@@ -168,7 +166,7 @@ const deleteEventHandler = async (request, h) => {
   const eventIndex = doc.data.findIndex(event => event.id === request.params.eventId);
   doc.data.splice(eventIndex, 1);
   await db.put(doc);
-  return h.code(HttpStatus.NO_CONTENT);
+  return h.response().code(HttpStatus.NO_CONTENT);
 };
 
 const deleteAllEventsHandler = async (request, h) => {
@@ -179,11 +177,11 @@ const deleteAllEventsHandler = async (request, h) => {
       { skip_setup: true });
     const events = await db.get('events');
     await db.remove(events._id, events._rev);
-    return h.code(HttpStatus.NO_CONTENT);
+    return h.response().code(HttpStatus.NO_CONTENT);
   }
   catch (error) {
     if (error.status === 404) {
-      return h.code(HttpStatus.NO_CONTENT);
+      return h.response().code(HttpStatus.NO_CONTENT);
     }
     throw error;
   }
