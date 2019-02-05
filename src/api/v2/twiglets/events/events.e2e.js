@@ -40,7 +40,7 @@ function baseEvent () {
   };
 }
 
-describe.only('events', () => {
+describe('events', () => {
   describe('POST /twiglets/{twigletName}/events', () => {
     describe('success', () => {
       let res;

@@ -33,7 +33,7 @@ const createSequenceRequest = Joi.object({
 });
 
 const getSequence = async (twigletName, sequenceId, contextualConfig) => {
-  const twigletInfo = await getTwigletInfoByName(twigletName);
+  const twigletInfo = await getTwigletInfoByName(twigletName, contextualConfig);
   const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
     skip_setup: true
   });
@@ -48,13 +48,13 @@ const getSequence = async (twigletName, sequenceId, contextualConfig) => {
 };
 
 const getSequenceDetails = async (twigletName, sequenceId, contextualConfig) => {
-  const sequence = await getSequence(twigletName, sequenceId);
+  const sequence = await getSequence(twigletName, sequenceId, contextualConfig);
   const eventsMap = sequence.events.reduce((map, eventId) => {
     map[eventId] = true;
     return map;
   }, {});
 
-  const twigletInfo = await getTwigletInfoByName(twigletName);
+  const twigletInfo = await getTwigletInfoByName(twigletName, contextualConfig);
   const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
     skip_setup: true
   });
@@ -155,7 +155,8 @@ const postSequencesHanlder = async (request, h) => {
   request.payload.id = uuidV4();
   doc.data.push(request.payload);
   await db.put(doc);
-  const newSequence = await getSequence(request.params.twigletName, request.payload.id);
+  const newSequence = await getSequence(request.params.twigletName, request.payload.id,
+    contextualConfig);
   const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${newSequence.id}`;
   const sequenceResponse = {
     id: newSequence.id,
@@ -184,7 +185,8 @@ const putSequenceHandler = async (request) => {
   request.payload.id = request.params.sequenceId;
   doc.data.push(request.payload);
   await db.put(doc);
-  const newSequence = await getSequence(request.params.twigletName, request.params.sequenceId);
+  const newSequence = await getSequence(request.params.twigletName, request.params.sequenceId,
+    contextualConfig);
   const { sequenceId } = request.params;
   const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
   const sequenceResponse = {
@@ -199,7 +201,7 @@ const putSequenceHandler = async (request) => {
 
 const deleteSequenceHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfo = await getTwigletInfoByName(request.params.twigletName);
+  const twigletInfo = await getTwigletInfoByName(request.params.twigletName, contextualConfig);
   const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
     skip_setup: true
   });
@@ -209,7 +211,7 @@ const deleteSequenceHandler = async (request, h) => {
   );
   doc.data.splice(sequenceIndex, 1);
   await db.put(doc);
-  return h.code(HttpStatus.NO_CONTENT);
+  return h.response().code(HttpStatus.NO_CONTENT);
 };
 
 module.exports.routes = [{
