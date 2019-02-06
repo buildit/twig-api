@@ -13,9 +13,9 @@ describe('/v2/ping', () => {
   describe('GET', () => {
     let res;
 
-    before(function* () {
+    before(async () => {
       // act
-      res = yield anonAgent.get('/v2/ping');
+      res = await anonAgent.get('/v2/ping');
     });
 
     it('returns 200', () => {

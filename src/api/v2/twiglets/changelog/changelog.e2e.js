@@ -14,10 +14,10 @@ describe('/v2/twiglets/{name}/changelog', () => {
   describe('(Successful)', () => {
     let res;
 
-    before(function* () {
-      yield createModel(baseModel());
-      res = yield createTwiglet(baseTwiglet());
-      res = yield chai.request(res.body.changelog_url).get('');
+    before(async () => {
+      await createModel(baseModel());
+      res = await createTwiglet(baseTwiglet());
+      res = await chai.request(res.body.changelog_url).get('');
     });
 
     it('returns 200', () => {
@@ -28,9 +28,9 @@ describe('/v2/twiglets/{name}/changelog', () => {
       expect(res.body.changelog.length).to.equal(1);
     });
 
-    after(function* foo () {
-      yield deleteTwiglet(baseTwiglet());
-      yield deleteModel(baseModel());
+    after(async () => {
+      await deleteTwiglet(baseTwiglet());
+      await deleteModel(baseModel());
     });
   });
 });

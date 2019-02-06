@@ -20,19 +20,19 @@ describe('/v2/twiglets/{name}/model', () => {
   describe('PUT', () => {
     describe('Success', () => {
       let _rev;
-      beforeEach('Create new twiglet', function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        ({ _rev } = (yield authAgent.get(`/v2/twiglets/${baseTwiglet().name}/model`)).body);
+      beforeEach('Create new twiglet', async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        ({ _rev } = (await authAgent.get(`/v2/twiglets/${baseTwiglet().name}/model`)).body);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteModel(baseModel());
-        yield deleteTwiglet(baseTwiglet());
+      afterEach('Delete new twiglet', async () => {
+        await deleteModel(baseModel());
+        await deleteTwiglet(baseTwiglet());
       });
 
-      it('updates a model', function* () {
-        const res = yield updateModel(baseTwiglet().name, {
+      it('updates a model', async () => {
+        const res = await updateModel(baseTwiglet().name, {
           _rev,
           entities: {
             some: {
@@ -57,8 +57,8 @@ describe('/v2/twiglets/{name}/model', () => {
         expect(res).to.have.status(200);
       });
 
-      it('updates a model (without nameChanges coming in)', function* () {
-        const res = yield updateModel(baseTwiglet().name, {
+      it('updates a model (without nameChanges coming in)', async () => {
+        const res = await updateModel(baseTwiglet().name, {
           _rev,
           entities: {
             some: {
@@ -101,15 +101,15 @@ describe('/v2/twiglets/{name}/model', () => {
   describe('GET', () => {
     describe('success', () => {
       let res;
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        res = yield createTwiglet(baseTwiglet());
-        res = yield chai.request(res.body.model_url).get('');
+      beforeEach(async () => {
+        await createModel(baseModel());
+        res = await createTwiglet(baseTwiglet());
+        res = await chai.request(res.body.model_url).get('');
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteModel(baseModel());
-        yield deleteTwiglet(baseTwiglet());
+      afterEach('Delete new twiglet', async () => {
+        await deleteModel(baseModel());
+        await deleteTwiglet(baseTwiglet());
       });
 
       it('returns 200 (OK)', () => {

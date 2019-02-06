@@ -74,7 +74,7 @@ const getView = async (name, viewName, contextualConfig) => {
       return viewArray[0];
     }
   }
-  return Boom.notFound();
+  throw Boom.notFound();
 };
 
 const getViewsHandler = async (request) => {
@@ -119,8 +119,8 @@ function seedWithEmptyViews (db) {
   return async (error) => {
     if (error.status === 404) {
       await db.put({ _id: 'views_2', data: [] });
-      const sequences = await db.get('sequences');
-      return sequences;
+      const views = await db.get('views');
+      return views;
     }
     throw error;
   };
@@ -132,7 +132,7 @@ async function throwIfViewNameNotUnique (twigletName, viewName, contextualConfig
     throw Boom.conflict('View name already in use');
   }
   catch (error) {
-    if (error.status !== HttpStatus.NOT_FOUND) {
+    if ((error.output || {}).statusCode !== HttpStatus.NOT_FOUND) {
       throw error;
     }
   }
@@ -145,11 +145,12 @@ const postViewsHandler = async (request, h) => {
     { skip_setup: true });
   const doc = await db.get('views_2').catch(seedWithEmptyViews);
   const viewName = request.payload.name;
-  throwIfViewNameNotUnique(request.params.twigletName, viewName, contextualConfig);
+  await throwIfViewNameNotUnique(request.params.twigletName, viewName, contextualConfig);
   doc.data.push(request.payload);
   await Promise.all([
     db.put(doc),
-    Changelog.addCommitMessage(twigletInfo._id,
+    Changelog.addCommitMessage(contextualConfig,
+      twigletInfo._id,
       `View ${request.payload.name} created`,
       request.auth.credentials.user.name),
   ]);
@@ -180,9 +181,12 @@ const putViewHandler = async (request) => {
   }
   await Promise.all([
     db.put(doc),
-    Changelog.addCommitMessage(twigletInfo._id,
+    Changelog.addCommitMessage(
+      contextualConfig,
+      twigletInfo._id,
       commitMessage,
-      request.auth.credentials.user.name),
+      request.auth.credentials.user.name
+    ),
   ]);
   const newView = await getView(request.params.twigletName, request.payload.name, contextualConfig);
   const viewUrl = `/v2/twiglets/${request.params.twigletName}/views/${request.payload.name}`;
@@ -199,7 +203,7 @@ const putViewHandler = async (request) => {
 
 const deleteViewHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfo = await getTwigletInfoByName(request.params.twigletName);
+  const twigletInfo = await getTwigletInfoByName(request.params.twigletName, contextualConfig);
   const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id),
     { skip_setup: true });
   const doc = await db.get('views_2');
@@ -207,11 +211,14 @@ const deleteViewHandler = async (request, h) => {
   doc.data.splice(viewIndex, 1);
   await Promise.all([
     db.put(doc),
-    Changelog.addCommitMessage(twigletInfo._id,
+    Changelog.addCommitMessage(
+      contextualConfig,
+      twigletInfo._id,
       `View ${request.params.viewName} deleted`,
-      request.auth.credentials.user.name),
+      request.auth.credentials.user.name
+    ),
   ]);
-  return h.code(HttpStatus.NO_CONTENT);
+  return h.response().code(HttpStatus.NO_CONTENT);
 };
 
 module.exports.routes = [
