@@ -14,6 +14,7 @@ const helpers = require('./server.helpers');
 const v2 = require('./api/v2');
 const { config } = require('./config');
 const logger = require('./log')('SERVER');
+require('./db-init');
 
 const options = {
   info: {
