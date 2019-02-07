@@ -4,7 +4,7 @@ const Boom = require('boom');
 const Joi = require('joi');
 const rp = require('request-promise');
 const jwt = require('jsonwebtoken');
-const { getContextualConfig } = require('../../../config');
+const { config } = require('../../../config');
 const logger = require('../../../log')('AUTH');
 
 const oldVerify = jwt.verify;
@@ -66,10 +66,9 @@ const validateLocal = (email, password) => {
 };
 
 const login = (request) => {
-  const contextualConfig = getContextualConfig(request);
   const enableTestUser = process.env.ENABLE_TEST_USER;
   try {
-    if (contextualConfig.DB_URL.includes('localhost') || enableTestUser === true || enableTestUser === 'true') {
+    if (config.DB_URL.includes('localhost') || enableTestUser === true || enableTestUser === 'true') {
       const user = validateLocal(request.payload.email, request.payload.password);
       request.cookieAuth.set({
         user

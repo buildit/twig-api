@@ -18,8 +18,8 @@ async function addWait (promise) {
   return promise;
 }
 
-before(function* () {
-  yield authAgent.post('/v2/login')
+before(async () => {
+  await authAgent.post('/v2/login')
     .send({
       email: 'local@user',
       password: 'password',
