@@ -3,7 +3,8 @@ node_modules
 npm-debug.log
 
 # Tests
-reports
+reports/*
+!reports/index.html
 
 # Build output (maybe you want this maybe you don't)
 npm-shrinkwrap.json

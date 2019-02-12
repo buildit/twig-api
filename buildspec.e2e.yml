@@ -17,3 +17,6 @@ phases:
     commands:
       # seem to be having some sync issues with couchdb.
       - HTTP_WAIT_TIME=300 npm run test:e2e:ci
+  post_build:
+    commands:
+      - aws s3 cp --recursive --quiet --acl public-read ./reports ${REPORTS_BUCKET}
