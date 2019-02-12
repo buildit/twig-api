@@ -5,9 +5,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const PouchDb = require('pouchdb');
 const Changelog = require('./changelog');
-const server = require('../../../../../test/unit/test-server');
-
-server.route(Changelog.routes);
+const init = require('../../../../../test/unit/test-server');
 
 function changeLoggedModel () {
   return {
@@ -27,14 +25,28 @@ function changeLoggedModel () {
   };
 }
 
-describe('/v2/models/{name}/changelog', () => {
-  let sandbox = sinon.sandbox.create();
-  beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+function props (obj) {
+  const p = [];
+  for (; obj != null; obj = Object.getPrototypeOf(obj)) {
+    const op = Object.getOwnPropertyNames(obj);
+    for (let i = 0; i < op.length; i++) {
+      if (p.indexOf(op[i]) === -1) {
+        p.push(op[i]);
+      }
+    }
+  }
+  return p;
+}
+
+describe.only('/v2/models/{name}/changelog', () => {
+  let server;
+
+  before(async () => {
+    server = await init(Changelog.routes);
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   describe('GET', () => {
@@ -44,30 +56,33 @@ describe('/v2/models/{name}/changelog', () => {
     };
 
 
-    it('returns populated changelog', () => {
+    it.only('returns populated changelog', async () => {
       // arrange
-      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
-      allDocs.resolves({ rows: [changeLoggedModel()] });
+      console.log('before', PouchDb.prototype.allDocs.displayName);
+      const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
+      console.log('after', PouchDb.prototype.allDocs.displayName);
+      allDocs.returns(Promise.resolve({ rows: [changeLoggedModel()] }));
+      const db = new PouchDb('http://localhost:5984/organisation-models');
+      console.log('???', Object.getPrototypeOf(db));
+      console.log(db.allDocs);
+      const docs = await db.allDocs({ include_docs: true });
+      console.log('wtf?', docs);
 
       // act
-      return server.inject(req)
-        .then((response) => {
-          // assert
-          expect(response.result.changelog).to.have.length.of(1);
-        });
+      // const response = await server.inject(req);
+      // assert
+      // expect(response.result.changelog).to.have.lengthOf(1);
     });
 
-    it('fails when twiglet doesn\'t exist', () => {
+    it('fails when twiglet doesn\'t exist', async () => {
       // arrange
-      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+      const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
       allDocs.onFirstCall().resolves({ rows: [] });
 
       // act
-      return server.inject(req)
-        .then((response) => {
-          // assert
-          expect(response.statusCode).to.eq(404);
-        });
+      const response = await server.inject(req)
+      // assert
+      expect(response.statusCode).to.eq(404);
     });
   });
 });

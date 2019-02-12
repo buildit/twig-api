@@ -4,14 +4,11 @@
 const chai = require('chai');
 chai.use(require('chai-string'));
 const sinon = require('sinon');
-require('sinon-as-promised');
 const PouchDb = require('pouchdb');
 const Twiglet = require('./twiglets');
-const server = require('../../../../test/unit/test-server');
+const init = require('../../../../test/unit/test-server');
 
 const { expect } = chai;
-
-server.route(Twiglet.routes);
 
 function twigletInfo () {
   return {
@@ -225,14 +222,14 @@ function twigletDocs (keys) {
 }
 
 describe('/v2/twiglets', () => {
-  let sandbox;
+  let server;
 
-  beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+  before(async () => {
+    server = await init(Twiglet.routes);
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   describe('getTwigletsHandler', () => {
@@ -242,7 +239,7 @@ describe('/v2/twiglets', () => {
     };
 
     it('returns an empty list of twiglets', () => {
-      sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve({ rows: [] }));
+      sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve({ rows: [] }));
 
       return server.inject(req)
         .then((response) => {
@@ -279,7 +276,7 @@ describe('/v2/twiglets', () => {
             },
           ]
         };
-        sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve(twiglets));
+        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve(twiglets));
         results = (yield server.inject(req)).result;
       });
 
@@ -305,7 +302,7 @@ describe('/v2/twiglets', () => {
 
     describe('errors', () => {
       it('relays errors from the database with correct error codes', () => {
-        sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
           status: '404',
           message: 'this twiglet can not be found!'
         })));
@@ -318,7 +315,7 @@ describe('/v2/twiglets', () => {
       });
 
       it('returns 500 if there is no status from the database', () => {
-        sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
           message: 'this message will not be pushed to the user'
         })));
 
@@ -340,7 +337,7 @@ describe('/v2/twiglets', () => {
     let twiglet;
     describe('successes', () => {
       beforeEach(function* foo () {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs(['nodes', 'links', 'changelog']));
         twiglet = (yield server.inject(req)).result;
@@ -370,7 +367,7 @@ describe('/v2/twiglets', () => {
 
     describe('errors', () => {
       it('relays errors from the database with correct error codes', () => {
-        sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
           status: '500',
           message: 'Internal Server Error or something'
         })));
@@ -383,7 +380,7 @@ describe('/v2/twiglets', () => {
       });
 
       it('returns 500 if there is no status from the database', () => {
-        sandbox.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
           message: 'this message will not be pushed to the user'
         })));
 
@@ -424,7 +421,7 @@ describe('/v2/twiglets', () => {
       let post;
       let twiglet;
       beforeEach(function* foo () {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [] });
         allDocs.onSecondCall().resolves({
           rows: [{
@@ -438,14 +435,14 @@ describe('/v2/twiglets', () => {
         });
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs(['nodes', 'links', 'changelog']));
-        post = sandbox.stub(PouchDb.prototype, 'post').resolves({
+        post = sinon.stub(PouchDb.prototype, 'post').resolves({
           id: 'some id',
         });
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
-        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+        sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sinon.stub(PouchDb.prototype, 'put').resolves();
         twiglet = (yield server.inject(req())).result;
       });
 
@@ -462,7 +459,7 @@ describe('/v2/twiglets', () => {
       let postedEntities;
 
       beforeEach(function* foo () {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [] });
         allDocs.onSecondCall().resolves({
           rows: [{
@@ -484,14 +481,14 @@ describe('/v2/twiglets', () => {
         });
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs(['nodes', 'links', 'changelog']));
-        sandbox.stub(PouchDb.prototype, 'post').resolves({
+        sinon.stub(PouchDb.prototype, 'post').resolves({
           id: 'some id',
         });
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
-        const bulkDocs = sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
-        sandbox.stub(PouchDb.prototype, 'put').resolves();
+        const bulkDocs = sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        sinon.stub(PouchDb.prototype, 'put').resolves();
         yield server.inject(req());
         postedEntities = bulkDocs.getCall(0).args[0][0].data.entities;
       });
@@ -579,18 +576,18 @@ describe('/v2/twiglets', () => {
       let put;
       let post;
       beforeEach(function* foo () {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [] });
         allDocs.onSecondCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onThirdCall().resolves(twigletDocs(['nodes', 'links', 'changelog']));
-        post = sandbox.stub(PouchDb.prototype, 'post').resolves({
+        post = sinon.stub(PouchDb.prototype, 'post').resolves({
           id: 'some id',
         });
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
-        bulkDocs = sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
-        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+        bulkDocs = sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sinon.stub(PouchDb.prototype, 'put').resolves();
         const jsonReq = req();
         jsonReq.payload.json = JSON.stringify(jsonTwiglet());
         twiglet = (yield server.inject(jsonReq)).result;
@@ -637,20 +634,20 @@ describe('/v2/twiglets', () => {
         };
       }
       beforeEach(function* foo () {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [] });
         allDocs.onSecondCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onThirdCall().resolves(clone());
         allDocs.onCall(3).resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(4).resolves(twigletDocs(['nodes', 'links', 'changelog']));
-        post = sandbox.stub(PouchDb.prototype, 'post').resolves({
+        post = sinon.stub(PouchDb.prototype, 'post').resolves({
           id: 'some id',
         });
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
-        bulkDocs = sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
-        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+        bulkDocs = sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sinon.stub(PouchDb.prototype, 'put').resolves();
         const cloneReq = req();
         cloneReq.payload.cloneTwiglet = 'Some Twiglet';
         twiglet = (yield server.inject(cloneReq)).result;
@@ -713,7 +710,7 @@ describe('/v2/twiglets', () => {
       });
 
       it('responds with a conflict if the twiglet already exists', () => {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.resolves({ rows: [{ doc: (twigletInfo()) }] });
         return server.inject(req())
           .then((response) => {
@@ -722,7 +719,7 @@ describe('/v2/twiglets', () => {
       });
 
       it('Passes along the error if the error is anything other than a 404', () => {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419 });
+        sinon.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419 });
         return server.inject(req())
           .then((response) => {
             expect(response.result.statusCode).to.equal(419);
@@ -779,16 +776,16 @@ describe('/v2/twiglets', () => {
     describe('success', () => {
       let put;
       beforeEach(function* foo () {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs(['nodes', 'links', 'model']));
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
-        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+        sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sinon.stub(PouchDb.prototype, 'put').resolves();
         yield server.inject(req());
       });
 
@@ -816,15 +813,15 @@ describe('/v2/twiglets', () => {
     describe('errors', () => {
       let allDocs;
       beforeEach(() => {
-        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs());
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
       });
 
       it('errors if the a node.type is not in the entities', () => {
@@ -938,16 +935,16 @@ describe('/v2/twiglets', () => {
     describe('success', () => {
       let put;
       beforeEach(() => {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs(['nodes', 'links', 'changelog']));
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
-        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+        sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sinon.stub(PouchDb.prototype, 'put').resolves();
       });
 
       describe('updating name only', () => {
@@ -1057,15 +1054,15 @@ describe('/v2/twiglets', () => {
     describe('errors', () => {
       let allDocs;
       beforeEach(() => {
-        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs());
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletInfo());
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
       });
 
       it('errors if the a node.type is not in the entities', () => {
@@ -1151,11 +1148,11 @@ describe('/v2/twiglets', () => {
 
     describe('success', () => {
       beforeEach(() => {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-        sandbox.stub(PouchDb.prototype, 'destroy').resolves();
-        sandbox.stub(PouchDb.prototype, 'get').resolves({ _id: 'some id', _rev: 'rev' });
-        sandbox.stub(PouchDb.prototype, 'remove').resolves();
+        sinon.stub(PouchDb.prototype, 'destroy').resolves();
+        sinon.stub(PouchDb.prototype, 'get').resolves({ _id: 'some id', _rev: 'rev' });
+        sinon.stub(PouchDb.prototype, 'remove').resolves();
       });
       it('returns 204 once deleted', () => server.inject(req())
         .then((response) => {
@@ -1165,9 +1162,9 @@ describe('/v2/twiglets', () => {
 
     describe('errors', () => {
       it('relays an error from the database', () => {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-        sandbox.stub(PouchDb.prototype, 'destroy')
+        sinon.stub(PouchDb.prototype, 'destroy')
           .rejects({ status: 419, message: 'some message' });
         return server.inject(req())
           .catch((response) => {

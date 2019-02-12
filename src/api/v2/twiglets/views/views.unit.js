@@ -3,14 +3,11 @@
 /* eslint no-unused-expressions: 0 */
 const { expect } = require('chai');
 const sinon = require('sinon');
-require('sinon-as-promised');
 const PouchDb = require('pouchdb');
 const Views = require('./views');
-const server = require('../../../../../test/unit/test-server');
+const init = require('../../../../../test/unit/test-server');
 const { twigletInfo } = require('../twiglets.unit');
 const { twigletDocs } = require('../twiglets.unit');
-
-server.route(Views.routes);
 
 function getViewResults () {
   return {
@@ -47,13 +44,13 @@ function getViewResults () {
 }
 
 describe('/v2/Twiglet::Views', () => {
-  let sandbox = sinon.sandbox.create();
-  beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+  let server;
+  before(async () => {
+    server = await init(Views.routes);
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   describe('getViewsHandler', () => {
@@ -65,7 +62,7 @@ describe('/v2/Twiglet::Views', () => {
     }
 
     beforeEach(() => {
-      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+      const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
       allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
     });
 
@@ -74,7 +71,7 @@ describe('/v2/Twiglet::Views', () => {
 
 
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').resolves(getViewResults());
+        sinon.stub(PouchDb.prototype, 'get').resolves(getViewResults());
         response = yield server.inject(req());
       });
 
@@ -99,13 +96,13 @@ describe('/v2/Twiglet::Views', () => {
 
     describe('errors', () => {
       it('relays errors', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
+        sinon.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
         const response = yield server.inject(req());
         expect(response.statusCode).to.equal(420);
       });
 
       it('passes 500 for unknown errors', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').rejects({ message: 'some message' });
+        sinon.stub(PouchDb.prototype, 'get').rejects({ message: 'some message' });
         const response = yield server.inject(req());
         expect(response.statusCode).to.equal(500);
       });
@@ -121,7 +118,7 @@ describe('/v2/Twiglet::Views', () => {
     }
 
     beforeEach(() => {
-      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+      const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
       allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
     });
 
@@ -129,7 +126,7 @@ describe('/v2/Twiglet::Views', () => {
       let response;
 
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').resolves(getViewResults());
+        sinon.stub(PouchDb.prototype, 'get').resolves(getViewResults());
         response = yield server.inject(req());
       });
 
@@ -149,13 +146,13 @@ describe('/v2/Twiglet::Views', () => {
 
     describe('errors', () => {
       it('relays errors', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
+        sinon.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
         const response = yield server.inject(req());
         expect(response.statusCode).to.equal(420);
       });
 
       it('passes 500 for unknown errors', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').rejects({ message: 'some message' });
+        sinon.stub(PouchDb.prototype, 'get').rejects({ message: 'some message' });
         const response = yield server.inject(req());
         expect(response.statusCode).to.equal(500);
       });
@@ -208,16 +205,16 @@ describe('/v2/Twiglet::Views', () => {
       let response;
       let put;
       beforeEach(function* foo () {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs());
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletDocs().rows[3].doc);
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
-        put = sandbox.stub(PouchDb.prototype, 'put').resolves(getViewResults());
+        sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sinon.stub(PouchDb.prototype, 'put').resolves(getViewResults());
         response = yield server.inject(req());
       });
 
@@ -237,19 +234,19 @@ describe('/v2/Twiglet::Views', () => {
     describe('errors', () => {
       let allDocs;
       beforeEach(() => {
-        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs());
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletDocs().rows[3].doc);
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
       });
 
       it('relays the error', () => {
-        sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
+        sinon.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
         return server.inject(req())
           .then((response) => {
             expect(response.result.statusCode).to.equal(420);
@@ -305,14 +302,14 @@ describe('/v2/Twiglet::Views', () => {
       let put;
       let allDocs;
       beforeEach(function* foo () {
-        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletDocs().rows[3].doc);
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
-        put = sandbox.stub(PouchDb.prototype, 'put').resolves(getViewResults());
+        sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        put = sinon.stub(PouchDb.prototype, 'put').resolves(getViewResults());
         response = yield server.inject(req());
       });
 
@@ -332,19 +329,19 @@ describe('/v2/Twiglet::Views', () => {
     describe('errors', () => {
       let allDocs;
       beforeEach(() => {
-        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs());
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletDocs().rows[3].doc);
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
       });
 
       it('relays the error', () => {
-        sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
+        sinon.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
         return server.inject(req())
           .then((response) => {
             expect(response.result.statusCode).to.equal(420);
@@ -371,16 +368,16 @@ describe('/v2/Twiglet::Views', () => {
     describe('success', () => {
       let response;
       beforeEach(function* foo () {
-        const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs());
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletDocs().rows[3].doc);
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
-        sandbox.stub(PouchDb.prototype, 'put').resolves(getViewResults());
+        sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        sinon.stub(PouchDb.prototype, 'put').resolves(getViewResults());
         response = yield server.inject(req());
       });
 
@@ -392,19 +389,19 @@ describe('/v2/Twiglet::Views', () => {
     describe('errors', () => {
       let allDocs;
       beforeEach(() => {
-        allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+        allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
         allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onSecondCall().resolves(twigletDocs());
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs());
-        const get = sandbox.stub(PouchDb.prototype, 'get');
+        const get = sinon.stub(PouchDb.prototype, 'get');
         get.withArgs('changelog').rejects({ status: 404 });
         get.resolves(twigletDocs().rows[3].doc);
-        sandbox.stub(PouchDb.prototype, 'bulkDocs').resolves();
+        sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
       });
 
       it('relays the error', () => {
-        sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
+        sinon.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
         return server.inject(req())
           .then((response) => {
             expect(response.result.statusCode).to.equal(420);

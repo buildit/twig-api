@@ -45,8 +45,7 @@
     "nyc": "13.1.0",
     "pre-commit": "1.2.2",
     "pre-push": "0.1.1",
-    "sinon": "7.2.3",
-    "sinon-as-promised": "4.0.3"
+    "sinon": "1.17.7"
   },
   "dependencies": {
     "boom": "7.3.0",

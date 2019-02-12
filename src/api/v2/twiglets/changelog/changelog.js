@@ -49,7 +49,6 @@ async function addCommitMessage (contextualConfig, _id, commitMessage, user, rep
     return db.put(doc);
   }
   catch (error) {
-    console.log('???', error);
     if (error.status !== 404) {
       logger.error(toJSON(error));
       throw error;

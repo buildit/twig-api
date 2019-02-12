@@ -3,22 +3,20 @@
 /* eslint no-unused-expressions: 0 */
 const { expect } = require('chai');
 const sinon = require('sinon');
-require('sinon-as-promised');
 const PouchDb = require('pouchdb');
 const Model = require('./model');
-const server = require('../../../../../test/unit/test-server');
+const init = require('../../../../../test/unit/test-server');
 const { twigletInfo } = require('../twiglets.unit');
 
-server.route(Model.routes);
-
 describe('/v2/Twiglet::Models', () => {
-  let sandbox = sinon.sandbox.create();
-  beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+  let server;
+
+  before(async () => {
+    server = await init(Model.routes);
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   describe('getModelHandler', () => {
@@ -30,7 +28,7 @@ describe('/v2/Twiglet::Models', () => {
     }
 
     beforeEach(() => {
-      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+      const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
       allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
     });
 
@@ -63,7 +61,7 @@ describe('/v2/Twiglet::Models', () => {
       }
 
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').resolves(getModelResults());
+        sinon.stub(PouchDb.prototype, 'get').resolves(getModelResults());
         response = yield server.inject(req());
       });
 
@@ -111,7 +109,7 @@ describe('/v2/Twiglet::Models', () => {
       }
 
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').resolves(getModelResults());
+        sinon.stub(PouchDb.prototype, 'get').resolves(getModelResults());
         ({ result } = (yield server.inject(req())));
       });
 
@@ -131,13 +129,13 @@ describe('/v2/Twiglet::Models', () => {
 
     describe('errors', () => {
       it('relays errors', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
+        sinon.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
         const response = yield server.inject(req());
         expect(response.statusCode).to.equal(420);
       });
 
       it('passes 500 for unknown errors', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'get').rejects({ message: 'some message' });
+        sinon.stub(PouchDb.prototype, 'get').rejects({ message: 'some message' });
         const response = yield server.inject(req());
         expect(response.statusCode).to.equal(500);
       });
