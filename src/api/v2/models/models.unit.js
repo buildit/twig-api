@@ -4,13 +4,11 @@
 const chai = require('chai');
 chai.use(require('chai-string'));
 const sinon = require('sinon');
-require('sinon-as-promised');
 const PouchDb = require('pouchdb');
 const Models = require('./models');
-const server = require('../../../../test/unit/test-server');
+const init = require('../../../../test/unit/test-server');
 
-const expect = chai.expect;
-server.route(Models.routes);
+const { expect } = chai;
 
 function stubModel () {
   return {
@@ -46,15 +44,15 @@ function stubModel () {
     }
   };
 }
-
 describe('/v2/models/', () => {
-  let sandbox = sinon.sandbox.create();
-  beforeEach(() => {
-    sandbox = sinon.sandbox.create();
-  });
+  let server;
+
+  before(async () => {
+    server = init(Models.routes);
+  })
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   describe('POST', () => {
@@ -96,7 +94,7 @@ describe('/v2/models/', () => {
       let res;
 
       beforeEach(function* foo () {
-        const getModelsStub = sandbox.stub(PouchDb.prototype, 'allDocs');
+        const getModelsStub = sinon.stub(PouchDb.prototype, 'allDocs');
         getModelsStub.onFirstCall().resolves({ rows: [] });
         getModelsStub.onSecondCall().resolves({
           rows: [
@@ -112,7 +110,7 @@ describe('/v2/models/', () => {
             }
           ]
         });
-        sandbox.stub(PouchDb.prototype, 'post').resolves();
+        sinon.stub(PouchDb.prototype, 'post').resolves();
         res = yield server.inject(req());
       });
 
@@ -139,7 +137,7 @@ describe('/v2/models/', () => {
 
     describe('errors', () => {
       it('returns a conflict error if the model already exists', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({
           rows: [
             {
               doc: {
@@ -155,28 +153,28 @@ describe('/v2/models/', () => {
       });
 
       it('passes database errors on to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419, message: 'teapots' });
+        sinon.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419, message: 'teapots' });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(419);
         expect(res.result.message).to.equal('teapots');
       });
 
       it('unknown errors are passed as 500', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ message: 'not teapots' });
+        sinon.stub(PouchDb.prototype, 'allDocs').rejects({ message: 'not teapots' });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(500);
       });
 
       it('passes on put errors to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
-        sandbox.stub(PouchDb.prototype, 'post').rejects({ status: 419, message: 'teapots' });
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
+        sinon.stub(PouchDb.prototype, 'post').rejects({ status: 419, message: 'teapots' });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(419);
       });
 
       it('handles passes on put errors to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
-        sandbox.stub(PouchDb.prototype, 'post').rejects({ message: 'not teapots' });
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
+        sinon.stub(PouchDb.prototype, 'post').rejects({ message: 'not teapots' });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(500);
       });
@@ -255,7 +253,7 @@ describe('/v2/models/', () => {
         };
       }
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves(stubModels());
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves(stubModels());
         res = yield server.inject(req());
       });
 
@@ -282,13 +280,13 @@ describe('/v2/models/', () => {
 
     describe('errors', () => {
       it('passes on errors to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ status: 418 });
+        sinon.stub(PouchDb.prototype, 'allDocs').rejects({ status: 418 });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(418);
       });
 
       it('handles unknown errors by passing 500', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ message: 'some message' });
+        sinon.stub(PouchDb.prototype, 'allDocs').rejects({ message: 'some message' });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(500);
       });
@@ -297,13 +295,14 @@ describe('/v2/models/', () => {
 });
 
 describe('/models/{name}', () => {
-  let sandbox = sinon.sandbox.create();
-  beforeEach(() => {
-    sandbox = sinon.sandbox.create();
-  });
+  let server;
+
+  before(async () => {
+    server = init(Models.routes);
+  })
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   describe('PUT', () => {
@@ -346,7 +345,7 @@ describe('/models/{name}', () => {
       let res;
       let put;
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({
           rows: [
             {
               doc: {
@@ -361,7 +360,7 @@ describe('/models/{name}', () => {
             }
           ]
         });
-        put = sandbox.stub(PouchDb.prototype, 'put').resolves();
+        put = sinon.stub(PouchDb.prototype, 'put').resolves();
         res = yield server.inject(req());
       });
 
@@ -384,13 +383,13 @@ describe('/models/{name}', () => {
 
     describe('errors', () => {
       it('errors if the model cannot be found', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(404);
       });
 
       it('errors if _rev does not match and sends back _rev for overwrite', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
         const badRev = req();
         badRev.payload._rev = 'wrong!';
         const res = yield server.inject(badRev);
@@ -399,8 +398,8 @@ describe('/models/{name}', () => {
       });
 
       it('passes database error codes on to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
-        sandbox.stub(PouchDb.prototype, 'put').rejects({ status: 419, message: 'teapots' });
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
+        sinon.stub(PouchDb.prototype, 'put').rejects({ status: 419, message: 'teapots' });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(419);
         expect(res.result.message).to.equal('teapots');
@@ -426,8 +425,8 @@ describe('/models/{name}', () => {
     describe('success', () => {
       let res;
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
-        sandbox.stub(PouchDb.prototype, 'remove').resolves();
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
+        sinon.stub(PouchDb.prototype, 'remove').resolves();
         res = yield server.inject(req());
       });
 
@@ -438,24 +437,24 @@ describe('/models/{name}', () => {
 
     describe('errors', () => {
       it('responds with 404 if the model cannot be found', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
-        sandbox.stub(PouchDb.prototype, 'remove').resolves();
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [] });
+        sinon.stub(PouchDb.prototype, 'remove').resolves();
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(404);
         expect(res.result.message).to.equal('Not Found');
       });
 
       it('responds with an error if it cannot delete the model', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
-        sandbox.stub(PouchDb.prototype, 'remove').rejects({ status: 409, message: 'Conflict!' });
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
+        sinon.stub(PouchDb.prototype, 'remove').rejects({ status: 409, message: 'Conflict!' });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(409);
         expect(res.result.message).to.equal('Conflict!');
       });
 
       it('unknown errors come through as 500', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
-        sandbox.stub(PouchDb.prototype, 'remove').rejects({ message: 'some error' });
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
+        sinon.stub(PouchDb.prototype, 'remove').rejects({ message: 'some error' });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(500);
       });
@@ -473,7 +472,7 @@ describe('/models/{name}', () => {
       let res;
 
       beforeEach(function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
         res = yield server.inject(req());
       });
 
@@ -492,7 +491,7 @@ describe('/models/{name}', () => {
       beforeEach(function* foo () {
         const stubbedModel = stubModel();
         delete stubbedModel.doc.data.changelog;
-        sandbox.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubbedModel] });
+        sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubbedModel] });
         res = yield server.inject(req());
       });
 
@@ -503,13 +502,13 @@ describe('/models/{name}', () => {
 
     describe('errors', () => {
       it('passes on errors to the client', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419 });
+        sinon.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419 });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(419);
       });
 
       it('handles unknown errors by passing 500', function* foo () {
-        sandbox.stub(PouchDb.prototype, 'allDocs').rejects({ message: 'some message' });
+        sinon.stub(PouchDb.prototype, 'allDocs').rejects({ message: 'some message' });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(500);
       });

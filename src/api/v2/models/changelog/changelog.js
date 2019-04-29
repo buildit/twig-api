@@ -1,9 +1,10 @@
 'use strict';
 
-const Boom = require('boom');
 const Joi = require('joi');
 const logger = require('../../../../log')('CHANGELOG');
-const getModel = require('../models.js').getModel;
+const { getModel } = require('../models.js');
+const { wrapTryCatchWithBoomify } = require('../../helpers');
+const { getContextualConfig } = require('../../../../config');
 
 // probably want to return raw array rather than object (been flipping on this)
 // but that would now be a breaking change
@@ -18,19 +19,17 @@ const getChangelogResponse = Joi.object({
   }))
 });
 
-const getChangelogHandler = (request, reply) =>
-  getModel(request.params.name)
-    .then(doc => reply({ changelog: doc.data.changelog }))
-    .catch((error) => {
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
+const getChangelogHandler = async (request) => {
+  const contextualConfig = getContextualConfig(request);
+  const doc = await getModel(request.params.name, contextualConfig);
+  return { changelog: doc.data.changelog };
+};
 
 const routes = [
   {
     method: ['GET'],
     path: '/v2/models/{name}/changelog',
-    handler: getChangelogHandler,
+    handler: wrapTryCatchWithBoomify(logger, getChangelogHandler),
     config: {
       auth: { mode: 'optional' },
       response: { schema: getChangelogResponse },

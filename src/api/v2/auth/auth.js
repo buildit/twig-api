@@ -2,10 +2,10 @@
 
 const Boom = require('boom');
 const Joi = require('joi');
-const config = require('../../../config');
-const logger = require('../../../log')('AUTH');
 const rp = require('request-promise');
 const jwt = require('jsonwebtoken');
+const { config } = require('../../../config');
+const logger = require('../../../log')('AUTH');
 
 const oldVerify = jwt.verify;
 
@@ -26,7 +26,9 @@ jwt.verify = (token, cert, callback) => {
 const validateMothershipJwt = (token) => {
   const oidConfigUrl = 'https://login.microsoftonline.com/258ac4e4-146a-411e-9dc8-79a9e12fd6da/.well-known/openid-configuration';
 
-  const decodedJwt = jwt.decode(token, { complete: true });
+  const decodedJwt = jwt.decode(token, {
+    complete: true
+  });
 
   function findKeyAsCert (keys, jwtKid) {
     return `-----BEGIN CERTIFICATE-----
@@ -34,9 +36,13 @@ ${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
 -----END CERTIFICATE-----`;
   }
 
-  return rp.get({ url: oidConfigUrl })
+  return rp.get({
+    url: oidConfigUrl
+  })
     .then(oidConfig => JSON.parse(oidConfig))
-    .then(oidConfig => rp.get({ url: oidConfig.jwks_uri }))
+    .then(oidConfig => rp.get({
+      url: oidConfig.jwks_uri
+    }))
     .then(keys => JSON.parse(keys))
     .then((keys) => {
       const cert = findKeyAsCert(keys, decodedJwt.header.kid);
@@ -48,71 +54,60 @@ ${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
     }));
 };
 
-const validateLocal = (email, password) =>
-  new Promise((resolve, reject) => {
-    if (email !== 'local@user' || password !== 'password') {
-      return reject('Bad local username/password');
-    }
+const validateLocal = (email, password) => {
+  if (email !== 'local@user' || password !== 'password') {
+    throw new Error('Bad local username/password');
+  }
 
-    return resolve({
-      id: email,
-      name: email
-    });
-  });
-
-const login = (request, reply) =>
-  Promise.resolve()
-    .then(() => {
-      if (config.DB_URL.includes('localhost') || process.env.ENABLE_TEST_USER === true || process.env.ENABLE_TEST_USER === 'true') {
-        return validateLocal(request.payload.email, request.payload.password);
-      }
-      throw new Error('Please login via mothership');
-    })
-    .then((user) => {
-    // put user in cache w/ a session id as key..put session id in cookie
-    // const sid = String(++this.uuid);
-    // request.server.app.cache.set(sid, { user }, 0, (error) => {
-    //   if (error) {
-    //     reply(error);
-    //   }
-
-    //   request.cookieAuth.set({ sid });
-    //   return reply.redirect('/');
-    // });
-      request.cookieAuth.set({ user });
-      return reply({
-        user
-      });
-    })
-    .catch((error) => {
-      logger.log(error);
-      reply(Boom.unauthorized(error.message));
-    });
-
-const validateJwt = (request, reply) => {
-  validateMothershipJwt(request.payload.jwt)
-    .then((user) => {
-      request.cookieAuth.set({ user });
-      return reply({
-        user
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      reply(Boom.unauthorized('Authentication failed'));
-    });
+  return {
+    id: email,
+    name: email
+  };
 };
 
-const logout = (request, reply) => {
+const login = (request) => {
+  const enableTestUser = process.env.ENABLE_TEST_USER;
+  try {
+    if (config.DB_URL.includes('localhost') || enableTestUser === true || enableTestUser === 'true') {
+      const user = validateLocal(request.payload.email, request.payload.password);
+      request.cookieAuth.set({
+        user
+      });
+      return { user };
+    }
+    throw new Error('Please login via mothership');
+  }
+  catch (error) {
+    throw Boom.unauthorized(error.message);
+  }
+};
+
+const validateJwt = async (request) => {
+  try {
+    const user = await validateMothershipJwt(request.payload.jwt);
+    request.cookieAuth.set({
+      user
+    });
+    return {
+      user
+    };
+  }
+  catch (error) {
+    logger.error(error);
+    throw Boom.unauthorized('Authentication failed');
+  }
+};
+
+const logout = (request, h) => {
   request.cookieAuth.clear();
-  return reply({}).code(204);
+  return h.response({}).code(204);
 };
 
 module.exports.routes = [{
   method: ['POST'],
   path: '/v2/login',
   handler: login,
-  config: {
+  options: {
     auth: {
       mode: 'try',
       strategy: 'session'
@@ -135,7 +130,7 @@ module.exports.routes = [{
   method: 'POST',
   path: '/v2/logout',
   handler: logout,
-  config: {
+  options: {
     auth: false,
     tags: ['api'],
   }
@@ -144,8 +139,9 @@ module.exports.routes = [{
   method: 'POST',
   path: '/v2/validateJwt',
   handler: validateJwt,
-  config: {
+  options: {
     auth: false,
     tags: ['api'],
   }
-}];
+}
+];

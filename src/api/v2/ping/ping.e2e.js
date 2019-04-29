@@ -4,18 +4,18 @@
 /* eslint no-unused-expressions: 0 */
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const anonAgent = require('../../../../test/e2e').anonAgent;
+const { anonAgent } = require('../../../../test/e2e');
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 
 describe('/v2/ping', () => {
   describe('GET', () => {
     let res;
 
-    before(function* () {
+    before(async () => {
       // act
-      res = yield anonAgent.get('/v2/ping');
+      res = await anonAgent.get('/v2/ping');
     });
 
     it('returns 200', () => {

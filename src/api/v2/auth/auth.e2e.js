@@ -52,8 +52,8 @@ describe('/v2/login', () => {
 
     describe('Good credentials', () => {
       let res;
-      before('logs in', function* () {
-        res = yield chai.request(url).post('/v2/login').send({
+      before('logs in', async () => {
+        res = await chai.request(url).post('/v2/login').send({
           email: 'local@user',
           password: 'password',
         });
@@ -85,17 +85,17 @@ describe('/logout', () => {
   describe('POST', () => {
     let response;
     describe('Authenticated agent', () => {
-      before(function* () {
+      before(async () => {
         // arrange
         const agent = chai.request.agent(url);
-        yield agent.post('/v2/login')
+        await agent.post('/v2/login')
           .send({
             email: 'local@user',
             password: 'password',
           });
 
         // act
-        response = yield agent.post('/v2/logout');
+        response = await agent.post('/v2/logout');
       });
 
       it('returns 204', () => {
@@ -108,8 +108,8 @@ describe('/logout', () => {
     });
 
     describe('Unauthenticated agent', () => {
-      before(function* () {
-        response = yield anonAgent.post('/v2/logout');
+      before(async () => {
+        response = await anonAgent.post('/v2/logout');
       });
 
       it('returns 204', () => {

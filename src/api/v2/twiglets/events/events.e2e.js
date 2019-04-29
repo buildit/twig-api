@@ -1,4 +1,3 @@
-/* eslint func-names: 0 */
 /* eslint no-unused-expressions: 0 */
 
 'use strict';
@@ -10,7 +9,7 @@ const { authAgent, anonAgent, addWait } = require('../../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 chai.use(chaiSubset);
 
@@ -46,15 +45,15 @@ describe('events', () => {
     describe('success', () => {
       let res;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        res = yield createEvent(baseTwiglet().name, baseEvent());
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        res = await createEvent(baseTwiglet().name, baseEvent());
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 201', () => {
@@ -67,20 +66,20 @@ describe('events', () => {
     });
 
     describe('errors', () => {
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        yield createEvent(baseTwiglet().name, baseEvent());
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        await createEvent(baseTwiglet().name, baseEvent());
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
-      it('409 for names not being unique', function* foo () {
+      it('409 for names not being unique', async () => {
         try {
-          yield createEvent(baseTwiglet().name, baseEvent());
+          await createEvent(baseTwiglet().name, baseEvent());
         }
         catch (error) {
           expect(error).to.have.status(409);
@@ -93,16 +92,16 @@ describe('events', () => {
     describe('success', () => {
       let res;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        res = yield createEvent(baseTwiglet().name, baseEvent());
-        res = yield getEvents(baseTwiglet().name);
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        res = await createEvent(baseTwiglet().name, baseEvent());
+        res = await getEvents(baseTwiglet().name);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 200 (OK)', () => {
@@ -132,17 +131,17 @@ describe('events', () => {
       let res;
       let eventSnapshot;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        yield createEvent(baseTwiglet().name, baseEvent());
-        eventSnapshot = (yield getEvents(baseTwiglet().name)).body[0];
-        res = yield hitUrl(eventSnapshot.url);
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        await createEvent(baseTwiglet().name, baseEvent());
+        [eventSnapshot] = (await getEvents(baseTwiglet().name)).body;
+        res = await hitUrl(eventSnapshot.url);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 200 (OK)', () => {
@@ -176,17 +175,17 @@ describe('events', () => {
       let res;
       let eventSnapshot;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        yield createEvent(baseTwiglet().name, baseEvent());
-        eventSnapshot = (yield getEvents(baseTwiglet().name)).body[0];
-        res = yield hitUrl(eventSnapshot.url, 'delete', true);
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        await createEvent(baseTwiglet().name, baseEvent());
+        [eventSnapshot] = (await getEvents(baseTwiglet().name)).body;
+        res = await hitUrl(eventSnapshot.url, 'delete', true);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 204', () => {
@@ -201,8 +200,8 @@ describe('events', () => {
           });
       });
 
-      it('not included in the list of events', function* () {
-        const events = (yield getEvents(baseTwiglet().name)).body;
+      it('not included in the list of events', async () => {
+        const events = (await getEvents(baseTwiglet().name)).body;
         expect(events.length).to.equal(0);
       });
     });
@@ -213,30 +212,29 @@ describe('events', () => {
       let res;
       let twiglet;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        twiglet = (yield createTwiglet(baseTwiglet())).body;
-        yield createEvent(baseTwiglet().name, baseEvent());
-        console.info(twiglet.events_url);
-        res = yield hitUrl(twiglet.events_url, 'delete', true);
+      beforeEach(async () => {
+        await createModel(baseModel());
+        twiglet = (await createTwiglet(baseTwiglet())).body;
+        await createEvent(baseTwiglet().name, baseEvent());
+        res = await hitUrl(twiglet.events_url, 'delete', true);
       });
 
-      afterEach('Delete new twiglet', function* () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 204', () => {
         expect(res).to.have.status(204);
       });
 
-      it('GET events returns empty array', function* () {
-        const events = (yield getEvents(baseTwiglet().name)).body;
+      it('GET events returns empty array', async () => {
+        const events = (await getEvents(baseTwiglet().name)).body;
         expect(events.length).to.equal(0);
       });
 
-      it('returns 204 when no events', function* () {
-        const secondResponse = yield hitUrl(twiglet.events_url, 'delete', true);
+      it('returns 204 when no events', async () => {
+        const secondResponse = await hitUrl(twiglet.events_url, 'delete', true);
         expect(secondResponse).to.have.status(204);
       });
     });

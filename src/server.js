@@ -2,16 +2,18 @@
 
 const Hapi = require('hapi');
 const cookieAuth = require('hapi-auth-cookie');
-const cls = require('continuation-local-storage');
-const logger = require('./log')('SERVER');
 const Inert = require('inert');
 const Vision = require('vision');
 const HapiSwagger = require('hapi-swagger');
-const { version, engines } = require('../package');
+const semver = require('semver');
+const {
+  version,
+  engines
+} = require('../package');
 const helpers = require('./server.helpers');
 const v2 = require('./api/v2');
-const config = require('./config');
-const semver = require('semver');
+const { config } = require('./config');
+const logger = require('./log')('SERVER');
 require('./db-init');
 
 const options = {
@@ -28,11 +30,7 @@ if (!semver.satisfies(process.version, engines.node)) {
   throw new Error(`Node version '${process.version}' does not satisfy range '${engines.node}'`);
 }
 
-const ns = cls.createNamespace('hapi-request');
-
-const server = new Hapi.Server();
-
-server.connection({
+const server = new Hapi.Server({
   port: 3000,
   routes: {
     cors: {
@@ -45,60 +43,58 @@ server.connection({
       ],
       credentials: true,
     },
-    payload: { maxBytes: 500000000 }
+    payload: {
+      maxBytes: 500000000
+    }
   }
 });
 
-server.decorate('request', 'buildUrl', request => helpers.buildUrl(request), { apply: true });
-
-
-server.ext('onRequest', (req, reply) => {
-  ns.bindEmitter(req.raw.req);
-  ns.bindEmitter(req.raw.res);
-  ns.run(() => {
-    ns.set('host', req.headers.host);
-    reply.continue();
-  });
+server.decorate('request', 'buildUrl', request => helpers.buildUrl(request), {
+  apply: true
 });
 
 server.ext('onRequest', (req, reply) => {
-  const protocol = req.headers['x-forwarded-proto'] || req.connection.info.protocol;
+  const protocol = req.headers['x-forwarded-proto'] || req.server.info.protocol;
   const host = req.headers['x-forwarded-host'] || req.info.hostname;
   if (host === 'localhost' || protocol === 'https') {
-    return reply.continue();
+    return reply.continue;
   }
   return reply
     .redirect(`https://${host}${req.url.path}`)
     .permanent();
 });
 
-server.register(
-  [
-    cookieAuth,
-    Inert,
-    Vision,
-    {
-      register: HapiSwagger,
-      options
-    }
-  ],
-  (err) => {
-    if (err) {
-      throw err;
-    }
+async function init () {
+  try {
+    await server.register(
+      [
+        cookieAuth,
+        Inert,
+        Vision,
+        {
+          plugin: HapiSwagger,
+          options
+        }
+      ],
+    );
 
-    server.auth.strategy('session', 'cookie', 'required', {
+    server.auth.strategy('session', 'cookie', {
       password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
       isSecure: config.SECURE_COOKIES
     });
-  }
-);
 
-Reflect.ownKeys(v2).forEach(key => server.route(v2[key].routes));
+    server.auth.default('session');
 
-server.start((err) => {
-  if (err) {
-    throw err;
+    Reflect.ownKeys(v2).forEach(key => server.route(v2[key].routes));
+    await server.start();
+    logger.log('Server running at:', server.info.uri);
   }
-  logger.log('Server running at:', server.info.uri);
-});
+  catch (error) {
+    console.error(error);
+    logger.error(error);
+    // eslint-disable-next-line no-process-exit
+    process.exit(1);
+  }
+}
+
+init();
