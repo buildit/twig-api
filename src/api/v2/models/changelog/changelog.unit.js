@@ -25,18 +25,19 @@ function changeLoggedModel () {
   };
 }
 
-function props (obj) {
-  const p = [];
-  for (; obj != null; obj = Object.getPrototypeOf(obj)) {
-    const op = Object.getOwnPropertyNames(obj);
-    for (let i = 0; i < op.length; i++) {
-      if (p.indexOf(op[i]) === -1) {
-        p.push(op[i]);
-      }
-    }
-  }
-  return p;
-}
+// JB 043019 - had linting errors but function seems to be unused
+// function props (obj) {
+//   const p = [];
+//   for (; obj != null; obj = Object.getPrototypeOf(obj)) {
+//     const op = Object.getOwnPropertyNames(obj);
+//     for (let i = 0; i < op.length; i++) {
+//       if (p.indexOf(op[i]) === -1) {
+//         p.push(op[i]);
+//       }
+//     }
+//   }
+//   return p;
+// }
 
 describe.only('/v2/models/{name}/changelog', () => {
   let server;
@@ -80,7 +81,7 @@ describe.only('/v2/models/{name}/changelog', () => {
       allDocs.onFirstCall().resolves({ rows: [] });
 
       // act
-      const response = await server.inject(req)
+      const response = await server.inject(req);
       // assert
       expect(response.statusCode).to.eq(404);
     });

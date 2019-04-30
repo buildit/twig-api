@@ -49,7 +49,7 @@ describe('/v2/models/', () => {
 
   before(async () => {
     server = init(Models.routes);
-  })
+  });
 
   afterEach(() => {
     sinon.restore();
@@ -299,7 +299,7 @@ describe('/models/{name}', () => {
 
   before(async () => {
     server = init(Models.routes);
-  })
+  });
 
   afterEach(() => {
     sinon.restore();

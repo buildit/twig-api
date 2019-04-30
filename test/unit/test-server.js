@@ -1,7 +1,7 @@
 'use strict';
 
-const Hapi = require('hapi');
-const cookieAuth = require('hapi-auth-cookie');
+const Hapi = require('@hapi/hapi');
+const cookieAuth = require('@hapi/cookie');
 const helpers = require('../../src/server.helpers');
 
 async function init (routes) {
@@ -12,8 +12,10 @@ async function init (routes) {
   await server.register([cookieAuth]);
 
   server.auth.strategy('session', 'cookie', {
-    password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
-    isSecure: false
+    cookie: {
+      password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
+      isSecure: false
+    }
   });
 
   server.auth.default('session');

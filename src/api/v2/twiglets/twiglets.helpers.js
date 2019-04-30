@@ -1,7 +1,7 @@
 'use strict';
 
 const PouchDB = require('pouchdb');
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const HttpStatus = require('http-status-codes');
 
 async function getTwigletInfoByNameWithDb (name, db) {

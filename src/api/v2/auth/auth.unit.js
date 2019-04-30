@@ -31,7 +31,7 @@ describe('/v2/validateMothershipJwt', () => {
 
   before(async () => {
     server = await init(Auth.routes);
-  })
+  });
 
   beforeEach(async () => {
     sinon.stub(jwt, 'decode').returns({ header: { kid: 'z039zd...' } });
@@ -50,7 +50,7 @@ describe('/v2/validateMothershipJwt', () => {
     sinon.stub(jwt, 'verify').resolves({ upn: 'foo@bar.com', name: 'Foo Bar' });
 
     // act
-    const response = await server.inject(req)
+    const response = await server.inject(req);
     expect(response.headers['set-cookie']).to.exist;
     expect(response.result.user.name).to.eq('Foo Bar');
     expect(response.result.user.id).to.eq('foo@bar.com');
@@ -61,7 +61,7 @@ describe('/v2/validateMothershipJwt', () => {
     sinon.stub(jwt, 'verify').rejects({});
 
     // act
-    const response = await server.inject(req)
+    const response = await server.inject(req);
     expect(response.headers['set-cookie']).to.not.exist;
     expect(response.statusCode).to.equal(401);
   });
