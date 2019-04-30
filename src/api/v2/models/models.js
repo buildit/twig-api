@@ -1,7 +1,7 @@
 'use strict';
 
-const Boom = require('boom');
-const Joi = require('joi');
+const Boom = require('@hapi/boom');
+const Joi = require('@hapi/joi');
 const PouchDB = require('pouchdb');
 const HttpStatus = require('http-status-codes');
 const { isNil } = require('ramda');

@@ -1,8 +1,8 @@
 'use strict';
 
 const PouchDb = require('pouchdb');
-const Boom = require('boom');
-const Joi = require('joi');
+const Boom = require('@hapi/boom');
+const Joi = require('@hapi/joi');
 const toJSON = require('utils-error-to-json');
 const { getContextualConfig } = require('../../../../config');
 const logger = require('../../../../log')('CHANGELOG');

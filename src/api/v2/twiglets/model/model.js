@@ -1,8 +1,8 @@
 'use strict';
 
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const PouchDb = require('pouchdb');
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const R = require('ramda');
 const logger = require('../../../../log')('MODEL');
 const { addCommitMessage } = require('../changelog');

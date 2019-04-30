@@ -1,6 +1,6 @@
 'use strict';
 
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const logger = require('../../../../log')('CHANGELOG');
 const { getModel } = require('../models.js');
 const { wrapTryCatchWithBoomify } = require('../../helpers');
