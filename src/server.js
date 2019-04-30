@@ -1,9 +1,9 @@
 'use strict';
 
-const Hapi = require('hapi');
-const cookieAuth = require('hapi-auth-cookie');
-const Inert = require('inert');
-const Vision = require('vision');
+const Hapi = require('@hapi/hapi');
+const cookieAuth = require('@hapi/cookie');
+const Inert = require('@hapi/inert');
+const Vision = require('@hapi/vision');
 const HapiSwagger = require('hapi-swagger');
 const semver = require('semver');
 const {
@@ -79,8 +79,10 @@ async function init () {
     );
 
     server.auth.strategy('session', 'cookie', {
-      password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
-      isSecure: config.SECURE_COOKIES
+      cookie: {
+        password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
+        isSecure: config.SECURE_COOKIES,
+      }
     });
 
     server.auth.default('session');

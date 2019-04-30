@@ -1,7 +1,7 @@
 'use strict';
 
-const Boom = require('boom');
-const Joi = require('joi');
+const Boom = require('@hapi/boom');
+const Joi = require('@hapi/joi');
 const rp = require('request-promise');
 const jwt = require('jsonwebtoken');
 const { config } = require('../../../config');

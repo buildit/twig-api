@@ -1,7 +1,7 @@
 'use strict';
 
-const Boom = require('boom');
-const Joi = require('joi');
+const Boom = require('@hapi/boom');
+const Joi = require('@hapi/joi');
 const R = require('ramda');
 const PouchDB = require('pouchdb');
 const uuidV4 = require('uuid/v4');
