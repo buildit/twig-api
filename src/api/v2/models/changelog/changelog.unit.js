@@ -43,6 +43,7 @@ describe.only('/v2/models/{name}/changelog', () => {
   let server;
 
   before(async () => {
+    console.log('!?!?!?!?!?', Changelog.routes);
     server = await init(Changelog.routes);
   });
 
@@ -57,7 +58,7 @@ describe.only('/v2/models/{name}/changelog', () => {
     };
 
 
-    it.only('returns populated changelog', async () => {
+    it('returns populated changelog', async () => {
       // arrange
       console.log('before', PouchDb.prototype.allDocs.displayName);
       const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
@@ -70,9 +71,10 @@ describe.only('/v2/models/{name}/changelog', () => {
       console.log('wtf?', docs);
 
       // act
-      // const response = await server.inject(req);
+      const response = await server.inject(req);
+      console.log(response);
       // assert
-      // expect(response.result.changelog).to.have.lengthOf(1);
+      expect(response.result.changelog).to.have.lengthOf(1);
     });
 
     it('fails when twiglet doesn\'t exist', async () => {

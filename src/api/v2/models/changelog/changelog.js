@@ -20,8 +20,10 @@ const getChangelogResponse = Joi.object({
 });
 
 const getChangelogHandler = async (request) => {
+  console.log('wtffff', request);
   const contextualConfig = getContextualConfig(request);
   const doc = await getModel(request.params.name, contextualConfig);
+  console.log('bleh', doc);
   return { changelog: doc.data.changelog };
 };
 
@@ -30,7 +32,7 @@ const routes = [
     method: ['GET'],
     path: '/v2/models/{name}/changelog',
     handler: wrapTryCatchWithBoomify(logger, getChangelogHandler),
-    config: {
+    options: {
       auth: { mode: 'optional' },
       response: { schema: getChangelogResponse },
       tags: ['api'],

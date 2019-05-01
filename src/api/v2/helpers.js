@@ -12,10 +12,12 @@ function isConflictOrNotFound (error) {
 function wrapTryCatchWithBoomify (logger, handlerFn) {
   return async (request, h) => {
     try {
+      console.log('wat', handlerFn);
       const response = await handlerFn(request, h);
       return response;
     }
     catch (error) {
+      console.log('ERROR ERROR ERROR', error);
       if (!isConflictOrNotFound(error)) {
         logger.error(error);
       }
