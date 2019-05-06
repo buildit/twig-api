@@ -25,25 +25,10 @@ function changeLoggedModel () {
   };
 }
 
-// JB 043019 - had linting errors but function seems to be unused
-// function props (obj) {
-//   const p = [];
-//   for (; obj != null; obj = Object.getPrototypeOf(obj)) {
-//     const op = Object.getOwnPropertyNames(obj);
-//     for (let i = 0; i < op.length; i++) {
-//       if (p.indexOf(op[i]) === -1) {
-//         p.push(op[i]);
-//       }
-//     }
-//   }
-//   return p;
-// }
-
 describe.only('/v2/models/{name}/changelog', () => {
   let server;
 
   before(async () => {
-    console.log('!?!?!?!?!?', Changelog.routes);
     server = await init(Changelog.routes);
   });
 
@@ -60,30 +45,32 @@ describe.only('/v2/models/{name}/changelog', () => {
 
     it('returns populated changelog', async () => {
       // arrange
-      console.log('before', PouchDb.prototype.allDocs.displayName);
-      const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
-      console.log('after', PouchDb.prototype.allDocs.displayName);
-      allDocs.returns(Promise.resolve({ rows: [changeLoggedModel()] }));
       const db = new PouchDb('http://localhost:5984/organisation-models');
-      console.log('???', Object.getPrototypeOf(db));
-      console.log(db.allDocs);
+      console.log('before', db.allDocs.displayName);
+      const allDocs = sinon.stub(db, 'allDocs');
+      console.log('after', db.allDocs.displayName);
+      allDocs.returns(Promise.resolve({ rows: [changeLoggedModel()] }));
       const docs = await db.allDocs({ include_docs: true });
-      console.log('wtf?', docs);
+      console.log('wtf?', docs.rows);
 
       // act
       const response = await server.inject(req);
-      console.log(response);
+      console.log('wtf', response.result);
       // assert
       expect(response.result.changelog).to.have.lengthOf(1);
     });
 
-    it('fails when twiglet doesn\'t exist', async () => {
+    it('fails when model doesn\'t exist', async () => {
+      const errReq = {
+        method: 'GET',
+        url: '/v2/models/nomodel/changelog',
+      };
       // arrange
       const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
       allDocs.onFirstCall().resolves({ rows: [] });
 
       // act
-      const response = await server.inject(req);
+      const response = await server.inject(errReq);
       // assert
       expect(response.statusCode).to.eq(404);
     });

@@ -52,6 +52,7 @@ const getModelsResponse = Joi.array().items(Joi.object({
 
 const getModelWithDb = async (name, db) => {
   const modelsRaw = await db.allDocs({ include_docs: true });
+  console.log('modelsRaw', modelsRaw);
   const modelArray = modelsRaw.rows.filter(row => row.doc.data.name === name);
   if (modelArray.length) {
     return modelArray[0].doc;
