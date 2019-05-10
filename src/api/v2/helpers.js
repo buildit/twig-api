@@ -10,17 +10,21 @@ function isConflictOrNotFound (error) {
 }
 
 function wrapTryCatchWithBoomify (logger, handlerFn) {
+
   return async (request, h) => {
     try {
-      console.log('wat', handlerFn);
+      // console.log('wat', handlerFn);
       const response = await handlerFn(request, h);
       return response;
     }
     catch (error) {
-      console.log('ERROR ERROR ERROR', error);
+      console.log('ERROR ERROR ERROR', JSON.stringify(error));
       if (!isConflictOrNotFound(error)) {
+        console.log('wrapTryCatchWithBoomify, catch before logger.error');
         logger.error(error);
       }
+      console.log('wrapTryCatchWithBoomify, catch before throw boom');
+      // throw error;
       throw Boom.boomify(error, { statusCode: error.status });
     }
   };

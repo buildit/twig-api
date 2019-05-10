@@ -240,9 +240,10 @@ describe('/v2/twiglets', () => {
 
     it('returns an empty list of twiglets', () => {
       sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve({ rows: [] }));
-
+      console.log('server.info', server.info);
       return server.inject(req)
         .then((response) => {
+          console.log('response.result', response.result);
           expect(response.result).to.be.empty;
         });
     });
@@ -329,7 +330,7 @@ describe('/v2/twiglets', () => {
     });
   });
 
-  describe('getTwiglet', () => {
+  describe.only('getTwiglet', () => {
     const req = {
       method: 'get',
       url: '/v2/twiglets/Some%20Twiglet'
@@ -365,17 +366,30 @@ describe('/v2/twiglets', () => {
       it('returns the url for the twiglet views', () => expect(twiglet.views_url).to.exist.and.endsWith('/twiglets/Some%20Twiglet/views'));
     });
 
-    describe('errors', () => {
-      it('relays errors from the database with correct error codes', () => {
-        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
-          status: '500',
-          message: 'Internal Server Error or something'
-        })));
+    describe.only('errors', () => {
+      // it('relays errors from the database with correct error codes', () => {
+      //   sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+      //     status: '404',
+      //     message: 'Internal Server Error or something'
+      //   })));
+
+      //   return server.inject(req)
+      //     .then((response) => {
+      //       expect(response.result.statusCode).to.equal(404);
+      //       expect(response.result.message).to.equal('An internal server error occurred');
+      //     });
+      // });
+
+      it.only('relays errors from the database with correct error codes', () => {
+        sinon.stub(PouchDb.prototype, 'allDocs').throws({
+          status: '402',
+          message: 'Unauthorized'
+        });
 
         return server.inject(req)
           .then((response) => {
-            expect(response.result.statusCode).to.equal(500);
-            expect(response.result.message).to.equal('An internal server error occurred');
+            expect(response.result.statusCode).to.equal(402);
+            expect(response.result.message).to.equal('Unauthorized');
           });
       });
 

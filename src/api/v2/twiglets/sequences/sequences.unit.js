@@ -65,9 +65,22 @@ describe('/v2/Twiglet::Sequences', () => {
         expect(response.result).to.deep.equal([]);
       });
 
-      it('relays errors', function* foo () {
-        sinon.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
-        const response = yield server.inject(req());
+      // it('returns an empty array if there are no sequences on the twiglet yet', async () => {
+      //   sinon.stub(PouchDb.prototype, 'get').rejects({ status: 404 });
+      //   const response = yield server.inject(req());
+      //   expect(response.result).to.deep.equal([]);
+      // });
+
+      // it('relays errors', function* foo () {
+      //   sinon.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
+      //   const response = yield server.inject(req());
+      //   expect(response.statusCode).to.equal(420);
+      // });
+
+      it('relays errors', async () => {
+        sinon.stub(PouchDb.prototype, 'get').rejects(new Error({ status: 420 }));
+        const response = await server.inject(req());
+        // console.log('response', response);
         expect(response.statusCode).to.equal(420);
       });
 
