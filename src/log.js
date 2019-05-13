@@ -12,14 +12,6 @@ const LOG_FOLDER = join(__dirname, '../../logs');
 function transportFactory (fileName) {
   const transports = [];
 
-  // @@Todo: fix this...
-  console.log('in transportFactory at the top');
-  console.log(`config.LOG_FILE: ${config.LOG_FILE}`);
-  console.log(`config.LOG_CONSOLE: ${config.LOG_CONSOLE}`);
-  console.log('setting them to true to see if it works');
-  config.LOG_FILE = true;
-  config.LOG_CONSOLE = true;
-
   if (config.LOG_FILE) {
     console.log('in transportFactory if (config.LOG_FILE)', config.LOG_FILE);
     transports.push(new WinstonDailyRotateFile({
