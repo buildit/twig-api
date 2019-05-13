@@ -221,7 +221,7 @@ function twigletDocs (keys) {
   return { rows: rows.filter(row => keys.includes(row.id)) };
 }
 
-describe('/v2/twiglets', () => {
+describe.only('/v2/twiglets', () => {
   let server;
 
   before(async () => {
@@ -240,10 +240,8 @@ describe('/v2/twiglets', () => {
 
     it('returns an empty list of twiglets', () => {
       sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve({ rows: [] }));
-      console.log('server.info', server.info);
       return server.inject(req)
         .then((response) => {
-          console.log('response.result', response.result);
           expect(response.result).to.be.empty;
         });
     });
@@ -303,10 +301,10 @@ describe('/v2/twiglets', () => {
 
     describe('errors', () => {
       it('relays errors from the database with correct error codes', () => {
-        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+        sinon.stub(PouchDb.prototype, 'allDocs').throws({
           status: '404',
           message: 'this twiglet can not be found!'
-        })));
+        });
 
         return server.inject(req)
           .then((response) => {
@@ -316,9 +314,9 @@ describe('/v2/twiglets', () => {
       });
 
       it('returns 500 if there is no status from the database', () => {
-        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+        sinon.stub(PouchDb.prototype, 'allDocs').throws({
           message: 'this message will not be pushed to the user'
-        })));
+        });
 
         return server.inject(req)
           .then((response) => {
@@ -330,7 +328,7 @@ describe('/v2/twiglets', () => {
     });
   });
 
-  describe.only('getTwiglet', () => {
+  describe('getTwiglet', () => {
     const req = {
       method: 'get',
       url: '/v2/twiglets/Some%20Twiglet'
@@ -366,7 +364,7 @@ describe('/v2/twiglets', () => {
       it('returns the url for the twiglet views', () => expect(twiglet.views_url).to.exist.and.endsWith('/twiglets/Some%20Twiglet/views'));
     });
 
-    describe.only('errors', () => {
+    describe('errors', () => {
       // it('relays errors from the database with correct error codes', () => {
       //   sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
       //     status: '404',
@@ -380,7 +378,7 @@ describe('/v2/twiglets', () => {
       //     });
       // });
 
-      it.only('relays errors from the database with correct error codes', () => {
+      it('relays errors from the database with correct error codes', () => {
         sinon.stub(PouchDb.prototype, 'allDocs').throws({
           status: '402',
           message: 'Unauthorized'

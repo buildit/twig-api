@@ -23,9 +23,9 @@ function wrapTryCatchWithBoomify (logger, handlerFn) {
         console.log('wrapTryCatchWithBoomify, catch before logger.error');
         logger.error(error);
       }
-      console.log('wrapTryCatchWithBoomify, catch before throw boom');
+      console.log('wrapTryCatchWithBoomify, catch before throw boom', new Error(error));
       // throw error;
-      throw Boom.boomify(error, { statusCode: error.status });
+      throw Boom.boomify(new Error(error.message), { statusCode: error.status });
     }
   };
 }
