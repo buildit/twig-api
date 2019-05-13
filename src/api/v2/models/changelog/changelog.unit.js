@@ -7,6 +7,7 @@ const PouchDb = require('pouchdb');
 const Changelog = require('./changelog');
 const init = require('../../../../../test/unit/test-server');
 
+
 function changeLoggedModel () {
   return {
     doc: {
@@ -32,6 +33,7 @@ describe('/v2/models/{name}/changelog', () => {
     server = await init(Changelog.routes);
   });
 
+
   afterEach(() => {
     sinon.restore();
   });
@@ -45,19 +47,31 @@ describe('/v2/models/{name}/changelog', () => {
 
     it('returns populated changelog', async () => {
       // arrange
-      const db = new PouchDb('http://localhost:5984/organisation-models');
-      console.log('before', db.allDocs.displayName);
-      const allDocs = sinon.stub(db, 'allDocs');
-      console.log('after', db.allDocs.displayName);
-      allDocs.returns(Promise.resolve({ rows: [changeLoggedModel()] }));
-      const docs = await db.allDocs({ include_docs: true });
-      console.log('wtf?', docs.rows);
+
+      // const db = new PouchDb('http://localhost:5984/organisation-models');
+      // console.log('before', db.allDocs.displayName);
+      // const allDocs = sinon.stub(db, 'allDocs');
+      // console.log('after', db.allDocs.displayName);
+      // allDocs.returns(Promise.resolve({ rows: [changeLoggedModel()] }));
+      // const docs = await db.allDocs({ include_docs: true });
+      // console.log('wtf?', docs.rows);
+
+
+      const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
+      allDocs.resolves({ rows: [changeLoggedModel()] });
 
       // act
       const response = await server.inject(req);
       console.log('wtf', response.result);
+
       // assert
       expect(response.result.changelog).to.have.lengthOf(1);
+
+      // return server.inject(req)
+      //   .then((response) => {
+      //     // assert
+      //     expect(response.result.changelog).to.have.length.of(1);
+      //   });
     });
 
     it('fails when model doesn\'t exist', async () => {

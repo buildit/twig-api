@@ -214,15 +214,22 @@ function linkCleaner (l) {
 }
 
 async function getTwiglet (name, urlBuilder, contextualConfig) {
+  console.log('getTwiglet 1');
   const twigletInfo = await getTwigletInfoByName(name, contextualConfig);
+  console.log('what is twigletInfo', twigletInfo);
+  console.log('getTwiglet 2');
   const db = new PouchDB(contextualConfig.getTenantDatabaseString(twigletInfo.twigId),
     { skip_setup: true });
+  console.log('getTwiglet 3');
   const twigletDocs = await db.allDocs({ include_docs: true, keys: ['nodes', 'links', 'changelog'] });
+  console.log('getTwiglet 4');
   const twigletData = twigletDocs.rows.reduce((obj, row) => {
     obj[row.id] = row.doc;
     return obj;
   }, {});
+  console.log('getTwiglet 5');
   const cleanedTwigletData = R.omit(['changelog', 'views_2', 'events', 'sequences'], twigletData);
+  console.log('getTwiglet 6');
   const presentationTwigletData = {
     _rev: `${twigletInfo._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`,
     name: twigletInfo.name,
@@ -238,12 +245,18 @@ async function getTwiglet (name, urlBuilder, contextualConfig) {
     events_url: urlBuilder(`/v2/twiglets/${name}/events`),
     sequences_url: urlBuilder(`/v2/twiglets/${name}/sequences`)
   };
+  console.log('getTwiglet 7');
   return R.merge(cleanedTwigletData, presentationTwigletData);
 }
 
 const getTwigletHandler = async (request) => {
+
   const contextualConfig = getContextualConfig(request);
+  console.log('getTwigletHandler', contextualConfig);
+  console.log(`getTwigletHandler request.params.name ${request.params.name}`);
+  console.log(`getTwigletHandler request.buildUrl ${request.buildUrl}`);
   const twiglet = await getTwiglet(request.params.name, request.buildUrl, contextualConfig);
+  console.log('getTwigletHandler back from getTwiglet');
   return twiglet;
 };
 

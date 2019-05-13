@@ -240,7 +240,6 @@ describe('/v2/twiglets', () => {
 
     it('returns an empty list of twiglets', () => {
       sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve({ rows: [] }));
-
       return server.inject(req)
         .then((response) => {
           expect(response.result).to.be.empty;
@@ -302,10 +301,10 @@ describe('/v2/twiglets', () => {
 
     describe('errors', () => {
       it('relays errors from the database with correct error codes', () => {
-        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+        sinon.stub(PouchDb.prototype, 'allDocs').throws({
           status: '404',
           message: 'this twiglet can not be found!'
-        })));
+        });
 
         return server.inject(req)
           .then((response) => {
@@ -315,9 +314,9 @@ describe('/v2/twiglets', () => {
       });
 
       it('returns 500 if there is no status from the database', () => {
-        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+        sinon.stub(PouchDb.prototype, 'allDocs').throws({
           message: 'this message will not be pushed to the user'
-        })));
+        });
 
         return server.inject(req)
           .then((response) => {
@@ -366,16 +365,29 @@ describe('/v2/twiglets', () => {
     });
 
     describe('errors', () => {
+      // it('relays errors from the database with correct error codes', () => {
+      //   sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+      //     status: '404',
+      //     message: 'Internal Server Error or something'
+      //   })));
+
+      //   return server.inject(req)
+      //     .then((response) => {
+      //       expect(response.result.statusCode).to.equal(404);
+      //       expect(response.result.message).to.equal('An internal server error occurred');
+      //     });
+      // });
+
       it('relays errors from the database with correct error codes', () => {
-        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
-          status: '500',
-          message: 'Internal Server Error or something'
-        })));
+        sinon.stub(PouchDb.prototype, 'allDocs').throws({
+          status: '402',
+          message: 'Unauthorized'
+        });
 
         return server.inject(req)
           .then((response) => {
-            expect(response.result.statusCode).to.equal(500);
-            expect(response.result.message).to.equal('An internal server error occurred');
+            expect(response.result.statusCode).to.equal(402);
+            expect(response.result.message).to.equal('Unauthorized');
           });
       });
 
