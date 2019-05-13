@@ -250,7 +250,6 @@ async function getTwiglet (name, urlBuilder, contextualConfig) {
 }
 
 const getTwigletHandler = async (request) => {
-
   const contextualConfig = getContextualConfig(request);
   console.log('getTwigletHandler', contextualConfig);
   console.log(`getTwigletHandler request.params.name ${request.params.name}`);

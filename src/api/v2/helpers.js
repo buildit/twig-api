@@ -10,7 +10,6 @@ function isConflictOrNotFound (error) {
 }
 
 function wrapTryCatchWithBoomify (logger, handlerFn) {
-
   return async (request, h) => {
     try {
       // console.log('wat', handlerFn);
