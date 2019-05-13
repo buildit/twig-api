@@ -5,10 +5,14 @@
 const ramda = require('ramda');
 
 function getDbUrl () {
-  if (process.env.TWIG_API_DB_URL) {
-    return process.env.TWIG_API_DB_URL;
+  if (process.env.NODE_ENV === 'production') {
+    if (process.env.TWIG_API_DB_URL) {
+      return process.env.TWIG_API_DB_URL;
+    }
+    return 'http://localhost:5984';
   }
-  return 'http://localhost:5984';
+  console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
+  return 'foo';
 }
 
 function getTenant (hostname) {

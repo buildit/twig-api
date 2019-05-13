@@ -56,7 +56,7 @@ describe('/v2/twiglets/{name}/changelog', () => {
       return server.inject(req)
         .then((response) => {
           // assert
-          expect(response.result.changelog).to.have.length.of(1);
+          expect(response.result.changelog).to.have.lengthOf(1);
           expect(response.result.changelog[0].user).to.be.eq('foo@bar.com');
           expect(response.result.changelog[0].message).to.be.eq('First commit');
           expect(response.result.changelog[0].timestamp).to.be

@@ -92,6 +92,7 @@ const getSequencesHandler = async (request) => {
     if (error.status === 404) {
       return [];
     }
+    console.log(error);
     throw error;
   }
 };
@@ -144,7 +145,7 @@ function throwIfSequenceNameNotUnique (sequences, name) {
     throw Boom.conflict('sequence name must be unique');
   }
 }
-const postSequencesHanlder = async (request, h) => {
+const postSequencesHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const twigletInfo = await getTwigletInfoByName(request.params.twigletName, contextualConfig);
   const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
@@ -257,7 +258,7 @@ module.exports.routes = [{
 {
   method: ['POST'],
   path: '/v2/twiglets/{twigletName}/sequences',
-  handler: wrapTryCatchWithBoomify(logger, postSequencesHanlder),
+  handler: wrapTryCatchWithBoomify(logger, postSequencesHandler),
   options: {
     validate: {
       payload: createSequenceRequest,

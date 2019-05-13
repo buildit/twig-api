@@ -68,6 +68,7 @@ describe('/v2/Twiglet::Sequences', () => {
       it('relays errors', function* foo () {
         sinon.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
         const response = yield server.inject(req());
+        console.log(response);
         expect(response.statusCode).to.equal(420);
       });
 
@@ -143,11 +144,14 @@ describe('/v2/Twiglet::Sequences', () => {
       return {
         method: 'POST',
         url: '/v2/twiglets/Some%20Twiglet/sequences',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+          auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -245,11 +249,14 @@ describe('/v2/Twiglet::Sequences', () => {
       return {
         method: 'PUT',
         url: '/v2/twiglets/Some%20Twiglet/sequences/75c4dc47-4131-4503-aa82-2c09ead3f357',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+          auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -339,11 +346,14 @@ describe('/v2/Twiglet::Sequences', () => {
       return {
         method: 'DELETE',
         url: '/v2/twiglets/Some%20Twiglet/sequences/75c4dc47-4131-4503-aa82-2c09ead3f357',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+          auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         }
       };

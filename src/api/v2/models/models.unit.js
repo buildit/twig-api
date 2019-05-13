@@ -48,7 +48,7 @@ describe('/v2/models/', () => {
   let server;
 
   before(async () => {
-    server = init(Models.routes);
+    server = await init(Models.routes);
   });
 
   afterEach(() => {
@@ -60,11 +60,14 @@ describe('/v2/models/', () => {
       return {
         method: 'POST',
         url: '/v2/models',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+            credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -298,7 +301,7 @@ describe('/models/{name}', () => {
   let server;
 
   before(async () => {
-    server = init(Models.routes);
+    server = await init(Models.routes);
   });
 
   afterEach(() => {
@@ -310,11 +313,14 @@ describe('/models/{name}', () => {
       return {
         method: 'PUT',
         url: '/v2/models/testModel1',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -412,11 +418,14 @@ describe('/models/{name}', () => {
       return {
         method: 'DELETE',
         url: '/v2/models/testModel1',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+          auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         }
       };

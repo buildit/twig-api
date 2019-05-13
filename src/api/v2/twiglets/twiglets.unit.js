@@ -406,11 +406,14 @@ describe('/v2/twiglets', () => {
           commitMessage: 'Creation',
           cloneTwiglet: 'N/A'
         },
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         }
       };
@@ -733,11 +736,14 @@ describe('/v2/twiglets', () => {
       return {
         method: 'put',
         url: '/v2/twiglets/Some%20Twiglet',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+          auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -892,11 +898,14 @@ describe('/v2/twiglets', () => {
       return {
         method: 'PATCH',
         url: '/v2/twiglets/Some%20Twiglet',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+          auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -1136,12 +1145,15 @@ describe('/v2/twiglets', () => {
       return {
         method: 'delete',
         url: '/v2/twiglets/Some%20Twiglet',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
-          },
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
+        },
         }
       };
     }

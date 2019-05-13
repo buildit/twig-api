@@ -25,7 +25,7 @@ function changeLoggedModel () {
   };
 }
 
-describe.only('/v2/models/{name}/changelog', () => {
+describe('/v2/models/{name}/changelog', () => {
   let server;
 
   before(async () => {
