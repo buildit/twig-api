@@ -164,7 +164,7 @@ describe('/v2/Twiglet::Views', () => {
       return {
         method: 'POST',
         url: '/v2/twiglets/Some%20Twiglet/views',
-          auth: {
+        auth: {
           strategy: 'session',
           credentials: {
             id: 123,
@@ -263,7 +263,7 @@ describe('/v2/Twiglet::Views', () => {
       return {
         method: 'PUT',
         url: '/v2/twiglets/Some%20Twiglet/views/view%20name',
-          auth: {
+        auth: {
           strategy: 'session',
           credentials: {
             id: 123,
@@ -361,7 +361,7 @@ describe('/v2/Twiglet::Views', () => {
       return {
         method: 'DELETE',
         url: '/v2/twiglets/Some%20Twiglet/views/view%20name',
-          auth: {
+        auth: {
           strategy: 'session',
           credentials: {
             id: 123,

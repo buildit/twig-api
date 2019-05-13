@@ -144,7 +144,7 @@ describe('/v2/Twiglet::Sequences', () => {
       return {
         method: 'POST',
         url: '/v2/twiglets/Some%20Twiglet/sequences',
-          auth: {
+        auth: {
           strategy: 'session',
           credentials: {
             id: 123,
@@ -249,7 +249,7 @@ describe('/v2/Twiglet::Sequences', () => {
       return {
         method: 'PUT',
         url: '/v2/twiglets/Some%20Twiglet/sequences/75c4dc47-4131-4503-aa82-2c09ead3f357',
-          auth: {
+        auth: {
           strategy: 'session',
           credentials: {
             id: 123,
@@ -346,7 +346,7 @@ describe('/v2/Twiglet::Sequences', () => {
       return {
         method: 'DELETE',
         url: '/v2/twiglets/Some%20Twiglet/sequences/75c4dc47-4131-4503-aa82-2c09ead3f357',
-          auth: {
+        auth: {
           strategy: 'session',
           credentials: {
             id: 123,

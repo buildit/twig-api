@@ -309,7 +309,7 @@ describe('/v2/Twiglet::Events', () => {
       return {
         method: 'DELETE',
         url: '/v2/twiglets/Some%20Twiglet/events/bd79213c-8e17-49bc-9fc2-392f3c5acd28',
-          auth: {
+        auth: {
           strategy: 'session',
           credentials: {
             id: 123,
@@ -361,7 +361,7 @@ describe('/v2/Twiglet::Events', () => {
       return {
         method: 'DELETE',
         url: '/v2/twiglets/Some%20Twiglet/events',
-          auth: {
+        auth: {
           strategy: 'session',
           credentials: {
             id: 123,

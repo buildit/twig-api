@@ -62,7 +62,7 @@ describe('/v2/models/', () => {
         url: '/v2/models',
         auth: {
           strategy: 'session',
-            credentials: {
+          credentials: {
             id: 123,
             username: 'ben',
             user: {
@@ -418,7 +418,7 @@ describe('/models/{name}', () => {
       return {
         method: 'DELETE',
         url: '/v2/models/testModel1',
-          auth: {
+        auth: {
           strategy: 'session',
           credentials: {
             id: 123,
