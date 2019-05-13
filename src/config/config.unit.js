@@ -12,12 +12,12 @@ describe.only('config', () => {
     beforeEach(() => {
       previousDbUrl = config.DB_URL;
       config.DB_URL = undefined;
-      cls.createNamespace('hapi-request');
+      // cls.createNamespace('hapi-request');
     });
 
     afterEach(() => {
       config.DB_URL = previousDbUrl;
-      cls.destroyNamespace('hapi-request');
+      // cls.destroyNamespace('hapi-request');
     });
 
     it('returns db_url if it is set', () => {
@@ -30,18 +30,18 @@ describe.only('config', () => {
     });
   });
 
-  describe.only('tenant', () => {
-    let ns;
+  describe('tenant', () => {
+    // let ns;
     let previousTenant;
     beforeEach(() => {
-      ns = cls.createNamespace('hapi-request');
+      // ns = cls.createNamespace('hapi-request');
       previousTenant = config.TENANT;
       config.TENANT = undefined;
     });
 
     afterEach(() => {
       config.TENANT = previousTenant;
-      cls.destroyNamespace('hapi-request');
+      // cls.destroyNamespace('hapi-request');
       delete process.env.TWIG_API_TENANT;
     });
 
@@ -51,18 +51,33 @@ describe.only('config', () => {
       process.env.TWIG_API_TENANT = 'foo';
       // act
       // assert
-      const configValue = config.getTenant(process.env.TWIG_API_TENANT);
-      console.log('is this something', configValue);
       // expect(config.TENANT).to.equal('foo');
-      expect(configValue).to.equal('foo');
+      const req = {
+        info: {
+          host: 'local',
+          protocol: 'http',
+          address: '0.0.0.0'
+        },
+      };
+      const contextualConfig = config.getContextualConfig(req);
+      expect(contextualConfig.TENANT).to.equal('foo');
     });
 
     it('returns empty string if set to empty string', () => {
       // arrange
-      config.TENANT = '';
+      // config.TENANT = '';
+      process.env.TWIG_API_TENANT = '';
       // act
       // assert
-      expect(config.TENANT).to.equal('');
+      const req = {
+        info: {
+          host: 'local',
+          protocol: 'http',
+          address: '0.0.0.0'
+        },
+      };
+      const contextualConfig = config.getContextualConfig(req);
+      expect(contextualConfig.TENANT).to.equal('');
     });
 
     it('returns empty string if hostname is localhost', () => {
@@ -74,9 +89,15 @@ describe.only('config', () => {
       //   // assert
       //   expect(config.TENANT).to.equal('');
       // });
-      const tenant = config.getTenant('localhost:5984');
-      console.log(tenant);
-      expect(tenant).to.equal('');
+      const req = {
+        info: {
+          host: 'localhost',
+          protocol: 'http',
+          address: '0.0.0.0'
+        },
+      };
+      const contextualConfig = config.getContextualConfig(req);
+      expect(contextualConfig.TENANT).to.equal('');
     });
 
     it('returns empty string if hostname does not contain twig', () => {
@@ -88,9 +109,15 @@ describe.only('config', () => {
       //   // assert
       //   expect(config.TENANT).to.equal('');
       // });
-      const tenant = config.getTenant('foo');
-      console.log(tenant);
-      expect(tenant).to.equal('');
+      const req = {
+        info: {
+          host: 'foo',
+          protocol: 'http',
+          address: '0.0.0.0'
+        },
+      };
+      const contextualConfig = config.getContextualConfig(req);
+      expect(contextualConfig.TENANT).to.equal('');
     });
 
     it('returns empty string if hostname is twig-api.riglet', () => {
@@ -102,9 +129,15 @@ describe.only('config', () => {
       //   // assert
       //   expect(config.TENANT).to.equal('');
       // });
-      const tenant = config.getTenant('twig-api.riglet');
-      console.log(tenant);
-      expect(tenant).to.equal('');
+      const req = {
+        info: {
+          host: 'twig-api.riglet',
+          protocol: 'http',
+          address: '0.0.0.0'
+        },
+      };
+      const contextualConfig = config.getContextualConfig(req);
+      expect(contextualConfig.TENANT).to.equal('');
     });
 
     it('returns empty string if hostname is twig-api.buildit.tools', () => {
@@ -116,9 +149,15 @@ describe.only('config', () => {
       //   // assert
       //   expect(config.TENANT).to.equal('');
       // });
-      const tenant = config.getTenant('twig-api.buildit.tools');
-      console.log(tenant);
-      expect(tenant).to.equal('');
+      const req = {
+        info: {
+          host: 'twig-api.buildit.tools',
+          protocol: 'http',
+          address: '0.0.0.0'
+        },
+      };
+      const contextualConfig = config.getContextualConfig(req);
+      expect(contextualConfig.TENANT).to.equal('');
     });
 
     it('returns empty string if hostname is twig-api', () => {
@@ -130,9 +169,15 @@ describe.only('config', () => {
       //   // assert
       //   expect(config.TENANT).to.equal('');
       // });
-      const tenant = config.getTenant('twig-api');
-      console.log(tenant);
-      expect(tenant).to.equal('');
+      const req = {
+        info: {
+          host: 'twig-api',
+          protocol: 'http',
+          address: '0.0.0.0'
+        },
+      };
+      const contextualConfig = config.getContextualConfig(req);
+      expect(contextualConfig.TENANT).to.equal('');
     });
 
     it('returns staging if hostname is staging.twig-api.riglet', () => {
@@ -144,9 +189,15 @@ describe.only('config', () => {
       //   // assert
       //   expect(config.TENANT).to.equal('staging');
       // });
-      const tenant = config.getTenant('staging.twig-api.riglet');
-      console.log(tenant);
-      expect(tenant).to.equal('staging');
+      const req = {
+        info: {
+          host: 'staging.twig-api.riglet',
+          protocol: 'http',
+          address: '0.0.0.0'
+        },
+      };
+      const contextualConfig = config.getContextualConfig(req);
+      expect(contextualConfig.TENANT).to.equal('staging');
     });
 
     it('returns staging if hostname is staging-twig-api.buildit.tools', () => {
@@ -158,13 +209,19 @@ describe.only('config', () => {
       //   // assert
       //   expect(config.TENANT).to.equal('staging');
       // });
-      const tenant = config.getTenant('staging-twig-api.buildit.tools');
-      console.log(tenant);
-      expect(tenant).to.equal('staging');
+      const req = {
+        info: {
+          host: 'staging-twig-api.buildit.tools',
+          protocol: 'http',
+          address: '0.0.0.0'
+        },
+      };
+      const contextualConfig = config.getContextualConfig(req);
+      expect(contextualConfig.TENANT).to.equal('staging');
     });
   });
 
-  describe.only('getTenantDatabase', () => {
+  describe('getTenantDatabase', () => {
     afterEach(() => {
       // config.TENANT = undefined;
       delete process.env.TWIG_API_TENANT;
@@ -203,7 +260,6 @@ describe.only('config', () => {
       const contextualConfig = config.getContextualConfig(req);
       // act
       // assert
-      console.log('contextualConfig', contextualConfig.getTenantDatabaseString('foo'));
       expect(contextualConfig.getTenantDatabaseString('foo')).to.contain('/bar_foo');
       // expect(config.getTenantDatabaseString('foo')).to.contain('/bar_foo');
     });

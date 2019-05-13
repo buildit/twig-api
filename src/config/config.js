@@ -69,4 +69,4 @@ function clearEnvVars () {
 
 clearEnvVars();
 
-module.exports = { config, getContextualConfig, getTenant };
+module.exports = { config, getContextualConfig };
