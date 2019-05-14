@@ -30,7 +30,7 @@ describe('/v2/twiglets/{name}/changelog', () => {
       const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
       allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
       // sinon.stub(PouchDb.prototype, 'get').returns(Promise.reject(new Error({ status: 404 })));
-      sinon.stub(PouchDb.prototype, 'get').rejects(new Error({ status: 404 }));
+      sinon.stub(PouchDb.prototype, 'get').rejects({ status: 404 });
       // act
       return server.inject(req)
         .then((response) => {

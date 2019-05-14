@@ -54,7 +54,7 @@ describe('/v2/Twiglet::Sequences', () => {
       });
 
       it('returns the sequences', () => {
-        expect(response.result).to.have.length.of(2);
+        expect(response.result).to.have.lengthOf(2);
       });
     });
 

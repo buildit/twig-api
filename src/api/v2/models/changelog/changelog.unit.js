@@ -70,7 +70,7 @@ describe('/v2/models/{name}/changelog', () => {
       // return server.inject(req)
       //   .then((response) => {
       //     // assert
-      //     expect(response.result.changelog).to.have.length.of(1);
+      //     expect(response.result.changelog).to.have.lengthOf(1);
       //   });
     });
 
