@@ -427,7 +427,7 @@ const putTwigletHandler = async (request) => {
     return obj;
   }, {});
 
-  throwIfInvalidRevisions(request.payload._rev, twigletInfo._rev, twigletData.nodes._rev,
+  await throwIfInvalidRevisions(request.payload._rev, twigletInfo._rev, twigletData.nodes._rev,
     twigletData.links._rev, request.params.name, request.buildUrl, contextualConfig);
 
   throwIfNodesNotInModel(twigletData.model.data, request.payload.nodes);
@@ -470,7 +470,7 @@ const patchTwigletHandler = async (request) => {
     return obj;
   }, {});
 
-  throwIfInvalidRevisions(request.payload._rev, twigletInfo._rev, twigletData.nodes._rev,
+  await throwIfInvalidRevisions(request.payload._rev, twigletInfo._rev, twigletData.nodes._rev,
     twigletData.links._rev, request.params.name, request.buildUrl, contextualConfig);
 
   if (request.payload.nodes) {
