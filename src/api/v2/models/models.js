@@ -5,7 +5,6 @@ const Joi = require('@hapi/joi');
 const PouchDB = require('pouchdb');
 const HttpStatus = require('http-status-codes');
 const { isNil } = require('ramda');
-const toJSON = require('utils-error-to-json');
 const { getContextualConfig } = require('../../../config');
 const logger = require('../../../log')('MODELS');
 const { wrapTryCatchWithBoomify } = require('../helpers');
