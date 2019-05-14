@@ -156,7 +156,11 @@ describe('/v2/models/', () => {
       });
 
       it('passes database errors on to the client', function* foo () {
-        sinon.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419, message: 'teapots' });
+        // sinon.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419, message: 'teapots' });
+        sinon.stub(PouchDb.prototype, 'allDocs').throws({
+          status: '419',
+          message: 'teapots'
+        });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(419);
         expect(res.result.message).to.equal('teapots');
@@ -405,7 +409,10 @@ describe('/models/{name}', () => {
 
       it('passes database error codes on to the client', function* foo () {
         sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
-        sinon.stub(PouchDb.prototype, 'put').rejects({ status: 419, message: 'teapots' });
+        sinon.stub(PouchDb.prototype, 'put').throws({
+          status: '419',
+          message: 'teapots'
+        });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(419);
         expect(res.result.message).to.equal('teapots');
