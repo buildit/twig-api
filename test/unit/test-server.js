@@ -22,7 +22,6 @@ async function init (routes) {
 
   server.route(routes);
 
-
   await server.start();
 
   return server;
