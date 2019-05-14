@@ -550,7 +550,7 @@ module.exports = {
     options: {
       validate: {
         payload: createTwigletRequest,
-        //todo: this might need to be in every endpoint
+        // todo: this might need to be in every endpoint
         failAction: async (request, h, err) => {
           if (process.env.NODE_ENV === 'production') {
             // In prod, log a limited error message and throw the default Bad Request error.
