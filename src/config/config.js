@@ -19,7 +19,6 @@ function getDbUrl () {
 }
 
 function getTenant (hostname) {
-  console.log('are we in getTenant?', process.env.TWIG_API_TENANT);
   if (process.env.TWIG_API_TENANT || process.env.TWIG_API_TENANT === '') {
     return process.env.TWIG_API_TENANT;
   }
@@ -46,11 +45,8 @@ const config = {
 };
 
 function getContextualConfig (request) {
-  console.log('request?', request)
   const { host } = request.info;
-  console.log('host?', host);
   const TENANT = getTenant(host);
-  console.log('TENANT', TENANT);
   return {
     TENANT,
     getTenantDatabaseString (dbName) {
