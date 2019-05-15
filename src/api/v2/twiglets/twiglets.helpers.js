@@ -34,10 +34,8 @@ async function getTwigletInfoByName (name, contextualConfig) {
 
 async function throwIfTwigletNameNotUnique (name, db) {
   try {
-    
     const twigOrError = await getTwigletInfoByNameWithDb(name, db);
-    console.log("twigOrError.statusCode", twigOrError.statusCode);
-    if(twigOrError.statusCode) {
+    if (twigOrError.statusCode) {
       throw Boom.conflict('Twiglet already exists');
     }
   }

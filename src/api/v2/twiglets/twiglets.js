@@ -400,8 +400,7 @@ async function throwIfInvalidRevisions (payloadRevisions, twigletRevision, nodes
     || nodesRevision !== splitRevs[1]
     || linksRevision !== splitRevs[2]) {
     const twiglet = await getTwiglet(name, urlBuilder, contextualConfig);
-    const error = Boom.conflict('Your revision number is out of date');
-    error.output.twiglet = twiglet;
+    const error = Boom.conflict('Your revision number is out of date', { data: twiglet });
     throw error;
   }
 }
@@ -476,7 +475,6 @@ const patchTwigletHandler = async (request) => {
   if (request.payload.nodes) {
     throwIfNodesNotInModel(twigletData.model.data, request.payload.nodes);
   }
-
   twigletInfo.name = request.payload.name || twigletInfo.name;
   twigletInfo.description = request.payload.description || twigletInfo.description;
   const twigIdVar = twigletInfo.twigId;

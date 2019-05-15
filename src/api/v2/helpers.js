@@ -24,7 +24,12 @@ function wrapTryCatchWithBoomify (logger, handlerFn) {
       }
       console.log('wrapTryCatchWithBoomify, catch before throw boom', new Error(error));
       const newError = error instanceof Error ? error : new Error(error.message);
-      throw Boom.boomify(newError, { statusCode: error.status });
+      const myErr = Boom.boomify(newError, { statusCode: error.status, decorate: error.data });
+      console.log('myErr', myErr);
+      // TODO: BLASPHEMY, why do I have to do this?
+      myErr.output.payload.data = error.data;
+      console.log('myErr2', myErr);
+      throw myErr;
     }
   };
 }
