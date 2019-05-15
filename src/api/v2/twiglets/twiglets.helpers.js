@@ -15,7 +15,8 @@ async function getTwigletInfoByNameWithDb (name, db) {
       twiglet.twigId = twiglet._id;
       return twiglet;
     }
-    return Boom.notFound();
+    // instead of returning an error, I just return nothing, since we found nothing
+    return undefined;
   }
   catch (error) {
     console.log('getTwigletInfoByNameWithDb caught error', error);
@@ -34,8 +35,11 @@ async function getTwigletInfoByName (name, contextualConfig) {
 
 async function throwIfTwigletNameNotUnique (name, db) {
   try {
-    await getTwigletInfoByNameWithDb(name, db);
-    throw Boom.conflict('Twiglet already exists');
+    // get the twig, if it exists, throw that it exists
+    const theTwig = await getTwigletInfoByNameWithDb(name, db);
+    if (theTwig) {
+      throw Boom.conflict('Twiglet already exists');
+    }
   }
   catch (error) {
     if (error.output.statusCode !== HttpStatus.NOT_FOUND) {
