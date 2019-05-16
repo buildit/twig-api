@@ -418,7 +418,13 @@ const putTwigletHandler = async (request) => {
 
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  const twigletInfo = await getTwigletInfoByName(request.params.name, contextualConfig);
+  const twigletInfoOrError = await getTwigletInfoByName(request.params.name, contextualConfig);
+  // TODO: we are doing this here and in changelog, this really needs to handled consisently
+  if (!twigletInfoOrError._id) {
+    return Boom.boomify(twigletInfoOrError);
+  }
+  const twigletInfo = twigletInfoOrError;
+
   const dbString = contextualConfig.getTenantDatabaseString(twigletInfo.twigId);
   const db = new PouchDB(dbString, { skip_setup: true });
   const twigletDocs = await db.allDocs({ include_docs: true, keys: ['nodes', 'links', 'model'] });
@@ -459,7 +465,15 @@ const patchTwigletHandler = async (request) => {
   throwIfInvalidRevsCount(request.payload._rev);
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  const twigletInfo = await getTwigletInfoByName(request.params.name, contextualConfig);
+
+  // TODO: these exact same lines are in put and patch, this should be cleaned up
+  const twigletInfoOrError = await getTwigletInfoByName(request.params.name, contextualConfig);
+  // TODO: we are doing this here and in changelog, this really needs to handled consisently
+  if (!twigletInfoOrError._id) {
+    return Boom.boomify(twigletInfoOrError);
+  }
+  const twigletInfo = twigletInfoOrError;
+
   const dbString = contextualConfig.getTenantDatabaseString(twigletInfo.twigId);
   const db = new PouchDB(dbString, {
     skip_setup: true
