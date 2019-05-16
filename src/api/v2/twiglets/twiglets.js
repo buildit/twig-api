@@ -291,9 +291,14 @@ function checkJsonParsableIfExists (json) {
   return jsonTwiglet;
 }
 
-function seedTwiglet (createdDb, model, nodes, links, views, events, sequences) {
+// TODO: argument order is inherently fragile, conevert to key: value instead through isomporhism
+function seedTwiglet (createdDb, links, model, nodes, views, events, sequences) {
   return Promise.all([
     createdDb.bulkDocs([
+      {
+        _id: 'links',
+        data: links
+      },
       {
         _id: 'model',
         data: model
@@ -301,10 +306,6 @@ function seedTwiglet (createdDb, model, nodes, links, views, events, sequences) 
       {
         _id: 'nodes',
         data: nodes
-      },
-      {
-        _id: 'links',
-        data: links
       },
       {
         _id: 'views_2',
@@ -337,7 +338,7 @@ const createTwigletHandler = async (request, h) => {
   const createdDb = new PouchDB(dbString);
   if (jsonTwiglet) {
     throwIfNodesNotInModel(jsonTwiglet.model, jsonTwiglet.nodes);
-    await seedTwiglet(createdDb, jsonTwiglet.model, jsonTwiglet.nodes, jsonTwiglet.links,
+    await seedTwiglet(createdDb, jsonTwiglet.links, jsonTwiglet.model, jsonTwiglet.nodes,
       jsonTwiglet.views, jsonTwiglet.events, jsonTwiglet.sequences);
   }
   else if (request.payload.cloneTwiglet && request.payload.cloneTwiglet !== 'N/A') {
@@ -351,7 +352,7 @@ const createTwigletHandler = async (request, h) => {
     );
     const twigletDocs = await clonedDb.allDocs({
       include_docs: true,
-      keys: ['model', 'nodes', 'links', 'views_2', 'events', 'sequences']
+      keys: ['links', 'model', 'nodes', 'views_2', 'events', 'sequences']
     });
     await seedTwiglet(createdDb, twigletDocs.rows[0].doc.data, twigletDocs.rows[1].doc.data,
       twigletDocs.rows[2].doc.data, twigletDocs.rows[3].doc.data, twigletDocs.rows[4].doc.data,

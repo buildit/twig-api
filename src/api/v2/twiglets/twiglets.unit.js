@@ -619,14 +619,15 @@ describe('/v2/twiglets', () => {
 
       it('pushes the json data to the bulkDocs call', () => {
         const json = jsonTwiglet();
-        expect(bulkDocs.firstCall.args[0]).to.deep.equal([
+        const compare = [
+          { _id: 'links', data: json.links },
           { _id: 'model', data: json.model },
           { _id: 'nodes', data: json.nodes },
-          { _id: 'links', data: json.links },
           { _id: 'views_2', data: json.views },
           { _id: 'events', data: json.events },
           { _id: 'sequences', data: json.sequences },
-        ]);
+        ];
+        expect(bulkDocs.firstCall.args[0]).to.deep.equal(compare);
       });
 
       it('logs the post to the commit log.', () => expect(put.getCall(0).args[0]).to.include.keys({ _id: 'changelog' }));
@@ -675,16 +676,18 @@ describe('/v2/twiglets', () => {
         { name: 'some name', description: 'a description', _id: 'some id' }
       ));
 
+
       it('pushes the cloned data to the bulkDocs call', () => {
         const clonedTwiglet = clone();
-        expect(bulkDocs.firstCall.args[0]).to.deep.equal([
+        const compare = [
           { _id: 'links', data: clonedTwiglet.rows[0].doc.data },
           { _id: 'model', data: clonedTwiglet.rows[1].doc.data },
           { _id: 'nodes', data: clonedTwiglet.rows[2].doc.data },
           { _id: 'views_2', data: clonedTwiglet.rows[3].doc.data },
           { _id: 'events', data: clonedTwiglet.rows[4].doc.data },
           { _id: 'sequences', data: clonedTwiglet.rows[5].doc.data },
-        ]);
+        ];
+        expect(bulkDocs.firstCall.args[0]).to.deep.equal(compare);
       });
 
       it('logs the post to the commit log.', () => expect(put.getCall(0).args[0]).to.include.keys({ _id: 'changelog' }));
