@@ -16,6 +16,8 @@ function wrapTryCatchWithBoomify (logger, handlerFn) {
       const response = await handlerFn(request, h);
       return response;
     }
+    // TODO: this is getting more and more complicated, we need to make sure that what we are doing
+    // is proper not just making tests pass.
     catch (error) {
       console.log('ERROR ERROR ERROR', error);
       if (!isConflictOrNotFound(error)) {
