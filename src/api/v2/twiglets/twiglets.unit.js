@@ -825,7 +825,7 @@ describe('/v2/twiglets', () => {
 
       it('adds a changelog entry for the put', () => {
         const expectedLogEntry = {
-          user: req().credentials.user.name,
+          user: req().auth.credentials.user.name,
           message: req().payload.commitMessage,
         };
         expect(put.getCall(3).args[0].data[0]).to.include.keys(expectedLogEntry);
