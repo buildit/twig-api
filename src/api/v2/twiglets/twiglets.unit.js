@@ -240,7 +240,6 @@ describe('/v2/twiglets', () => {
 
     it('returns an empty list of twiglets', () => {
       sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve({ rows: [] }));
-
       return server.inject(req)
         .then((response) => {
           expect(response.result).to.be.empty;
@@ -302,10 +301,10 @@ describe('/v2/twiglets', () => {
 
     describe('errors', () => {
       it('relays errors from the database with correct error codes', () => {
-        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+        sinon.stub(PouchDb.prototype, 'allDocs').throws({
           status: '404',
           message: 'this twiglet can not be found!'
-        })));
+        });
 
         return server.inject(req)
           .then((response) => {
@@ -315,9 +314,9 @@ describe('/v2/twiglets', () => {
       });
 
       it('returns 500 if there is no status from the database', () => {
-        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+        sinon.stub(PouchDb.prototype, 'allDocs').throws({
           message: 'this message will not be pushed to the user'
-        })));
+        });
 
         return server.inject(req)
           .then((response) => {
@@ -366,16 +365,29 @@ describe('/v2/twiglets', () => {
     });
 
     describe('errors', () => {
+      // it('relays errors from the database with correct error codes', () => {
+      //   sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
+      //     status: '404',
+      //     message: 'Internal Server Error or something'
+      //   })));
+
+      //   return server.inject(req)
+      //     .then((response) => {
+      //       expect(response.result.statusCode).to.equal(404);
+      //       expect(response.result.message).to.equal('An internal server error occurred');
+      //     });
+      // });
+
       it('relays errors from the database with correct error codes', () => {
-        sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
-          status: '500',
-          message: 'Internal Server Error or something'
-        })));
+        sinon.stub(PouchDb.prototype, 'allDocs').throws({
+          status: '402',
+          message: 'Unauthorized'
+        });
 
         return server.inject(req)
           .then((response) => {
-            expect(response.result.statusCode).to.equal(500);
-            expect(response.result.message).to.equal('An internal server error occurred');
+            expect(response.result.statusCode).to.equal(402);
+            expect(response.result.message).to.equal('Unauthorized');
           });
       });
 
@@ -406,15 +418,19 @@ describe('/v2/twiglets', () => {
           commitMessage: 'Creation',
           cloneTwiglet: 'N/A'
         },
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         }
       };
     }
+
 
     describe('successes - basic creation', () => {
       let put;
@@ -603,14 +619,15 @@ describe('/v2/twiglets', () => {
 
       it('pushes the json data to the bulkDocs call', () => {
         const json = jsonTwiglet();
-        expect(bulkDocs.firstCall.args[0]).to.deep.equal([
+        const compare = [
+          { _id: 'links', data: json.links },
           { _id: 'model', data: json.model },
           { _id: 'nodes', data: json.nodes },
-          { _id: 'links', data: json.links },
           { _id: 'views_2', data: json.views },
           { _id: 'events', data: json.events },
           { _id: 'sequences', data: json.sequences },
-        ]);
+        ];
+        expect(bulkDocs.firstCall.args[0]).to.deep.equal(compare);
       });
 
       it('logs the post to the commit log.', () => expect(put.getCall(0).args[0]).to.include.keys({ _id: 'changelog' }));
@@ -659,16 +676,18 @@ describe('/v2/twiglets', () => {
         { name: 'some name', description: 'a description', _id: 'some id' }
       ));
 
+
       it('pushes the cloned data to the bulkDocs call', () => {
         const clonedTwiglet = clone();
-        expect(bulkDocs.firstCall.args[0]).to.deep.equal([
+        const compare = [
           { _id: 'links', data: clonedTwiglet.rows[0].doc.data },
           { _id: 'model', data: clonedTwiglet.rows[1].doc.data },
           { _id: 'nodes', data: clonedTwiglet.rows[2].doc.data },
           { _id: 'views_2', data: clonedTwiglet.rows[3].doc.data },
           { _id: 'events', data: clonedTwiglet.rows[4].doc.data },
           { _id: 'sequences', data: clonedTwiglet.rows[5].doc.data },
-        ]);
+        ];
+        expect(bulkDocs.firstCall.args[0]).to.deep.equal(compare);
       });
 
       it('logs the post to the commit log.', () => expect(put.getCall(0).args[0]).to.include.keys({ _id: 'changelog' }));
@@ -733,11 +752,14 @@ describe('/v2/twiglets', () => {
       return {
         method: 'put',
         url: '/v2/twiglets/Some%20Twiglet',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -803,7 +825,7 @@ describe('/v2/twiglets', () => {
 
       it('adds a changelog entry for the put', () => {
         const expectedLogEntry = {
-          user: req().credentials.user.name,
+          user: req().auth.credentials.user.name,
           message: req().payload.commitMessage,
         };
         expect(put.getCall(3).args[0].data[0]).to.include.keys(expectedLogEntry);
@@ -892,11 +914,14 @@ describe('/v2/twiglets', () => {
       return {
         method: 'PATCH',
         url: '/v2/twiglets/Some%20Twiglet',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -1095,6 +1120,7 @@ describe('/v2/twiglets', () => {
           });
       });
 
+      // TODO: this is the only .data in the app, is this needed?
       describe('_rev mistakes', () => {
         const docs = twigletDocs();
         docs.rows.pop();
@@ -1136,11 +1162,14 @@ describe('/v2/twiglets', () => {
       return {
         method: 'delete',
         url: '/v2/twiglets/Some%20Twiglet',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         }
       };

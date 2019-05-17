@@ -5,10 +5,17 @@
 const ramda = require('ramda');
 
 function getDbUrl () {
-  if (process.env.TWIG_API_DB_URL) {
-    return process.env.TWIG_API_DB_URL;
+  // TODO: JB051319 This code change is probably OK
+  // NODE_ENV set to production in docker-compose.yml.template
+  // we should probably double check before we're done
+  if (process.env.NODE_ENV === 'production') {
+    if (process.env.TWIG_API_DB_URL) {
+      return process.env.TWIG_API_DB_URL;
+    }
+    return 'http://localhost:5984';
   }
-  return 'http://localhost:5984';
+  console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
+  return 'foo';
 }
 
 function getTenant (hostname) {
@@ -25,8 +32,13 @@ function getTenant (hostname) {
 }
 
 const config = {
-  LOG_CONSOLE: process.env.TWIG_API_LOG_CONSOLE === 'true',
-  LOG_FILE: process.env.TWIG_API_LOG_FILE === 'true',
+  // TODO: JB051319
+  // At least one of LOG_CONSOLE and LOG_FILE must be set to true
+  // or we get a winston error about no defined transports
+  // LOG_CONSOLE: process.env.TWIG_API_LOG_CONSOLE === 'true',
+  // LOG_FILE: process.env.TWIG_API_LOG_FILE === 'true',
+  LOG_CONSOLE: true,
+  LOG_FILE: true,
   LOG_LEVEL: process.env.TWIG_API_LOG_LEVEL,
   SECURE_COOKIES: process.env.NODE_ENV === 'production',
   DB_URL: getDbUrl(),
@@ -35,7 +47,6 @@ const config = {
 function getContextualConfig (request) {
   const { host } = request.info;
   const TENANT = getTenant(host);
-
   return {
     TENANT,
     getTenantDatabaseString (dbName) {

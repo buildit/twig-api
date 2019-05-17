@@ -89,7 +89,7 @@ describe('/v2/Twiglet::Views', () => {
       });
 
       it('returns the views', () => {
-        expect(response.result).to.have.length.of(1);
+        expect(response.result).to.have.lengthOf(1);
         expect(response.result[0].name).to.deep.equal(getViewResults().data[0].name);
       });
     });
@@ -164,11 +164,14 @@ describe('/v2/Twiglet::Views', () => {
       return {
         method: 'POST',
         url: '/v2/twiglets/Some%20Twiglet/views',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -260,11 +263,14 @@ describe('/v2/Twiglet::Views', () => {
       return {
         method: 'PUT',
         url: '/v2/twiglets/Some%20Twiglet/views/view%20name',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -355,11 +361,14 @@ describe('/v2/Twiglet::Views', () => {
       return {
         method: 'DELETE',
         url: '/v2/twiglets/Some%20Twiglet/views/view%20name',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         }
       };

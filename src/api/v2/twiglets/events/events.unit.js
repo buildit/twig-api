@@ -55,7 +55,7 @@ describe('/v2/Twiglet::Events', () => {
       });
 
       it('returns the events', () => {
-        expect(response.result).to.have.length.of(2);
+        expect(response.result).to.have.lengthOf(2);
       });
     });
 
@@ -149,11 +149,14 @@ describe('/v2/Twiglet::Events', () => {
       return {
         method: 'POST',
         url: '/v2/twiglets/Some%20Twiglet/events',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -306,11 +309,14 @@ describe('/v2/Twiglet::Events', () => {
       return {
         method: 'DELETE',
         url: '/v2/twiglets/Some%20Twiglet/events/bd79213c-8e17-49bc-9fc2-392f3c5acd28',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         }
       };
@@ -355,11 +361,14 @@ describe('/v2/Twiglet::Events', () => {
       return {
         method: 'DELETE',
         url: '/v2/twiglets/Some%20Twiglet/events',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         }
       };

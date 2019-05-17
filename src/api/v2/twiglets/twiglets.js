@@ -10,7 +10,7 @@ const { getContextualConfig } = require('../../../config');
 const logger = require('../../../log')('TWIGLETS');
 const Changelog = require('./changelog');
 const Model = require('../models/');
-const { getTwigletInfoByName, throwIfTwigletNameNotUnique } = require('./twiglets.helpers');
+const { getTwigletInfoByName } = require('./twiglets.helpers');
 const { wrapTryCatchWithBoomify } = require('../helpers');
 
 const createTwigletRequest = Joi.object({
@@ -279,9 +279,14 @@ function checkJsonParsableIfExists (json) {
   return jsonTwiglet;
 }
 
-function seedTwiglet (createdDb, model, nodes, links, views, events, sequences) {
+// TODO: argument order is inherently fragile, conevert to key: value instead through isomporhism
+function seedTwiglet (createdDb, links, model, nodes, views, events, sequences) {
   return Promise.all([
     createdDb.bulkDocs([
+      {
+        _id: 'links',
+        data: links
+      },
       {
         _id: 'model',
         data: model
@@ -289,10 +294,6 @@ function seedTwiglet (createdDb, model, nodes, links, views, events, sequences) 
       {
         _id: 'nodes',
         data: nodes
-      },
-      {
-        _id: 'links',
-        data: links
       },
       {
         _id: 'views_2',
@@ -317,7 +318,11 @@ const createTwigletHandler = async (request, h) => {
   }
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  await throwIfTwigletNameNotUnique(request.payload.name, twigletLookupDb);
+  // await throwIfTwigletNameNotUnique(request.payload.name, twigletLookupDb);
+  const docs = await twigletLookupDb.allDocs({ include_docs: true });
+  if (docs.rows.some(row => row.doc.name === request.payload.name)) {
+    return (Boom.conflict('Twiglet already exists'));
+  }
   const newTwiglet = R.pick(['name', 'description'], request.payload);
   newTwiglet._id = `twig-${uuidV4()}`;
   const twigletInfo = await twigletLookupDb.post(newTwiglet);
@@ -325,7 +330,7 @@ const createTwigletHandler = async (request, h) => {
   const createdDb = new PouchDB(dbString);
   if (jsonTwiglet) {
     throwIfNodesNotInModel(jsonTwiglet.model, jsonTwiglet.nodes);
-    await seedTwiglet(createdDb, jsonTwiglet.model, jsonTwiglet.nodes, jsonTwiglet.links,
+    await seedTwiglet(createdDb, jsonTwiglet.links, jsonTwiglet.model, jsonTwiglet.nodes,
       jsonTwiglet.views, jsonTwiglet.events, jsonTwiglet.sequences);
   }
   else if (request.payload.cloneTwiglet && request.payload.cloneTwiglet !== 'N/A') {
@@ -339,7 +344,7 @@ const createTwigletHandler = async (request, h) => {
     );
     const twigletDocs = await clonedDb.allDocs({
       include_docs: true,
-      keys: ['model', 'nodes', 'links', 'views_2', 'events', 'sequences']
+      keys: ['links', 'model', 'nodes', 'views_2', 'events', 'sequences']
     });
     await seedTwiglet(createdDb, twigletDocs.rows[0].doc.data, twigletDocs.rows[1].doc.data,
       twigletDocs.rows[2].doc.data, twigletDocs.rows[3].doc.data, twigletDocs.rows[4].doc.data,
@@ -356,7 +361,6 @@ const createTwigletHandler = async (request, h) => {
     request.payload.commitMessage,
     request.auth.credentials.user.name
   );
-
   const twiglet = await getTwiglet(request.payload.name, request.buildUrl, contextualConfig);
   return h.response(twiglet).created(twiglet.url);
 };
@@ -388,8 +392,7 @@ async function throwIfInvalidRevisions (payloadRevisions, twigletRevision, nodes
     || nodesRevision !== splitRevs[1]
     || linksRevision !== splitRevs[2]) {
     const twiglet = await getTwiglet(name, urlBuilder, contextualConfig);
-    const error = Boom.conflict('Your revision number is out of date');
-    error.output.twiglet = twiglet;
+    const error = Boom.conflict('Your revision number is out of date', { data: twiglet });
     throw error;
   }
 }
@@ -406,7 +409,13 @@ const putTwigletHandler = async (request) => {
 
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  const twigletInfo = await getTwigletInfoByName(request.params.name, contextualConfig);
+  const twigletInfoOrError = await getTwigletInfoByName(request.params.name, contextualConfig);
+  // TODO: we are doing this here and in changelog, this really needs to handled consisently
+  if (!twigletInfoOrError._id) {
+    return Boom.boomify(twigletInfoOrError);
+  }
+  const twigletInfo = twigletInfoOrError;
+
   const dbString = contextualConfig.getTenantDatabaseString(twigletInfo.twigId);
   const db = new PouchDB(dbString, { skip_setup: true });
   const twigletDocs = await db.allDocs({ include_docs: true, keys: ['nodes', 'links', 'model'] });
@@ -415,7 +424,7 @@ const putTwigletHandler = async (request) => {
     return obj;
   }, {});
 
-  throwIfInvalidRevisions(request.payload._rev, twigletInfo._rev, twigletData.nodes._rev,
+  await throwIfInvalidRevisions(request.payload._rev, twigletInfo._rev, twigletData.nodes._rev,
     twigletData.links._rev, request.params.name, request.buildUrl, contextualConfig);
 
   throwIfNodesNotInModel(twigletData.model.data, request.payload.nodes);
@@ -447,7 +456,15 @@ const patchTwigletHandler = async (request) => {
   throwIfInvalidRevsCount(request.payload._rev);
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  const twigletInfo = await getTwigletInfoByName(request.params.name, contextualConfig);
+
+  // TODO: these exact same lines are in put and patch, this should be cleaned up
+  const twigletInfoOrError = await getTwigletInfoByName(request.params.name, contextualConfig);
+  // TODO: we are doing this here and in changelog, this really needs to handled consisently
+  if (!twigletInfoOrError._id) {
+    return Boom.boomify(twigletInfoOrError);
+  }
+  const twigletInfo = twigletInfoOrError;
+
   const dbString = contextualConfig.getTenantDatabaseString(twigletInfo.twigId);
   const db = new PouchDB(dbString, {
     skip_setup: true
@@ -458,13 +475,12 @@ const patchTwigletHandler = async (request) => {
     return obj;
   }, {});
 
-  throwIfInvalidRevisions(request.payload._rev, twigletInfo._rev, twigletData.nodes._rev,
+  await throwIfInvalidRevisions(request.payload._rev, twigletInfo._rev, twigletData.nodes._rev,
     twigletData.links._rev, request.params.name, request.buildUrl, contextualConfig);
 
   if (request.payload.nodes) {
     throwIfNodesNotInModel(twigletData.model.data, request.payload.nodes);
   }
-
   twigletInfo.name = request.payload.name || twigletInfo.name;
   twigletInfo.description = request.payload.description || twigletInfo.description;
   const twigIdVar = twigletInfo.twigId;
@@ -538,6 +554,19 @@ module.exports = {
     options: {
       validate: {
         payload: createTwigletRequest,
+        // todo: this might need to be in every endpoint
+        failAction: async (request, h, err) => {
+          if (process.env.NODE_ENV === 'production') {
+            // In prod, log a limited error message and throw the default Bad Request error.
+            console.error('ValidationError:', err.message);
+            throw Boom.badRequest('Invalid request payload input');
+          }
+          else {
+            // During development, log and respond with the full error.
+            console.error(err);
+            throw err;
+          }
+        }
       },
       response: {
         schema: getTwigletResponse

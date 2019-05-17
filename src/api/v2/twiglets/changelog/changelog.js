@@ -60,11 +60,15 @@ async function addCommitMessage (contextualConfig, _id, commitMessage, user, rep
 const getChangelogHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    const twigletInfo = await getTwigletInfoByName(request.params.name, contextualConfig);
-    const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id),
-      { skip_setup: true });
-    const doc = await db.get('changelog');
-    return { changelog: doc.data };
+    // TODO: Make twigletInfo variable naming more consistent throughout
+    const twigletInfoOrError = await getTwigletInfoByName(request.params.name, contextualConfig);
+    if (twigletInfoOrError._id) {
+      const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id),
+        { skip_setup: true });
+      const doc = await db.get('changelog');
+      return { changelog: doc.data };
+    }
+    return Boom.boomify(twigletInfoOrError);
   }
   catch (error) {
     if (error.status !== 404) {

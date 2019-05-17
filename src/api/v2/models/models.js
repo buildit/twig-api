@@ -5,7 +5,6 @@ const Joi = require('@hapi/joi');
 const PouchDB = require('pouchdb');
 const HttpStatus = require('http-status-codes');
 const { isNil } = require('ramda');
-const toJSON = require('utils-error-to-json');
 const { getContextualConfig } = require('../../../config');
 const logger = require('../../../log')('MODELS');
 const { wrapTryCatchWithBoomify } = require('../helpers');
@@ -52,7 +51,8 @@ const getModelsResponse = Joi.array().items(Joi.object({
 
 const getModelWithDb = async (name, db) => {
   const modelsRaw = await db.allDocs({ include_docs: true });
-  console.log('modelsRaw', modelsRaw);
+  console.log('getModelWithDb - modelsRaw', JSON.stringify(modelsRaw));
+  console.log(`getModelWithDb - name: ${name}`);
   const modelArray = modelsRaw.rows.filter(row => row.doc.data.name === name);
   if (modelArray.length) {
     return modelArray[0].doc;
@@ -107,7 +107,7 @@ const postModelsHandler = async (request, h) => {
     throw Boom.conflict('Model name already in use');
   }
   catch (error) {
-    if (error.output.statusCode !== HttpStatus.NOT_FOUND) {
+    if ((error.output || {}).statusCode !== HttpStatus.NOT_FOUND) {
       throw error;
     }
   }
@@ -167,8 +167,6 @@ const putModelHandler = async (request) => {
       const updatedModel = await getModelWithDb(request.payload.name, db);
       return formatModelResponse(updatedModel, request.buildUrl);
     }
-    const error = Error('Conflict, bad revision number');
-    error.status = HttpStatus.CONFLICT;
     const modelResponse = {
       entities: model.data.entities,
       name: model.data.name,
@@ -177,14 +175,16 @@ const putModelHandler = async (request) => {
       url: request.buildUrl(`/v2/models/${model.data.name}`),
       changelog_url: request.buildUrl(`/v2/models/${model.data.name}/changelog`)
     };
-    error.model = modelResponse;
-    throw error;
+    const boomError = Boom.conflict('Conflict, bad revision number');
+    boomError.model = modelResponse;
+    throw boomError;
   }
   catch (error) {
     if (error.status !== HttpStatus.CONFLICT) {
-      logger.error(toJSON(error));
+      logger.error(error);
     }
-    const boomError = Boom.boomify(error);
+    const newError = error instanceof Error ? error : new Error(error.message);
+    const boomError = Boom.boomify(newError, { statusCode: error.status });
     if (error.model) {
       boomError.output.payload.data = error.model;
     }

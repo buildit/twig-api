@@ -48,7 +48,7 @@ describe('/v2/models/', () => {
   let server;
 
   before(async () => {
-    server = init(Models.routes);
+    server = await init(Models.routes);
   });
 
   afterEach(() => {
@@ -60,11 +60,14 @@ describe('/v2/models/', () => {
       return {
         method: 'POST',
         url: '/v2/models',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -153,7 +156,11 @@ describe('/v2/models/', () => {
       });
 
       it('passes database errors on to the client', function* foo () {
-        sinon.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419, message: 'teapots' });
+        // sinon.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419, message: 'teapots' });
+        sinon.stub(PouchDb.prototype, 'allDocs').throws({
+          status: '419',
+          message: 'teapots'
+        });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(419);
         expect(res.result.message).to.equal('teapots');
@@ -298,7 +305,7 @@ describe('/models/{name}', () => {
   let server;
 
   before(async () => {
-    server = init(Models.routes);
+    server = await init(Models.routes);
   });
 
   afterEach(() => {
@@ -310,11 +317,14 @@ describe('/models/{name}', () => {
       return {
         method: 'PUT',
         url: '/v2/models/testModel1',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         },
         payload: {
@@ -399,7 +409,10 @@ describe('/models/{name}', () => {
 
       it('passes database error codes on to the client', function* foo () {
         sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
-        sinon.stub(PouchDb.prototype, 'put').rejects({ status: 419, message: 'teapots' });
+        sinon.stub(PouchDb.prototype, 'put').throws({
+          status: '419',
+          message: 'teapots'
+        });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(419);
         expect(res.result.message).to.equal('teapots');
@@ -412,11 +425,14 @@ describe('/models/{name}', () => {
       return {
         method: 'DELETE',
         url: '/v2/models/testModel1',
-        credentials: {
-          id: 123,
-          username: 'ben',
-          user: {
-            name: 'Ben Hernandez',
+        auth: {
+          strategy: 'session',
+          credentials: {
+            id: 123,
+            username: 'ben',
+            user: {
+              name: 'Ben Hernandez',
+            },
           },
         }
       };
