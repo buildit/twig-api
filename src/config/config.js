@@ -5,17 +5,10 @@
 const ramda = require('ramda');
 
 function getDbUrl () {
-  // TODO: JB051319 This code change is probably OK
-  // NODE_ENV set to production in docker-compose.yml.template
-  // we should probably double check before we're done
-  if (process.env.NODE_ENV === 'production') {
-    if (process.env.TWIG_API_DB_URL) {
-      return process.env.TWIG_API_DB_URL;
-    }
-    return 'http://localhost:5984';
+  if (process.env.TWIG_API_DB_URL) {
+    return process.env.TWIG_API_DB_URL;
   }
-  console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
-  return 'foo';
+  return 'http://localhost:5984';
 }
 
 function getTenant (hostname) {
