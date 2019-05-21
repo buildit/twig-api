@@ -353,7 +353,7 @@ const createTwigletHandler = async (request, h) => {
   else {
     const model = await Model.getModel(request.payload.model, contextualConfig);
     await seedTwiglet(createdDb,
-      { entities: ensureEntitiesHaveAttributesAndType(model.data.entities) }, [], [], [], [], []);
+      [], { entities: ensureEntitiesHaveAttributesAndType(model.data.entities) }, [], [], [], []);
   }
   await Changelog.addCommitMessage(
     contextualConfig,

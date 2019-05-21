@@ -506,7 +506,7 @@ describe('/v2/twiglets', () => {
         const bulkDocs = sinon.stub(PouchDb.prototype, 'bulkDocs').resolves();
         sinon.stub(PouchDb.prototype, 'put').resolves();
         yield server.inject(req());
-        postedEntities = bulkDocs.getCall(0).args[0][0].data.entities;
+        postedEntities = bulkDocs.getCall(0).args[0][1].data.entities;
       });
 
       it('adds the attributes key with an empty array', () => {
