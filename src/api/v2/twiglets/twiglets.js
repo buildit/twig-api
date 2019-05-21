@@ -508,7 +508,11 @@ const patchTwigletHandler = async (request) => {
 const deleteTwigletHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  const twigletInfo = await getTwigletInfoByName(request.params.name, contextualConfig);
+  const twigletInfoOrError = await getTwigletInfoByName(request.params.name, contextualConfig);
+  if (!twigletInfoOrError._id) {
+    return Boom.boomify(twigletInfoOrError);
+  }
+  const twigletInfo = twigletInfoOrError;
   const dbString = contextualConfig.getTenantDatabaseString(twigletInfo.twigId);
   const db = new PouchDB(dbString, { skip_setup: true });
   await db.destroy();
