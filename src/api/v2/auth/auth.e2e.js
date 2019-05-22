@@ -54,7 +54,7 @@ describe('/v2/login', () => {
       let res;
       before('logs in', async () => {
         res = await chai.request(url).post('/v2/login').send({
-          email: 'local@user',
+          email: 'local@user.com',
           password: 'password',
         });
       });
@@ -72,8 +72,8 @@ describe('/v2/login', () => {
       it('returns response', () => {
         expect(res.body).to.deep.eq({
           user: {
-            id: 'local@user',
-            name: 'local@user'
+            id: 'local@user.com',
+            name: 'local@user.com'
           }
         });
       });
@@ -90,7 +90,7 @@ describe('/logout', () => {
         const agent = chai.request.agent(url);
         await agent.post('/v2/login')
           .send({
-            email: 'local@user',
+            email: 'local@user.com',
             password: 'password',
           });
 

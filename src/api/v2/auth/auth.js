@@ -55,7 +55,7 @@ ${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
 };
 
 const validateLocal = (email, password) => {
-  if (email !== 'local@user' || password !== 'password') {
+  if (email !== 'local@user.com' || password !== 'password') {
     throw new Error('Bad local username/password');
   }
 
@@ -114,10 +114,7 @@ module.exports.routes = [{
     },
     validate: {
       payload: Joi.object({
-        // TODO: add email validation, but this will break our tests since we use
-        // TODO: local@user which is not a valid email
-        // TODO: replace with ```email: Joi.string().email().required().trim(),```
-        email: Joi.string().required().trim(),
+        email: Joi.string().email().required().trim(),
         password: Joi.string().required().trim()
       })
     },

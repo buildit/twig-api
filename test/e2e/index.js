@@ -21,7 +21,7 @@ async function addWait (promise) {
 before(async () => {
   await authAgent.post('/v2/login')
     .send({
-      email: 'local@user',
+      email: 'local@user.com',
       password: 'password',
     });
 });

@@ -392,7 +392,7 @@ describe('twiglets', () => {
             links: [],
             latestCommit: {
               message: 'fee fie fo fum',
-              user: 'local@user',
+              user: 'local@user.com',
             }
           }
         ));
