@@ -279,37 +279,42 @@ function checkJsonParsableIfExists (json) {
   return jsonTwiglet;
 }
 
-// TODO: argument order is inherently fragile, conevert to key: value instead through isomporhism
-function seedTwiglet (createdDb, links, model, nodes, views, events, sequences) {
-  return Promise.all([
-    createdDb.bulkDocs([
-      {
-        _id: 'links',
-        data: links
-      },
-      {
-        _id: 'model',
-        data: model
-      },
-      {
-        _id: 'nodes',
-        data: nodes
-      },
-      {
-        _id: 'views_2',
-        data: views
-      },
-      {
-        _id: 'events',
-        data: events || []
-      },
-      {
-        _id: 'sequences',
-        data: sequences || []
-      },
-    ]),
-  ]);
-}
+const seedTwiglet = ({
+  createdDb,
+  links,
+  model,
+  nodes,
+  views,
+  events,
+  sequences
+}) => Promise.all([
+  createdDb.bulkDocs([
+    {
+      _id: 'links',
+      data: links
+    },
+    {
+      _id: 'model',
+      data: model
+    },
+    {
+      _id: 'nodes',
+      data: nodes
+    },
+    {
+      _id: 'views_2',
+      data: views
+    },
+    {
+      _id: 'events',
+      data: events || []
+    },
+    {
+      _id: 'sequences',
+      data: sequences || []
+    },
+  ]),
+]);
 
 const createTwigletHandler = async (request, h) => {
   const jsonTwiglet = checkJsonParsableIfExists(request.payload.json);
@@ -330,8 +335,7 @@ const createTwigletHandler = async (request, h) => {
   const createdDb = new PouchDB(dbString);
   if (jsonTwiglet) {
     throwIfNodesNotInModel(jsonTwiglet.model, jsonTwiglet.nodes);
-    await seedTwiglet(createdDb, jsonTwiglet.links, jsonTwiglet.model, jsonTwiglet.nodes,
-      jsonTwiglet.views, jsonTwiglet.events, jsonTwiglet.sequences);
+    await seedTwiglet(Object.assign({ createdDb }, jsonTwiglet));
   }
   else if (request.payload.cloneTwiglet && request.payload.cloneTwiglet !== 'N/A') {
     const twigletToBeClonedInfo = await
@@ -346,14 +350,25 @@ const createTwigletHandler = async (request, h) => {
       include_docs: true,
       keys: ['links', 'model', 'nodes', 'views_2', 'events', 'sequences']
     });
-    await seedTwiglet(createdDb, twigletDocs.rows[0].doc.data, twigletDocs.rows[1].doc.data,
-      twigletDocs.rows[2].doc.data, twigletDocs.rows[3].doc.data, twigletDocs.rows[4].doc.data,
-      twigletDocs.rows[5].doc.data);
+    await seedTwiglet({
+      createdDb,
+      links: twigletDocs.rows[0].doc.data,
+      model: twigletDocs.rows[1].doc.data,
+      nodes: twigletDocs.rows[2].doc.data,
+      views: twigletDocs.rows[3].doc.data,
+      events: twigletDocs.rows[4].doc.data,
+      sequences: twigletDocs.rows[5].doc.data,
+    });
   }
   else {
     const model = await Model.getModel(request.payload.model, contextualConfig);
-    await seedTwiglet(createdDb,
-      [], { entities: ensureEntitiesHaveAttributesAndType(model.data.entities) }, [], [], [], []);
+    await seedTwiglet({
+      createdDb,
+      model: { entities: ensureEntitiesHaveAttributesAndType(model.data.entities) },
+      links: [],
+      views: [],
+      nodes: []
+    });
   }
   await Changelog.addCommitMessage(
     contextualConfig,
