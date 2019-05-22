@@ -4,7 +4,6 @@ const Boom = require('@hapi/boom');
 const Joi = require('@hapi/joi');
 const PouchDB = require('pouchdb');
 const HttpStatus = require('http-status-codes');
-const { isNil } = require('ramda');
 const { getContextualConfig } = require('../../../config');
 const logger = require('../../../log')('MODELS');
 const { wrapTryCatchWithBoomify } = require('../helpers');
@@ -51,8 +50,6 @@ const getModelsResponse = Joi.array().items(Joi.object({
 
 const getModelWithDb = async (name, db) => {
   const modelsRaw = await db.allDocs({ include_docs: true });
-  console.log('getModelWithDb - modelsRaw', JSON.stringify(modelsRaw));
-  console.log(`getModelWithDb - name: ${name}`);
   const modelArray = modelsRaw.rows.filter(row => row.doc.data.name === name);
   if (modelArray.length) {
     return modelArray[0].doc;
@@ -78,7 +75,7 @@ async function postModel (db, name, entities, commitMessage, userName, cloneFrom
       name,
     }
   };
-  if (!isNil(cloneFromName)) {
+  if (cloneFromName) {
     const cloneSource = await getModelWithDb(cloneFromName, db);
     modelToCreate.data.entities = cloneSource.data.entities;
   }
@@ -125,7 +122,6 @@ const getModelsHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const db = new PouchDB(contextualConfig.getTenantDatabaseString('organisation-models'));
   const modelsRaw = await db.allDocs({ include_docs: true });
-
   const orgModels = modelsRaw.rows
     .map(row => ({
       name: row.doc.data.name,
