@@ -11,7 +11,7 @@ const logger = require('../../../log')('TWIGLETS');
 const Changelog = require('./changelog');
 const Model = require('../models/');
 const { getTwigletInfoByName } = require('./twiglets.helpers');
-const { wrapTryCatchWithBoomify } = require('../helpers');
+const { wrapTryCatchWithBoomify, getTwigletInfoAndMakeDB} = require('../helpers');
 
 const createTwigletRequest = Joi.object({
   name: Joi.string()
@@ -303,18 +303,19 @@ function linkCleaner (l) {
 }
 
 async function getTwiglet (name, urlBuilder, contextualConfig) {
-  const twigletInfoOrError = await getTwigletInfoByName(name, contextualConfig);
-  const db = new PouchDB(contextualConfig.getTenantDatabaseString(twigletInfoOrError.twigId), {
-    skip_setup: true
-  });
-  const twigletDocs = await db.allDocs({
-    include_docs: true,
-    keys: ['nodes', 'links', 'changelog']
-  });
-  const twigletData = twigletDocs.rows.reduce((obj, row) => {
-    obj[row.id] = row.doc;
-    return obj;
-  }, {});
+  const {twigletInfoOrError, twigletData} = await getTwigletInfoAndMakeDB({name, contextualConfig, getTwigletInfoByName, twigletKeys: ['nodes', 'links', 'changelog']});
+  //const twigletInfoOrError = await getTwigletInfoByName(name, contextualConfig);
+  //const db = new PouchDB(contextualConfig.getTenantDatabaseString(twigletInfoOrError.twigId), {
+  //  skip_setup: true
+  //});
+  //const twigletDocs = await db.allDocs({
+  //  include_docs: true,
+  //  keys: ['nodes', 'links', 'changelog']
+  //});
+  //const twigletData = twigletDocs.rows.reduce((obj, row) => {
+  //  obj[row.id] = row.doc;
+  //  return obj;
+  //}, {});
   const cleanedTwigletData = R.omit(['changelog', 'views_2', 'events', 'sequences'], twigletData);
   const presentationTwigletData = {
     _rev: `${twigletInfoOrError._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`,
