@@ -8,7 +8,7 @@ const logger = require('../../../../log')('VIEWS');
 const Changelog = require('../changelog');
 const { getContextualConfig } = require('../../../../config');
 const { getTwigletInfoByName } = require('../twiglets.helpers');
-const { wrapTryCatchWithBoomify } = require('../../helpers');
+const { wrapTryCatchWithBoomify, getTwigletInfoAndMakeDB } = require('../../helpers');
 
 const getViewsResponse = Joi.array().items(
   Joi.object({
@@ -76,10 +76,7 @@ const getViewResponse = createViewRequest.keys({
 
 const getView = async (name, viewName, contextualConfig) => {
   const twigletName = name;
-  const twigletInfoOrError = await getTwigletInfoByName(twigletName, contextualConfig);
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
-  });
+  const { db } = await getTwigletInfoAndMakeDB({ name: twigletName, contextualConfig });
   const viewsRaw = await db.get('views_2');
   if (viewsRaw.data) {
     const viewArray = viewsRaw.data.filter(row => row.name === viewName);
@@ -93,12 +90,9 @@ const getView = async (name, viewName, contextualConfig) => {
 const getViewsHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    const twigletInfoOrError = await getTwigletInfoByName(
-      request.params.twigletName,
+    const { db } = await getTwigletInfoAndMakeDB({
+      name: request.params.twigletName,
       contextualConfig
-    );
-    const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-      skip_setup: true
     });
     const viewsRaw = await db.get('views_2');
     const views = viewsRaw.data.map(item => ({
@@ -156,12 +150,9 @@ async function throwIfViewNameNotUnique (twigletName, viewName, contextualConfig
 
 const postViewsHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfoOrError = await getTwigletInfoByName(
-    request.params.twigletName,
+  const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
+    name: request.params.twigletName,
     contextualConfig
-  );
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
   });
   const doc = await db.get('views_2').catch(seedWithEmptyViews);
   const viewName = request.payload.name;
@@ -191,12 +182,9 @@ const postViewsHandler = async (request, h) => {
 
 const putViewHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfoOrError = await getTwigletInfoByName(
-    request.params.twigletName,
+  const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
+    name: request.params.twigletName,
     contextualConfig
-  );
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
   });
   const doc = await db.get('views_2');
   const viewIndex = doc.data.findIndex(view => view.name === request.params.viewName);
@@ -229,12 +217,9 @@ const putViewHandler = async (request) => {
 
 const deleteViewHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfoOrError = await getTwigletInfoByName(
-    request.params.twigletName,
+  const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
+    name: request.params.twigletName,
     contextualConfig
-  );
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
   });
   const doc = await db.get('views_2');
   const viewIndex = doc.data.findIndex(view => view.name === request.params.viewName);

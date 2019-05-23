@@ -3,6 +3,7 @@
 const Boom = require('@hapi/boom');
 const HttpStatus = require('http-status-codes');
 const PouchDB = require('pouchdb');
+const { getTwigletInfoByName } = require('./twiglets/twiglets.helpers');
 
 function isConflictOrNotFound(error) {
   const code = error.status || (error.output || {}).statusCode;
@@ -32,13 +33,7 @@ function wrapTryCatchWithBoomify(logger, handlerFn) {
     }
   };
 }
-const getTwigletInfoAndMakeDB = async ({
-  name,
-  contextualConfig,
-  getTwigletInfoByName,
-  twigletKeys,
-  beBad
-}) => {
+const getTwigletInfoAndMakeDB = async ({ name, contextualConfig, twigletKeys }) => {
   const twigletInfoOrError = await getTwigletInfoByName(name, contextualConfig);
   const db = new PouchDB(contextualConfig.getTenantDatabaseString(twigletInfoOrError.twigId), {
     skip_setup: true
@@ -49,10 +44,6 @@ const getTwigletInfoAndMakeDB = async ({
         keys: twigletKeys
       })
     : undefined;
-  /*if(beBad) {
-    console.log("HERE");
-    return {twigletInfoOrError, db}
-  }*/
 
   return {
     twigletInfoOrError,
@@ -65,21 +56,6 @@ const getTwigletInfoAndMakeDB = async ({
           }, {})
         }
       : {})
-
-    /*...(twigletKeys
-        ? {
-            twigletData: twigletDocs.rows.reduce((obj, row) => ({
-                ...obj,
-                [row.id] : row.doc && row.doc.data
-                    ? row.doc.data
-                    // This might be wrong
-                    : row.doc
-            }),
-            {})
-        }
-        :{}
-    )
-    */
   };
 };
 

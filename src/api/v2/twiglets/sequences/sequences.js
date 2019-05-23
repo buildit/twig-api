@@ -2,13 +2,12 @@
 
 const Boom = require('@hapi/boom');
 const Joi = require('@hapi/joi');
-const PouchDb = require('pouchdb');
 const uuidV4 = require('uuid/v4');
 const HttpStatus = require('http-status-codes');
 const logger = require('../../../../log')('SEQUENCES');
 const { getContextualConfig } = require('../../../../config');
-const { getTwigletInfoByName } = require('../twiglets.helpers');
 const { wrapTryCatchWithBoomify } = require('../../helpers');
+const { getTwigletInfoAndMakeDB } = require('../../helpers');
 
 const getSequenceResponse = Joi.object({
   description: Joi.string().allow(''),
@@ -41,10 +40,7 @@ const createSequenceRequest = Joi.object({
 });
 
 const getSequence = async (twigletName, sequenceId, contextualConfig) => {
-  const twigletInfoOrError = await getTwigletInfoByName(twigletName, contextualConfig);
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
-  });
+  const { db } = await getTwigletInfoAndMakeDB({ name: twigletName, contextualConfig });
   const sequencesRaw = await db.get('sequences');
   if (sequencesRaw.data) {
     const sequenceArray = sequencesRaw.data.filter(row => row.id === sequenceId);
@@ -62,10 +58,7 @@ const getSequenceDetails = async (twigletName, sequenceId, contextualConfig) => 
     return map;
   }, {});
 
-  const twigletInfoOrError = await getTwigletInfoByName(twigletName, contextualConfig);
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
-  });
+  const { db } = await getTwigletInfoAndMakeDB({ name: twigletName, contextualConfig });
 
   const eventsRaw = await db.get('events');
   if (eventsRaw.data) {
@@ -79,12 +72,9 @@ const getSequenceDetails = async (twigletName, sequenceId, contextualConfig) => 
 const getSequencesHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    const twigletInfoOrError = await getTwigletInfoByName(
-      request.params.twigletName,
+    const { db } = await getTwigletInfoAndMakeDB({
+      name: request.params.twigletName,
       contextualConfig
-    );
-    const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-      skip_setup: true
     });
     const sequences = await db.get('sequences');
     const sequencesArray = sequences.data.map(item => ({
@@ -161,12 +151,9 @@ function throwIfSequenceNameNotUnique (sequences, name) {
 }
 const postSequencesHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfoOrError = await getTwigletInfoByName(
-    request.params.twigletName,
+  const { db } = await getTwigletInfoAndMakeDB({
+    name: request.params.twigletName,
     contextualConfig
-  );
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
   });
   const doc = await db.get('sequences').catch(seedWithEmptySequences(db));
   throwIfSequenceNameNotUnique(doc.data, request.payload.name);
@@ -191,12 +178,9 @@ const postSequencesHandler = async (request, h) => {
 
 const putSequenceHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfoOrError = await getTwigletInfoByName(
-    request.params.twigletName,
+  const { db } = await getTwigletInfoAndMakeDB({
+    name: request.params.twigletName,
     contextualConfig
-  );
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
   });
   const doc = await db.get('sequences');
   const sequenceIndex = doc.data.findIndex(sequence => sequence.id === request.params.sequenceId);
@@ -226,12 +210,9 @@ const putSequenceHandler = async (request) => {
 
 const deleteSequenceHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfoOrError = await getTwigletInfoByName(
-    request.params.twigletName,
+  const { db } = await getTwigletInfoAndMakeDB({
+    name: request.params.twigletName,
     contextualConfig
-  );
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
   });
   const doc = await db.get('sequences');
   const sequenceIndex = doc.data.findIndex(sequence => sequence.id === request.params.sequenceId);

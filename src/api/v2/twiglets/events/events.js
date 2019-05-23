@@ -9,7 +9,7 @@ const HttpStatus = require('http-status-codes');
 const { getContextualConfig } = require('../../../../config');
 const logger = require('../../../../log')('EVENTS');
 const { getTwigletInfoByName } = require('../twiglets.helpers');
-const { wrapTryCatchWithBoomify } = require('../../helpers');
+const { wrapTryCatchWithBoomify, getTwigletInfoAndMakeDB } = require('../../helpers');
 
 const getEventsResponse = Joi.array().items(
   Joi.object({
@@ -74,9 +74,9 @@ const getEventResponse = Event.keys({
 });
 
 const getEvent = async (twigletName, eventId, contextualConfig) => {
-  const twigletInfoOrError = await getTwigletInfoByName(twigletName, contextualConfig);
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
+  const { db } = await getTwigletInfoAndMakeDB({
+    name: twigletName,
+    contextualConfig
   });
   const eventsRaw = await db.get('events');
   if (eventsRaw.data) {
@@ -91,12 +91,9 @@ const getEvent = async (twigletName, eventId, contextualConfig) => {
 const getEventsHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    const twigletInfoOrError = await getTwigletInfoByName(
-      request.params.twigletName,
+    const { db } = await getTwigletInfoAndMakeDB({
+      name: request.params.twigletName,
       contextualConfig
-    );
-    const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-      skip_setup: true
     });
     const events = await db.get('events');
     const eventsArray = events.data.map(item => ({
@@ -150,12 +147,9 @@ function seedWithEmptyEvents (db) {
 
 const postEventsHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfoOrError = await getTwigletInfoByName(
-    request.params.twigletName,
+  const { db } = await getTwigletInfoAndMakeDB({
+    name: request.params.twigletName,
     contextualConfig
-  );
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
   });
   const doc = await db.get('events').catch(seedWithEmptyEvents(db));
   if (doc.data.some(event => event.name === request.payload.name)) {
@@ -174,12 +168,9 @@ const postEventsHandler = async (request, h) => {
 
 const deleteEventHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfoOrError = await getTwigletInfoByName(
-    request.params.twigletName,
+  const { db } = await getTwigletInfoAndMakeDB({
+    name: request.params.twigletName,
     contextualConfig
-  );
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-    skip_setup: true
   });
   const doc = await db.get('events');
   const eventIndex = doc.data.findIndex(event => event.id === request.params.eventId);
@@ -191,12 +182,9 @@ const deleteEventHandler = async (request, h) => {
 const deleteAllEventsHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    const twigletInfoOrError = await getTwigletInfoByName(
-      request.params.twigletName,
+    const { db } = await getTwigletInfoAndMakeDB({
+      name: request.params.twigletName,
       contextualConfig
-    );
-    const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id), {
-      skip_setup: true
     });
     const events = await db.get('events');
     await db.remove(events._id, events._rev);

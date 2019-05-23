@@ -306,21 +306,8 @@ async function getTwiglet (name, urlBuilder, contextualConfig) {
   const { twigletInfoOrError, twigletData } = await getTwigletInfoAndMakeDB({
     name,
     contextualConfig,
-    getTwigletInfoByName,
     twigletKeys: ['nodes', 'links', 'changelog']
   });
-  // const twigletInfoOrError = await getTwigletInfoByName(name, contextualConfig);
-  // const db = new PouchDB(contextualConfig.getTenantDatabaseString(twigletInfoOrError.twigId), {
-  //  skip_setup: true
-  // });
-  // const twigletDocs = await db.allDocs({
-  //  include_docs: true,
-  //  keys: ['nodes', 'links', 'changelog']
-  // });
-  // const twigletData = twigletDocs.rows.reduce((obj, row) => {
-  //  obj[row.id] = row.doc;
-  //  return obj;
-  // }, {});
   const cleanedTwigletData = R.omit(['changelog', 'views_2', 'events', 'sequences'], twigletData);
   const presentationTwigletData = {
     _rev: `${twigletInfoOrError._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`,
@@ -528,23 +515,11 @@ const putTwigletHandler = async (request) => {
 
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  // const twigletInfoOrError = await getTwigletInfoByName(request.params.name, contextualConfig);
   const { twigletInfoOrError, db, twigletData } = await getTwigletInfoAndMakeDB({
     name: request.params.name,
     contextualConfig,
-    getTwigletInfoByName,
     twigletKeys: ['nodes', 'links', 'model']
   });
-  // TODO: we are doing this here and in changelog, this really needs to handled consisently
-  // const twigletInfoOrError = twigletInfoOrError;
-
-  // const dbString = contextualConfig.getTenantDatabaseString(twigletInfoOrError.twigId);
-  // const db = new PouchDB(dbString, { skip_setup: true });
-  // const twigletDocs = await db.allDocs({ include_docs: true, keys: ['nodes', 'links', 'model'] });
-  // const twigletData = twigletDocs.rows.reduce((obj, row) => {
-  //  obj[row.id] = row.doc;
-  //  return obj;
-  // }, {});
 
   if (!twigletInfoOrError._id) {
     return Boom.boomify(twigletInfoOrError);
@@ -589,24 +564,15 @@ const patchTwigletHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
 
-  // TODO: these exact same lines are in put and patch, this should be cleaned up
-  const twigletInfoOrError = await getTwigletInfoByName(request.params.name, contextualConfig);
-  // TODO: we are doing this here and in changelog, this really needs to handled consisently
+  const { twigletInfoOrError, db, twigletData } = await getTwigletInfoAndMakeDB({
+    name: request.params.name,
+    contextualConfig,
+    twigletKeys: ['nodes', 'links', 'model']
+  });
+
   if (!twigletInfoOrError._id) {
     return Boom.boomify(twigletInfoOrError);
   }
-  const twigletInfo = twigletInfoOrError;
-
-  const dbString = contextualConfig.getTenantDatabaseString(twigletInfoOrError.twigId);
-  const db = new PouchDB(dbString, {
-    skip_setup: true
-  });
-  const twigletDocs = await db.allDocs({ include_docs: true, keys: ['nodes', 'links', 'model'] });
-  const twigletData = twigletDocs.rows.reduce((obj, row) => {
-    obj[row.id] = row.doc;
-    return obj;
-  }, {});
-
   await throwIfInvalidRevisions(
     request.payload._rev,
     twigletInfoOrError._rev,
@@ -627,7 +593,7 @@ const patchTwigletHandler = async (request) => {
   twigletData.nodes.data = request.payload.nodes || twigletData.nodes.data;
   twigletData.links.data = request.payload.links || twigletData.links.data;
   await Promise.all([
-    twigletLookupDb.put(twigletInfo),
+    twigletLookupDb.put(twigletInfoOrError),
     db.put(twigletData.nodes),
     db.put(twigletData.links),
     Changelog.addCommitMessage(
@@ -650,12 +616,13 @@ const patchTwigletHandler = async (request) => {
 const deleteTwigletHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  const twigletInfoOrError = await getTwigletInfoByName(request.params.name, contextualConfig);
+  const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
+    name: request.params.name,
+    contextualConfig
+  });
   if (!twigletInfoOrError._id) {
     return Boom.boomify(twigletInfoOrError);
   }
-  const dbString = contextualConfig.getTenantDatabaseString(twigletInfoOrError.twigId);
-  const db = new PouchDB(dbString, { skip_setup: true });
   await db.destroy();
   await twigletLookupDb.remove(twigletInfoOrError._id, twigletInfoOrError._rev);
   return h.response().code(HttpStatus.NO_CONTENT);
@@ -667,9 +634,10 @@ function sanitizeModel (model) {
 
 const getTwigletJsonHandler = async (request, reply) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfoOrError = await getTwigletInfoByName(request.params.name, contextualConfig);
-  const dbString = contextualConfig.getTenantDatabaseString(twigletInfoOrError.twigId);
-  const db = new PouchDB(dbString, { skip_setup: true });
+  const { db } = await getTwigletInfoAndMakeDB({
+    name: request.params.name,
+    contextualConfig
+  });
   const twigletDocs = await db.allDocs({
     include_docs: true,
     keys: ['nodes', 'links', 'model', 'views_2', 'events', 'sequences']
@@ -699,7 +667,6 @@ module.exports = {
       options: {
         validate: {
           payload: createTwigletRequest,
-          // todo: this might need to be in every endpoint
           failAction: async (request, h, err) => {
             if (process.env.NODE_ENV === 'production') {
               // In prod, log a limited error message and throw the default Bad Request error.
