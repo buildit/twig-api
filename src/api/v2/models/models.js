@@ -9,44 +9,62 @@ const logger = require('../../../log')('MODELS');
 const { wrapTryCatchWithBoomify } = require('../helpers');
 
 const createModelRequest = Joi.object({
-  cloneModel: Joi.string().allow('').allow(null),
+  cloneModel: Joi.string()
+    .allow('')
+    .allow(null),
   commitMessage: Joi.string().required(),
-  entities: Joi.object().pattern(/[\S\s]*/, Joi.object({
-    class: Joi.string().required(),
-    color: Joi.string(),
-    image: Joi.string().required(),
-    size: [Joi.string().allow('').allow(null), Joi.number()],
-    type: Joi.string(),
-    attributes: Joi.array().items(Joi.object({
-      name: Joi.string().required(),
-      dataType: Joi.string().required(),
-      required: Joi.bool().required(),
-    })),
-  })),
-  name: Joi.string().required(),
+  entities: Joi.object().pattern(
+    /[\S\s]*/,
+    Joi.object({
+      class: Joi.string().required(),
+      color: Joi.string(),
+      image: Joi.string().required(),
+      size: [
+        Joi.string()
+          .allow('')
+          .allow(null),
+        Joi.number()
+      ],
+      type: Joi.string(),
+      attributes: Joi.array().items(
+        Joi.object({
+          name: Joi.string().required(),
+          dataType: Joi.string().required(),
+          required: Joi.bool().required()
+        })
+      )
+    })
+  ),
+  name: Joi.string().required()
 });
 
 const updateModelRequest = createModelRequest.keys({
   _rev: Joi.string().required(),
-  doReplacement: Joi.bool(),
+  doReplacement: Joi.bool()
 });
 
 const getModelResponse = updateModelRequest.keys({
-  url: Joi.string().uri().required(),
-  changelog_url: Joi.string().uri().required(),
+  url: Joi.string()
+    .uri()
+    .required(),
+  changelog_url: Joi.string()
+    .uri()
+    .required(),
   commitMessage: Joi.invalid(),
   latestCommit: Joi.object({
     message: Joi.string().required(),
     user: Joi.string().required(),
     timestamp: Joi.date().iso(),
-    replacement: Joi.bool(),
-  }),
+    replacement: Joi.bool()
+  })
 });
 
-const getModelsResponse = Joi.array().items(Joi.object({
-  name: Joi.string().required(),
-  url: Joi.string().required(),
-}));
+const getModelsResponse = Joi.array().items(
+  Joi.object({
+    name: Joi.string().required(),
+    url: Joi.string().required()
+  })
+);
 
 const getModelWithDb = async (name, db) => {
   const modelsRaw = await db.allDocs({ include_docs: true });
@@ -62,17 +80,18 @@ const getModelWithContextualConfig = async (name, contextualConfig) => {
   return getModelWithDb(name, db);
 };
 
-
 async function postModel (db, name, entities, commitMessage, userName, cloneFromName = null) {
   const modelToCreate = {
     data: {
       entities,
-      changelog: [{
-        message: commitMessage,
-        user: userName,
-        timestamp: new Date().toISOString(),
-      }],
-      name,
+      changelog: [
+        {
+          message: commitMessage,
+          user: userName,
+          timestamp: new Date().toISOString()
+        }
+      ],
+      name
     }
   };
   if (cloneFromName) {
@@ -112,8 +131,14 @@ const postModelsHandler = async (request, h) => {
   const {
     name, entities, commitMessage, cloneModel
   } = request.payload;
-  await postModel(db, name, entities, commitMessage,
-    request.auth.credentials.user.name, cloneModel);
+  await postModel(
+    db,
+    name,
+    entities,
+    commitMessage,
+    request.auth.credentials.user.name,
+    cloneModel
+  );
   const newModel = await getModelWithDb(request.payload.name, db);
   return h.response(formatModelResponse(newModel, request.buildUrl)).code(HttpStatus.CREATED);
 };
@@ -122,11 +147,10 @@ const getModelsHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const db = new PouchDB(contextualConfig.getTenantDatabaseString('organisation-models'));
   const modelsRaw = await db.allDocs({ include_docs: true });
-  const orgModels = modelsRaw.rows
-    .map(row => ({
-      name: row.doc.data.name,
-      url: request.buildUrl(`/v2/models/${row.doc.data.name}`),
-    }));
+  const orgModels = modelsRaw.rows.map(row => ({
+    name: row.doc.data.name,
+    url: request.buildUrl(`/v2/models/${row.doc.data.name}`)
+  }));
   return orgModels;
 };
 
@@ -148,13 +172,13 @@ const putModelHandler = async (request) => {
       const newLog = {
         message: request.payload.commitMessage,
         user: request.auth.credentials.user.name,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
       if (request.payload.doReplacement) {
         const replacementCommit = {
           message: '--- previous change overwritten ---',
           user: request.auth.credentials.user.name,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toISOString()
         };
         model.data.changelog.unshift(replacementCommit);
       }
@@ -206,7 +230,7 @@ const routes = [
         payload: createModelRequest
       },
       response: { schema: getModelResponse },
-      tags: ['api'],
+      tags: ['api']
     }
   },
   {
@@ -216,7 +240,7 @@ const routes = [
     config: {
       auth: { mode: 'optional' },
       response: { schema: getModelsResponse },
-      tags: ['api'],
+      tags: ['api']
     }
   },
   {
@@ -226,7 +250,7 @@ const routes = [
     config: {
       auth: { mode: 'optional' },
       response: { schema: getModelResponse },
-      tags: ['api'],
+      tags: ['api']
     }
   },
   {
@@ -238,7 +262,7 @@ const routes = [
         payload: updateModelRequest
       },
       response: { schema: getModelResponse },
-      tags: ['api'],
+      tags: ['api']
     }
   },
   {
@@ -246,9 +270,9 @@ const routes = [
     path: '/v2/models/{name}',
     handler: wrapTryCatchWithBoomify(logger, deleteModelsHandler),
     config: {
-      tags: ['api'],
+      tags: ['api']
     }
-  },
+  }
 ];
 
 module.exports = {
@@ -256,5 +280,5 @@ module.exports = {
   getModel: getModelWithContextualConfig,
   getModelResponse,
   updateModelRequest,
-  routes,
+  routes
 };

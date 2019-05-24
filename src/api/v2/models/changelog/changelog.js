@@ -11,12 +11,16 @@ const { getContextualConfig } = require('../../../../config');
 // thinking was object because that is extensible to include paging metadata
 // but now maybe it's better to use Link headers (this is what GitHub does)
 const getChangelogResponse = Joi.object({
-  changelog: Joi.array().required().items(Joi.object({
-    message: Joi.string().required(),
-    user: Joi.string().required(),
-    timestamp: Joi.date().iso(),
-    replacement: Joi.bool(),
-  }))
+  changelog: Joi.array()
+    .required()
+    .items(
+      Joi.object({
+        message: Joi.string().required(),
+        user: Joi.string().required(),
+        timestamp: Joi.date().iso(),
+        replacement: Joi.bool()
+      })
+    )
 });
 
 const getChangelogHandler = async (request) => {
@@ -33,9 +37,9 @@ const routes = [
     options: {
       auth: { mode: 'optional' },
       response: { schema: getChangelogResponse },
-      tags: ['api'],
+      tags: ['api']
     }
-  },
+  }
 ];
 
 module.exports = { routes };
