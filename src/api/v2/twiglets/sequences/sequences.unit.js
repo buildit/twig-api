@@ -80,7 +80,6 @@ describe('/v2/Twiglet::Sequences', () => {
       it('relays errors', function* foo () {
         sinon.stub(PouchDb.prototype, 'get').rejects({ status: 420 });
         const response = yield server.inject(req());
-        console.log(response);
         expect(response.statusCode).to.equal(420);
       });
 

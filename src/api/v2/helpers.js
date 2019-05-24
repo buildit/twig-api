@@ -13,18 +13,14 @@ function isConflictOrNotFound(error) {
 function wrapTryCatchWithBoomify(logger, handlerFn) {
   return async (request, h) => {
     try {
-      // console.log('wat', handlerFn);
       const response = await handlerFn(request, h);
       return response;
     } catch (error) {
       // TODO: this is getting more and more complicated, we need to make sure that what we are doing
       // is proper not just making tests pass.
-      console.log('ERROR ERROR ERROR', error);
       if (!isConflictOrNotFound(error)) {
-        console.log('wrapTryCatchWithBoomify, catch before logger.error');
         logger.error(error);
       }
-      console.log('wrapTryCatchWithBoomify, catch before throw boom', new Error(error));
       const newError = error instanceof Error ? error : new Error(error.message);
       const myErr = Boom.boomify(newError, { statusCode: error.status, decorate: error.data });
       // this is unfortunately needed as per this post: https://github.com/hapijs/boom/issues/153
@@ -33,6 +29,7 @@ function wrapTryCatchWithBoomify(logger, handlerFn) {
     }
   };
 }
+
 const getTwigletInfoAndMakeDB = async ({ name, contextualConfig, twigletKeys }) => {
   const twigletInfoOrError = await getTwigletInfoByName(name, contextualConfig);
   const db = new PouchDB(contextualConfig.getTenantDatabaseString(twigletInfoOrError.twigId), {

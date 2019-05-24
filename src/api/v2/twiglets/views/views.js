@@ -2,12 +2,10 @@
 
 const Boom = require('@hapi/boom');
 const Joi = require('@hapi/joi');
-const PouchDb = require('pouchdb');
 const HttpStatus = require('http-status-codes');
 const logger = require('../../../../log')('VIEWS');
 const Changelog = require('../changelog');
 const { getContextualConfig } = require('../../../../config');
-const { getTwigletInfoByName } = require('../twiglets.helpers');
 const { wrapTryCatchWithBoomify, getTwigletInfoAndMakeDB } = require('../../helpers');
 
 const getViewsResponse = Joi.array().items(

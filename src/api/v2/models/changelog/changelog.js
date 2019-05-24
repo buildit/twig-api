@@ -20,10 +20,8 @@ const getChangelogResponse = Joi.object({
 });
 
 const getChangelogHandler = async (request) => {
-  // console.log('wtffff', request);
   const contextualConfig = getContextualConfig(request);
   const doc = await getModel(request.params.name, contextualConfig);
-  console.log('bleh', doc);
   return { changelog: doc.data.changelog };
 };
 

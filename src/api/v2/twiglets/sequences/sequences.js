@@ -90,7 +90,6 @@ const getSequencesHandler = async (request) => {
     if (error.status === 404) {
       return [];
     }
-    console.log(error);
     throw error;
   }
 };

@@ -25,13 +25,8 @@ function getTenant (hostname) {
 }
 
 const config = {
-  // TODO: JB051319
-  // At least one of LOG_CONSOLE and LOG_FILE must be set to true
-  // or we get a winston error about no defined transports
-  // LOG_CONSOLE: process.env.TWIG_API_LOG_CONSOLE === 'true',
-  // LOG_FILE: process.env.TWIG_API_LOG_FILE === 'true',
-  LOG_CONSOLE: true,
-  LOG_FILE: true,
+  LOG_CONSOLE: process.env.TWIG_API_LOG_CONSOLE === 'true',
+  LOG_FILE: process.env.TWIG_API_LOG_FILE === 'true',
   LOG_LEVEL: process.env.TWIG_API_LOG_LEVEL,
   SECURE_COOKIES: process.env.NODE_ENV === 'production',
   DB_URL: getDbUrl(),

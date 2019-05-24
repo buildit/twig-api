@@ -13,7 +13,6 @@ function transportFactory (fileName) {
   const transports = [];
 
   if (config.LOG_FILE) {
-    console.log('in transportFactory if (config.LOG_FILE)', config.LOG_FILE);
     transports.push(new WinstonDailyRotateFile({
       name: 'file',
       datePattern: '.yyyy-MM-ddTHH',
@@ -25,7 +24,6 @@ function transportFactory (fileName) {
   }
 
   if (config.LOG_CONSOLE) {
-    console.log('in transportFactory if (config.LOG_CONSOLE)', config.LOG_CONSOLE);
     transports.push(new (winston.transports.Console)({
       prettyPrint: true,
       colorize: true,
