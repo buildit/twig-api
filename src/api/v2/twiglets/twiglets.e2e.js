@@ -8,7 +8,7 @@ const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
 const R = require('ramda');
 const {
-  authAgent, anonAgent, url, addWait
+  authAgent, anonAgent, url, addWait,
 } = require('../../../../test/e2e');
 const { createModel, deleteModel, baseModel } = require('../models/models.e2e.js');
 
@@ -84,7 +84,7 @@ describe('twiglets', () => {
       it('has an entity response', () => {
         expect(res.body).to.contain.all.keys({
           name: baseTwiglet().name,
-          url: `${url}/twiglets/${baseTwiglet().name}`
+          url: `${url}/twiglets/${baseTwiglet().name}`,
         });
         expect(res.body).to.contain.all.keys(['_rev']);
       });
@@ -124,13 +124,13 @@ describe('twiglets', () => {
           {
             id: 'node1',
             name: 'node 1',
-            type: 'ent1'
+            type: 'ent1',
           },
           {
             id: 'node2',
             name: 'node 2',
-            type: 'ent2'
-          }
+            type: 'ent2',
+          },
         ];
         updates.links = [
           {
@@ -142,7 +142,7 @@ describe('twiglets', () => {
             id: 'link2',
             source: 'node2',
             target: 'node1',
-          }
+          },
         ];
         res = await updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
         res = await createTwiglet(cloneTwiglet());
@@ -160,13 +160,13 @@ describe('twiglets', () => {
           {
             id: 'node1',
             name: 'node 1',
-            type: 'ent1'
+            type: 'ent1',
           },
           {
             id: 'node2',
             name: 'node 2',
-            type: 'ent2'
-          }
+            type: 'ent2',
+          },
         ]);
       });
 
@@ -181,7 +181,7 @@ describe('twiglets', () => {
             id: 'link2',
             source: 'node2',
             target: 'node1',
-          }
+          },
         ]);
       });
 
@@ -220,13 +220,13 @@ describe('twiglets', () => {
             {
               id: 'node1',
               name: 'node 1',
-              type: 'ent1'
+              type: 'ent1',
             },
             {
               id: 'node2',
               name: 'node 2',
-              type: 'ent2'
-            }
+              type: 'ent2',
+            },
           ],
           links: [
             {
@@ -238,7 +238,7 @@ describe('twiglets', () => {
               id: 'link2',
               source: 'node2',
               target: 'node1',
-            }
+            },
           ],
           views: [{
             links: {},
@@ -261,7 +261,7 @@ describe('twiglets', () => {
               showNodeLabels: true,
               treeMode: true,
               traverseDepth: 3,
-            }
+            },
           }],
         };
       }
@@ -359,7 +359,7 @@ describe('twiglets', () => {
       it('returns a list of twiglets', () => {
         const foundTwiglet = res.body.find(({ name }) => name === baseTwiglet().name);
         expect(foundTwiglet).to.containSubset(
-          R.omit(['links', 'nodes', '_rev', 'latestCommit'], createdTwiglet)
+          R.omit(['links', 'nodes', '_rev', 'latestCommit'], createdTwiglet),
         );
       });
 
@@ -393,8 +393,8 @@ describe('twiglets', () => {
             latestCommit: {
               message: 'fee fie fo fum',
               user: 'local@user.com',
-            }
-          }
+            },
+          },
         ));
         expect(res.body).to.include.keys('_rev', 'url', 'model_url', 'changelog_url', 'views_url');
       });
@@ -437,13 +437,13 @@ describe('twiglets', () => {
           {
             id: 'node1',
             name: 'node 1',
-            type: 'ent1'
+            type: 'ent1',
           },
           {
             id: 'node2',
             name: 'node 2',
-            type: 'ent2'
-          }
+            type: 'ent2',
+          },
         ];
         updates.links = [
           {
@@ -455,7 +455,7 @@ describe('twiglets', () => {
             id: 'link2',
             source: 'node2',
             target: 'node1',
-          }
+          },
         ];
         updates.commitMessage = 'this was totally updated!';
         res = await updateTwiglet('test-c44e6001-1abd-483f-a8ab-bf807da7e455', updates);
@@ -489,13 +489,13 @@ describe('twiglets', () => {
           {
             id: 'node 1',
             name: 'node 1',
-            type: 'ent1'
+            type: 'ent1',
           },
           {
             id: 'node 2',
             name: 'node 2',
-            type: 'ent2'
-          }
+            type: 'ent2',
+          },
         ];
         updates.links = [
           {
@@ -507,7 +507,7 @@ describe('twiglets', () => {
             id: 'link 2',
             source: 'node 2',
             target: 'node 1',
-          }
+          },
         ];
         updates.commitMessage = 'this was totally updated!';
         await createModel(baseModel());
@@ -557,13 +557,13 @@ describe('twiglets', () => {
           {
             id: 'node1',
             name: 'node 1',
-            type: 'ent1'
+            type: 'ent1',
           },
           {
             id: 'node2',
             name: 'node 2',
-            type: 'ent2'
-          }
+            type: 'ent2',
+          },
         ];
         updates.links = [
           {
@@ -575,7 +575,7 @@ describe('twiglets', () => {
             id: 'link2',
             source: 'node2',
             target: 'node1',
-          }
+          },
         ];
         updates.commitMessage = 'this was totally updated!';
       });
@@ -642,13 +642,13 @@ describe('twiglets', () => {
           {
             id: 'node 1',
             name: 'node 1',
-            type: 'ent1'
+            type: 'ent1',
           },
           {
             id: 'node 2',
             name: 'node 2',
-            type: 'ent2'
-          }
+            type: 'ent2',
+          },
         ];
         updates.links = [
           {
@@ -660,7 +660,7 @@ describe('twiglets', () => {
             id: 'link 2',
             source: 'node 2',
             target: 'node 1',
-          }
+          },
         ];
         updates.commitMessage = 'this was totally updated!';
         await createModel(baseModel());
@@ -725,5 +725,5 @@ describe('twiglets', () => {
 
 
 module.exports = {
-  createTwiglet, deleteTwiglet, getTwiglet, baseTwiglet
+  createTwiglet, deleteTwiglet, getTwiglet, baseTwiglet,
 };

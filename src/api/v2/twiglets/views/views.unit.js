@@ -23,7 +23,7 @@ function getViewResults () {
           currentNode: null,
           filters: [{
             attributes: [],
-            types: { }
+            types: { },
           }],
           forceChargeStrength: 0.1,
           forceGravityX: 0.1,
@@ -37,9 +37,9 @@ function getViewResults () {
           showNodeLabels: false,
           traverseDepth: 3,
           treeMode: false,
-        }
-      }
-    ]
+        },
+      },
+    ],
   };
 }
 
@@ -185,7 +185,7 @@ describe('/v2/Twiglet::Views', () => {
             currentNode: null,
             filters: [{
               attributes: [],
-              types: { }
+              types: { },
             }],
             forceChargeStrength: 0.1,
             forceGravityX: 0.1,
@@ -199,8 +199,8 @@ describe('/v2/Twiglet::Views', () => {
             showNodeLabels: false,
             traverseDepth: 3,
             treeMode: false,
-          }
-        }
+          },
+        },
       };
     }
 
@@ -284,7 +284,7 @@ describe('/v2/Twiglet::Views', () => {
             currentNode: null,
             filters: [{
               attributes: [],
-              types: { }
+              types: { },
             }],
             forceChargeStrength: 0.1,
             forceGravityX: 0.1,
@@ -298,8 +298,8 @@ describe('/v2/Twiglet::Views', () => {
             showNodeLabels: false,
             traverseDepth: 3,
             treeMode: false,
-          }
-        }
+          },
+        },
       };
     }
 
@@ -370,7 +370,7 @@ describe('/v2/Twiglet::Views', () => {
               name: 'Ben Hernandez',
             },
           },
-        }
+        },
       };
     }
 

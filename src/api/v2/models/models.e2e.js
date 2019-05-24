@@ -6,7 +6,7 @@ const chaiHttp = require('chai-http');
 chai.use(require('chai-string'));
 const R = require('ramda');
 const {
-  anonAgent, authAgent, url, addWait
+  anonAgent, authAgent, url, addWait,
 } = require('../../../../test/e2e');
 
 const { expect } = chai;
@@ -51,7 +51,7 @@ function baseModel () {
         size: 25,
         type: 'ent2',
         attributes: [],
-      }
+      },
     },
     name: 'model1',
   };
@@ -74,7 +74,7 @@ function baseModel2 () {
         image: '4',
         size: 41,
         type: 'type 4',
-      }
+      },
     },
     name: 'model2',
   };

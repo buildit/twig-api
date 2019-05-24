@@ -14,8 +14,8 @@ const getViewsResponse = Joi.array().items(
     name: Joi.string().required(),
     url: Joi.string()
       .uri()
-      .required()
-  })
+      .required(),
+  }),
 );
 
 const userStateResponse = Joi.object({
@@ -31,7 +31,7 @@ const userStateResponse = Joi.object({
       .allow(''),
     Joi.string()
       .required()
-      .allow(null)
+      .allow(null),
   ],
   filters: Joi.array().required(),
   forceChargeStrength: Joi.number().required(),
@@ -51,7 +51,7 @@ const userStateResponse = Joi.object({
   showLinkLabels: Joi.boolean().required(),
   showNodeLabels: Joi.boolean().required(),
   treeMode: Joi.boolean().required(),
-  traverseDepth: Joi.number().required()
+  traverseDepth: Joi.number().required(),
 });
 
 const linksResponse = Joi.object();
@@ -63,13 +63,13 @@ const createViewRequest = Joi.object({
   links: linksResponse,
   name: Joi.string().required(),
   nodes: nodesResponse.required(),
-  userState: userStateResponse.required()
+  userState: userStateResponse.required(),
 });
 
 const getViewResponse = createViewRequest.keys({
   url: Joi.string()
     .uri()
-    .required()
+    .required(),
 });
 
 const getView = async (name, viewName, contextualConfig) => {
@@ -90,13 +90,13 @@ const getViewsHandler = async (request) => {
   try {
     const { db } = await getTwigletInfoAndMakeDB({
       name: request.params.twigletName,
-      contextualConfig
+      contextualConfig,
     });
     const viewsRaw = await db.get('views_2');
     const views = viewsRaw.data.map(item => ({
       description: item.description,
       name: item.name,
-      url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/views/${item.name}`)
+      url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/views/${item.name}`),
     }));
     return views;
   }
@@ -118,7 +118,7 @@ const getViewHandler = async (request) => {
     name: view.name,
     nodes: view.nodes,
     userState: view.userState,
-    url: request.buildUrl(viewUrl)
+    url: request.buildUrl(viewUrl),
   };
   return viewResponse;
 };
@@ -150,7 +150,7 @@ const postViewsHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
     name: request.params.twigletName,
-    contextualConfig
+    contextualConfig,
   });
   const doc = await db.get('views_2').catch(seedWithEmptyViews);
   const viewName = request.payload.name;
@@ -162,8 +162,8 @@ const postViewsHandler = async (request, h) => {
       contextualConfig,
       twigletInfoOrError._id,
       `View ${request.payload.name} created`,
-      request.auth.credentials.user.name
-    )
+      request.auth.credentials.user.name,
+    ),
   ]);
   const newView = await getView(request.params.twigletName, request.payload.name, contextualConfig);
   const viewUrl = `/v2/twiglets/${request.params.twigletName}/views/${request.params.viewName}`;
@@ -173,7 +173,7 @@ const postViewsHandler = async (request, h) => {
     links: newView.links,
     nodes: newView.nodes,
     userState: newView.userState,
-    url: request.buildUrl(viewUrl)
+    url: request.buildUrl(viewUrl),
   };
   return h.response(viewResponse).created(viewResponse.url);
 };
@@ -182,7 +182,7 @@ const putViewHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
     name: request.params.twigletName,
-    contextualConfig
+    contextualConfig,
   });
   const doc = await db.get('views_2');
   const viewIndex = doc.data.findIndex(view => view.name === request.params.viewName);
@@ -197,8 +197,8 @@ const putViewHandler = async (request) => {
       contextualConfig,
       twigletInfoOrError._id,
       commitMessage,
-      request.auth.credentials.user.name
-    )
+      request.auth.credentials.user.name,
+    ),
   ]);
   const newView = await getView(request.params.twigletName, request.payload.name, contextualConfig);
   const viewUrl = `/v2/twiglets/${request.params.twigletName}/views/${request.payload.name}`;
@@ -208,7 +208,7 @@ const putViewHandler = async (request) => {
     name: newView.name,
     nodes: newView.nodes,
     userState: newView.userState,
-    url: request.buildUrl(viewUrl)
+    url: request.buildUrl(viewUrl),
   };
   return viewResponse;
 };
@@ -217,7 +217,7 @@ const deleteViewHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
     name: request.params.twigletName,
-    contextualConfig
+    contextualConfig,
   });
   const doc = await db.get('views_2');
   const viewIndex = doc.data.findIndex(view => view.name === request.params.viewName);
@@ -228,8 +228,8 @@ const deleteViewHandler = async (request, h) => {
       contextualConfig,
       twigletInfoOrError._id,
       `View ${request.params.viewName} deleted`,
-      request.auth.credentials.user.name
-    )
+      request.auth.credentials.user.name,
+    ),
   ]);
   return h.response().code(HttpStatus.NO_CONTENT);
 };
@@ -242,8 +242,8 @@ module.exports.routes = [
     options: {
       auth: { mode: 'optional' },
       response: { schema: getViewsResponse },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['GET'],
@@ -252,8 +252,8 @@ module.exports.routes = [
     options: {
       auth: { mode: 'optional' },
       response: { schema: getViewResponse },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['PUT'],
@@ -261,11 +261,11 @@ module.exports.routes = [
     handler: wrapTryCatchWithBoomify(logger, putViewHandler),
     options: {
       validate: {
-        payload: createViewRequest
+        payload: createViewRequest,
       },
       response: { schema: getViewResponse },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['POST'],
@@ -273,18 +273,18 @@ module.exports.routes = [
     handler: wrapTryCatchWithBoomify(logger, postViewsHandler),
     options: {
       validate: {
-        payload: createViewRequest
+        payload: createViewRequest,
       },
       response: { schema: getViewResponse },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['DELETE'],
     path: '/v2/twiglets/{twigletName}/views/{viewName}',
     handler: wrapTryCatchWithBoomify(logger, deleteViewHandler),
     options: {
-      tags: ['api']
-    }
-  }
+      tags: ['api'],
+    },
+  },
 ];

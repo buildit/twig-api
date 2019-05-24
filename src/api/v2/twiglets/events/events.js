@@ -16,8 +16,8 @@ const getEventsResponse = Joi.array().items(
     name: Joi.string().required(),
     url: Joi.string()
       .uri()
-      .required()
-  })
+      .required(),
+  }),
 );
 
 const Event = Joi.object({
@@ -26,14 +26,14 @@ const Event = Joi.object({
     .description('a description of the event'),
   name: Joi.string()
     .required()
-    .description('the name of the event, eg "Ben got fired"')
+    .description('the name of the event, eg "Ben got fired"'),
 });
 
 const attributes = Joi.array().items(
   Joi.object({
     key: Joi.string().required(),
-    value: Joi.any()
-  })
+    value: Joi.any(),
+  }),
 );
 
 const Link = Joi.object({
@@ -43,7 +43,7 @@ const Link = Joi.object({
   association: Joi.string(),
   id: Joi.string().required(),
   source: Joi.string().required(),
-  target: Joi.string().required()
+  target: Joi.string().required(),
 });
 
 const Node = Joi.object({
@@ -59,7 +59,7 @@ const Node = Joi.object({
   _color: Joi.string(),
   _icon: Joi.string(),
   _image: Joi.string(),
-  _size: Joi.number()
+  _size: Joi.number(),
 });
 
 const getEventResponse = Event.keys({
@@ -68,13 +68,13 @@ const getEventResponse = Event.keys({
   url: Joi.string()
     .uri()
     .required(),
-  id: Joi.string().required()
+  id: Joi.string().required(),
 });
 
 const getEvent = async (twigletName, eventId, contextualConfig) => {
   const { db } = await getTwigletInfoAndMakeDB({
     name: twigletName,
-    contextualConfig
+    contextualConfig,
   });
   const eventsRaw = await db.get('events');
   if (eventsRaw.data) {
@@ -91,14 +91,14 @@ const getEventsHandler = async (request) => {
   try {
     const { db } = await getTwigletInfoAndMakeDB({
       name: request.params.twigletName,
-      contextualConfig
+      contextualConfig,
     });
     const events = await db.get('events');
     const eventsArray = events.data.map(item => ({
       id: item.id,
       name: item.name,
       description: item.description,
-      url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/events/${item.id}`)
+      url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/events/${item.id}`),
     }));
     return eventsArray;
   }
@@ -115,7 +115,7 @@ const getEventHandler = async (request) => {
   const event = await getEvent(
     request.params.twigletName,
     request.params.eventId,
-    contextualConfig
+    contextualConfig,
   );
   const eventUrl = `/v2/twiglets/${request.params.twigletName}/events/${request.params.eventId}`;
   const eventResponse = {
@@ -124,7 +124,7 @@ const getEventHandler = async (request) => {
     links: event.links,
     name: event.name,
     nodes: event.nodes,
-    url: request.buildUrl(eventUrl)
+    url: request.buildUrl(eventUrl),
   };
   return eventResponse;
 };
@@ -135,7 +135,7 @@ function seedWithEmptyEvents (db) {
       return db
         .put({
           _id: 'events',
-          data: []
+          data: [],
         })
         .then(() => db.get('events'));
     }
@@ -147,7 +147,7 @@ const postEventsHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const { db } = await getTwigletInfoAndMakeDB({
     name: request.params.twigletName,
-    contextualConfig
+    contextualConfig,
   });
   const doc = await db.get('events').catch(seedWithEmptyEvents(db));
   if (doc.data.some(event => event.name === request.payload.name)) {
@@ -168,7 +168,7 @@ const deleteEventHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const { db } = await getTwigletInfoAndMakeDB({
     name: request.params.twigletName,
-    contextualConfig
+    contextualConfig,
   });
   const doc = await db.get('events');
   const eventIndex = doc.data.findIndex(event => event.id === request.params.eventId);
@@ -182,7 +182,7 @@ const deleteAllEventsHandler = async (request, h) => {
   try {
     const { db } = await getTwigletInfoAndMakeDB({
       name: request.params.twigletName,
-      contextualConfig
+      contextualConfig,
     });
     const events = await db.get('events');
     await db.remove(events._id, events._rev);
@@ -205,8 +205,8 @@ module.exports = {
       options: {
         auth: { mode: 'optional' },
         response: { schema: getEventsResponse },
-        tags: ['api']
-      }
+        tags: ['api'],
+      },
     },
     {
       method: ['GET'],
@@ -215,8 +215,8 @@ module.exports = {
       options: {
         auth: { mode: 'optional' },
         response: { schema: getEventResponse },
-        tags: ['api']
-      }
+        tags: ['api'],
+      },
     },
     {
       method: ['POST'],
@@ -224,27 +224,27 @@ module.exports = {
       handler: wrapTryCatchWithBoomify(logger, postEventsHandler),
       options: {
         validate: {
-          payload: Event
+          payload: Event,
         },
         response: { schema: Joi.string() },
-        tags: ['api']
-      }
+        tags: ['api'],
+      },
     },
     {
       method: ['DELETE'],
       path: '/v2/twiglets/{twigletName}/events/{eventId}',
       handler: wrapTryCatchWithBoomify(logger, deleteEventHandler),
       options: {
-        tags: ['api']
-      }
+        tags: ['api'],
+      },
     },
     {
       method: ['DELETE'],
       path: '/v2/twiglets/{twigletName}/events',
       handler: wrapTryCatchWithBoomify(logger, deleteAllEventsHandler),
       options: {
-        tags: ['api']
-      }
-    }
-  ]
+        tags: ['api'],
+      },
+    },
+  ],
 };

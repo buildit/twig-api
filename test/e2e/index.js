@@ -27,5 +27,5 @@ before(async () => {
 });
 
 module.exports = {
-  authAgent, anonAgent, url, addWait
+  authAgent, anonAgent, url, addWait,
 };

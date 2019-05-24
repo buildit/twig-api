@@ -33,7 +33,7 @@ function stubModel () {
             image: '2',
             size: 25,
             type: 'type 2',
-          }
+          },
         },
         changelog: [{
           message: 'Model Created',
@@ -41,7 +41,7 @@ function stubModel () {
           timestamp: new Date().toISOString(),
         }],
       },
-    }
+    },
   };
 }
 describe('/v2/models/', () => {
@@ -109,9 +109,9 @@ describe('/v2/models/', () => {
                   entities: req().payload.entities,
                   name: 'model1',
                 },
-              }
-            }
-          ]
+              },
+            },
+          ],
         });
         sinon.stub(PouchDb.prototype, 'post').resolves();
         res = yield server.inject(req());
@@ -147,9 +147,9 @@ describe('/v2/models/', () => {
                 data: {
                   name: 'model1',
                 },
-              }
-            }
-          ]
+              },
+            },
+          ],
         });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(409);
@@ -159,7 +159,7 @@ describe('/v2/models/', () => {
         // sinon.stub(PouchDb.prototype, 'allDocs').rejects({ status: 419, message: 'teapots' });
         sinon.stub(PouchDb.prototype, 'allDocs').throws({
           status: '419',
-          message: 'teapots'
+          message: 'teapots',
         });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(419);
@@ -225,10 +225,10 @@ describe('/v2/models/', () => {
                       image: '2',
                       size: 25,
                       type: 'type 2',
-                    }
-                  }
-                }
-              }
+                    },
+                  },
+                },
+              },
             },
             {
               id: 'buildit',
@@ -252,11 +252,11 @@ describe('/v2/models/', () => {
                       size: '15',
                       type: 'type 4',
                     },
-                  }
-                }
-              }
-            }
-          ]
+                  },
+                },
+              },
+            },
+          ],
         };
       }
       beforeEach(function* foo () {
@@ -345,8 +345,8 @@ describe('/models/{name}', () => {
               image: 'T',
               size: '350',
               type: 'type 2 - new',
-            }
-          }
+            },
+          },
         },
       };
     }
@@ -366,9 +366,9 @@ describe('/models/{name}', () => {
                   name: 'testModel1',
                   changelog: [],
                 },
-              }
-            }
-          ]
+              },
+            },
+          ],
         });
         put = sinon.stub(PouchDb.prototype, 'put').resolves();
         res = yield server.inject(req());
@@ -411,7 +411,7 @@ describe('/models/{name}', () => {
         sinon.stub(PouchDb.prototype, 'allDocs').resolves({ rows: [stubModel()] });
         sinon.stub(PouchDb.prototype, 'put').throws({
           status: '419',
-          message: 'teapots'
+          message: 'teapots',
         });
         const res = yield server.inject(req());
         expect(res.statusCode).to.equal(419);
@@ -434,7 +434,7 @@ describe('/models/{name}', () => {
               name: 'Ben Hernandez',
             },
           },
-        }
+        },
       };
     }
 

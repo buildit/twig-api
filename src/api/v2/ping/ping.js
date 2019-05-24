@@ -31,7 +31,7 @@ module.exports.routes = [
     options: {
       auth: { mode: 'try' },
       tags: ['api'],
-    }
+    },
   },
   {
     method: ['GET'],
@@ -40,6 +40,6 @@ module.exports.routes = [
     options: {
       auth: { mode: 'try' },
       tags: ['api'],
-    }
+    },
   },
 ];

@@ -16,7 +16,7 @@ const getSequenceResponse = Joi.object({
   events: Joi.array().required(),
   url: Joi.string()
     .uri()
-    .required()
+    .required(),
 });
 
 const getSequencesResponse = Joi.array().items(
@@ -29,14 +29,14 @@ const getSequencesResponse = Joi.array().items(
     id: Joi.string().required(),
     url: Joi.string()
       .uri()
-      .required()
-  })
+      .required(),
+  }),
 );
 
 const createSequenceRequest = Joi.object({
   description: Joi.string().allow(''),
   name: Joi.string().required(),
-  events: Joi.array().required()
+  events: Joi.array().required(),
 });
 
 const getSequence = async (twigletName, sequenceId, contextualConfig) => {
@@ -74,7 +74,7 @@ const getSequencesHandler = async (request) => {
   try {
     const { db } = await getTwigletInfoAndMakeDB({
       name: request.params.twigletName,
-      contextualConfig
+      contextualConfig,
     });
     const sequences = await db.get('sequences');
     const sequencesArray = sequences.data.map(item => ({
@@ -82,7 +82,7 @@ const getSequencesHandler = async (request) => {
       events: item.events,
       id: item.id,
       name: item.name,
-      url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/sequences/${item.id}`)
+      url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/sequences/${item.id}`),
     }));
     return sequencesArray;
   }
@@ -99,7 +99,7 @@ const getSequenceHandler = async (request) => {
   const sequence = await getSequence(
     request.params.twigletName,
     request.params.sequenceId,
-    contextualConfig
+    contextualConfig,
   );
   const { sequenceId } = request.params;
   const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
@@ -108,7 +108,7 @@ const getSequenceHandler = async (request) => {
     description: sequence.description,
     name: sequence.name,
     events: sequence.events,
-    url: request.buildUrl(sequenceUrl)
+    url: request.buildUrl(sequenceUrl),
   };
   return sequenceResponse;
 };
@@ -118,7 +118,7 @@ const getSequenceDetailsHandler = async (request) => {
   const sequence = await getSequenceDetails(
     request.params.twigletName,
     request.params.sequenceId,
-    contextualConfig
+    contextualConfig,
   );
   const { sequenceId } = request.params;
   const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
@@ -127,7 +127,7 @@ const getSequenceDetailsHandler = async (request) => {
     description: sequence.description,
     name: sequence.name,
     events: sequence.events,
-    url: request.buildUrl(sequenceUrl)
+    url: request.buildUrl(sequenceUrl),
   };
   return sequenceResponse;
 };
@@ -152,7 +152,7 @@ const postSequencesHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const { db } = await getTwigletInfoAndMakeDB({
     name: request.params.twigletName,
-    contextualConfig
+    contextualConfig,
   });
   const doc = await db.get('sequences').catch(seedWithEmptySequences(db));
   throwIfSequenceNameNotUnique(doc.data, request.payload.name);
@@ -162,7 +162,7 @@ const postSequencesHandler = async (request, h) => {
   const newSequence = await getSequence(
     request.params.twigletName,
     request.payload.id,
-    contextualConfig
+    contextualConfig,
   );
   const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${newSequence.id}`;
   const sequenceResponse = {
@@ -170,7 +170,7 @@ const postSequencesHandler = async (request, h) => {
     description: newSequence.description,
     name: newSequence.name,
     events: newSequence.events,
-    url: request.buildUrl(sequenceUrl)
+    url: request.buildUrl(sequenceUrl),
   };
   return h.response(sequenceResponse).created(sequenceResponse.url);
 };
@@ -179,7 +179,7 @@ const putSequenceHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const { db } = await getTwigletInfoAndMakeDB({
     name: request.params.twigletName,
-    contextualConfig
+    contextualConfig,
   });
   const doc = await db.get('sequences');
   const sequenceIndex = doc.data.findIndex(sequence => sequence.id === request.params.sequenceId);
@@ -193,7 +193,7 @@ const putSequenceHandler = async (request) => {
   const newSequence = await getSequence(
     request.params.twigletName,
     request.params.sequenceId,
-    contextualConfig
+    contextualConfig,
   );
   const { sequenceId } = request.params;
   const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
@@ -202,7 +202,7 @@ const putSequenceHandler = async (request) => {
     description: newSequence.description,
     name: newSequence.name,
     events: newSequence.events,
-    url: request.buildUrl(sequenceUrl)
+    url: request.buildUrl(sequenceUrl),
   };
   return sequenceResponse;
 };
@@ -211,7 +211,7 @@ const deleteSequenceHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const { db } = await getTwigletInfoAndMakeDB({
     name: request.params.twigletName,
-    contextualConfig
+    contextualConfig,
   });
   const doc = await db.get('sequences');
   const sequenceIndex = doc.data.findIndex(sequence => sequence.id === request.params.sequenceId);
@@ -227,13 +227,13 @@ module.exports.routes = [
     handler: wrapTryCatchWithBoomify(logger, getSequencesHandler),
     options: {
       auth: {
-        mode: 'optional'
+        mode: 'optional',
       },
       response: {
-        schema: getSequencesResponse
+        schema: getSequencesResponse,
       },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['GET'],
@@ -241,13 +241,13 @@ module.exports.routes = [
     handler: wrapTryCatchWithBoomify(logger, getSequenceHandler),
     options: {
       auth: {
-        mode: 'optional'
+        mode: 'optional',
       },
       response: {
-        schema: getSequenceResponse
+        schema: getSequenceResponse,
       },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['GET'],
@@ -255,11 +255,11 @@ module.exports.routes = [
     handler: wrapTryCatchWithBoomify(logger, getSequenceDetailsHandler),
     options: {
       auth: {
-        mode: 'optional'
+        mode: 'optional',
       },
       // response: { schema: getSequenceResponse },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['POST'],
@@ -267,13 +267,13 @@ module.exports.routes = [
     handler: wrapTryCatchWithBoomify(logger, postSequencesHandler),
     options: {
       validate: {
-        payload: createSequenceRequest
+        payload: createSequenceRequest,
       },
       response: {
-        schema: getSequenceResponse
+        schema: getSequenceResponse,
       },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['PUT'],
@@ -281,20 +281,20 @@ module.exports.routes = [
     handler: wrapTryCatchWithBoomify(logger, putSequenceHandler),
     options: {
       validate: {
-        payload: createSequenceRequest
+        payload: createSequenceRequest,
       },
       response: {
-        schema: getSequenceResponse
+        schema: getSequenceResponse,
       },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['DELETE'],
     path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}',
     handler: wrapTryCatchWithBoomify(logger, deleteSequenceHandler),
     options: {
-      tags: ['api']
-    }
-  }
+      tags: ['api'],
+    },
+  },
 ];

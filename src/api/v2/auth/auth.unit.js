@@ -17,15 +17,15 @@ describe('/v2/validateMothershipJwt', () => {
   const jwkResponse = {
     keys: [
       { kid: 'z039zd...', x5c: ['MIIDB...'] },
-      { kid: '9FXDpb...', x5c: ['MIIDBT...'] }
-    ]
+      { kid: '9FXDpb...', x5c: ['MIIDBT...'] },
+    ],
   };
 
   const req = {
     method: 'POST',
     url: '/v2/validateJwt',
     payload: {
-      token: 'some_giant_encoded_jwt_token'
+      token: 'some_giant_encoded_jwt_token',
     },
   };
 

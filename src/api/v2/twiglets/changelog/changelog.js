@@ -19,9 +19,9 @@ const getChangelogResponse = Joi.object({
       Joi.object({
         message: Joi.string().required(),
         user: Joi.string().required(),
-        timestamp: Joi.date().iso()
-      })
-    )
+        timestamp: Joi.date().iso(),
+      }),
+    ),
 });
 
 function createInitialChangelogIfNeeded (error) {
@@ -37,7 +37,7 @@ async function addCommitMessage (
   commitMessage,
   user,
   replacement,
-  timestamp = new Date().toISOString()
+  timestamp = new Date().toISOString(),
 ) {
   const db = new PouchDb(contextualConfig.getTenantDatabaseString(_id));
   try {
@@ -45,13 +45,13 @@ async function addCommitMessage (
     const commit = {
       message: commitMessage,
       user,
-      timestamp
+      timestamp,
     };
     if (replacement) {
       const replacementCommit = {
         message: '--- previous change overwritten ---',
         user,
-        timestamp
+        timestamp,
       };
       doc.data.unshift(replacementCommit);
     }
@@ -72,7 +72,7 @@ const getChangelogHandler = async (request) => {
   try {
     const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
       name: request.params.name,
-      contextualConfig
+      contextualConfig,
     });
     if (twigletInfoOrError._id) {
       const doc = await db.get('changelog');
@@ -97,9 +97,9 @@ const routes = [
     options: {
       auth: { mode: 'optional' },
       response: { schema: getChangelogResponse },
-      tags: ['api']
-    }
-  }
+      tags: ['api'],
+    },
+  },
 ];
 
 module.exports = { routes, addCommitMessage };

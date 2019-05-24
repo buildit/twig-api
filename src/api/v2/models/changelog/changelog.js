@@ -18,9 +18,9 @@ const getChangelogResponse = Joi.object({
         message: Joi.string().required(),
         user: Joi.string().required(),
         timestamp: Joi.date().iso(),
-        replacement: Joi.bool()
-      })
-    )
+        replacement: Joi.bool(),
+      }),
+    ),
 });
 
 const getChangelogHandler = async (request) => {
@@ -37,9 +37,9 @@ const routes = [
     options: {
       auth: { mode: 'optional' },
       response: { schema: getChangelogResponse },
-      tags: ['api']
-    }
-  }
+      tags: ['api'],
+    },
+  },
 ];
 
 module.exports = { routes };

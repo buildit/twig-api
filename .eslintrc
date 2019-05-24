@@ -16,9 +16,11 @@
     "no-underscore-dangle": 0,
     "no-console": 0,
     "no-restricted-syntax": 0,
-    "comma-dangle": 0,
-    "import/no-extraneous-dependencies": ["error",
-      {"devDependencies": ["**/*.unit.js", "**/*.e2e.js", "**/test/**"]}],
+    "comma-dangle": 2,
+    "import/no-extraneous-dependencies": [
+      "error",
+      { "devDependencies": ["**/*.unit.js", "**/*.e2e.js", "**/test/**"] }
+    ],
     "node/exports-style": ["error", "module.exports"]
   }
 }

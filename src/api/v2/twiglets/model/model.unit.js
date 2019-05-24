@@ -55,8 +55,8 @@ describe('/v2/Twiglet::Models', () => {
                 image: '',
                 attributes: [],
               },
-            }
-          }
+            },
+          },
         };
       }
 
@@ -101,10 +101,10 @@ describe('/v2/Twiglet::Models', () => {
                 size: '40',
                 class: 'building',
                 image: '',
-                attributes: [{ name: 'name1', dataType: 'string', required: true }]
+                attributes: [{ name: 'name1', dataType: 'string', required: true }],
               },
-            }
-          }
+            },
+          },
         };
       }
 

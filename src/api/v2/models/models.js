@@ -23,24 +23,24 @@ const createModelRequest = Joi.object({
         Joi.string()
           .allow('')
           .allow(null),
-        Joi.number()
+        Joi.number(),
       ],
       type: Joi.string(),
       attributes: Joi.array().items(
         Joi.object({
           name: Joi.string().required(),
           dataType: Joi.string().required(),
-          required: Joi.bool().required()
-        })
-      )
-    })
+          required: Joi.bool().required(),
+        }),
+      ),
+    }),
   ),
-  name: Joi.string().required()
+  name: Joi.string().required(),
 });
 
 const updateModelRequest = createModelRequest.keys({
   _rev: Joi.string().required(),
-  doReplacement: Joi.bool()
+  doReplacement: Joi.bool(),
 });
 
 const getModelResponse = updateModelRequest.keys({
@@ -55,15 +55,15 @@ const getModelResponse = updateModelRequest.keys({
     message: Joi.string().required(),
     user: Joi.string().required(),
     timestamp: Joi.date().iso(),
-    replacement: Joi.bool()
-  })
+    replacement: Joi.bool(),
+  }),
 });
 
 const getModelsResponse = Joi.array().items(
   Joi.object({
     name: Joi.string().required(),
-    url: Joi.string().required()
-  })
+    url: Joi.string().required(),
+  }),
 );
 
 const getModelWithDb = async (name, db) => {
@@ -88,11 +88,11 @@ async function postModel (db, name, entities, commitMessage, userName, cloneFrom
         {
           message: commitMessage,
           user: userName,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       ],
-      name
-    }
+      name,
+    },
   };
   if (cloneFromName) {
     const cloneSource = await getModelWithDb(cloneFromName, db);
@@ -110,7 +110,7 @@ function formatModelResponse (model, urlBuilder) {
       ? model.data.changelog[0]
       : { message: 'no history', user: 'robot@buildit', timestamp: new Date().toISOString() },
     url: urlBuilder(`/v2/models/${model.data.name}`),
-    changelog_url: urlBuilder(`/v2/models/${model.data.name}/changelog`)
+    changelog_url: urlBuilder(`/v2/models/${model.data.name}/changelog`),
   };
 }
 
@@ -129,7 +129,7 @@ const postModelsHandler = async (request, h) => {
   }
 
   const {
-    name, entities, commitMessage, cloneModel
+    name, entities, commitMessage, cloneModel,
   } = request.payload;
   await postModel(
     db,
@@ -137,7 +137,7 @@ const postModelsHandler = async (request, h) => {
     entities,
     commitMessage,
     request.auth.credentials.user.name,
-    cloneModel
+    cloneModel,
   );
   const newModel = await getModelWithDb(request.payload.name, db);
   return h.response(formatModelResponse(newModel, request.buildUrl)).code(HttpStatus.CREATED);
@@ -149,7 +149,7 @@ const getModelsHandler = async (request) => {
   const modelsRaw = await db.allDocs({ include_docs: true });
   const orgModels = modelsRaw.rows.map(row => ({
     name: row.doc.data.name,
-    url: request.buildUrl(`/v2/models/${row.doc.data.name}`)
+    url: request.buildUrl(`/v2/models/${row.doc.data.name}`),
   }));
   return orgModels;
 };
@@ -172,13 +172,13 @@ const putModelHandler = async (request) => {
       const newLog = {
         message: request.payload.commitMessage,
         user: request.auth.credentials.user.name,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
       if (request.payload.doReplacement) {
         const replacementCommit = {
           message: '--- previous change overwritten ---',
           user: request.auth.credentials.user.name,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         };
         model.data.changelog.unshift(replacementCommit);
       }
@@ -193,7 +193,7 @@ const putModelHandler = async (request) => {
       _rev: model._rev,
       latestCommit: model.data.changelog[0],
       url: request.buildUrl(`/v2/models/${model.data.name}`),
-      changelog_url: request.buildUrl(`/v2/models/${model.data.name}/changelog`)
+      changelog_url: request.buildUrl(`/v2/models/${model.data.name}/changelog`),
     };
     const boomError = Boom.conflict('Conflict, bad revision number');
     boomError.model = modelResponse;
@@ -227,11 +227,11 @@ const routes = [
     handler: wrapTryCatchWithBoomify(logger, postModelsHandler),
     config: {
       validate: {
-        payload: createModelRequest
+        payload: createModelRequest,
       },
       response: { schema: getModelResponse },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['GET'],
@@ -240,8 +240,8 @@ const routes = [
     config: {
       auth: { mode: 'optional' },
       response: { schema: getModelsResponse },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['GET'],
@@ -250,8 +250,8 @@ const routes = [
     config: {
       auth: { mode: 'optional' },
       response: { schema: getModelResponse },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['PUT'],
@@ -259,20 +259,20 @@ const routes = [
     handler: putModelHandler,
     config: {
       validate: {
-        payload: updateModelRequest
+        payload: updateModelRequest,
       },
       response: { schema: getModelResponse },
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: ['DELETE'],
     path: '/v2/models/{name}',
     handler: wrapTryCatchWithBoomify(logger, deleteModelsHandler),
     config: {
-      tags: ['api']
-    }
-  }
+      tags: ['api'],
+    },
+  },
 ];
 
 module.exports = {
@@ -280,5 +280,5 @@ module.exports = {
   getModel: getModelWithContextualConfig,
   getModelResponse,
   updateModelRequest,
-  routes
+  routes,
 };

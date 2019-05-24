@@ -10,5 +10,5 @@ function buildUrl (request) {
 }
 
 module.exports = {
-  buildUrl
+  buildUrl,
 };

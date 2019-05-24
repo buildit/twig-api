@@ -50,7 +50,7 @@ describe('/v2/twiglets/{name}/model', () => {
               class: 'still do not know',
               image: 'E',
               attributes: [],
-            }
+            },
           },
           nameChanges: [],
         });
@@ -76,7 +76,7 @@ describe('/v2/twiglets/{name}/model', () => {
               class: 'still do not know',
               image: 'E',
               attributes: [],
-            }
+            },
           },
         });
         expect(res).to.have.status(200);

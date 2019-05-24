@@ -3,7 +3,7 @@
 const winston = require('winston');
 const WinstonDailyRotateFile = require('winston-daily-rotate-file');
 const {
-  join
+  join,
 } = require('path');
 const { config } = require('./config');
 
@@ -19,7 +19,7 @@ function transportFactory (fileName) {
       filename: join(LOG_FOLDER, fileName),
       maxFileSize: 10485760,
       json: true,
-      prettyPrint: true
+      prettyPrint: true,
     }));
   }
 
@@ -28,12 +28,12 @@ function transportFactory (fileName) {
       prettyPrint: true,
       colorize: true,
       json: false,
-      level: config.LOG_LEVEL
+      level: config.LOG_LEVEL,
     }));
   }
 
   return {
-    transports
+    transports,
   };
 }
 
@@ -71,7 +71,7 @@ const logger = winston.createLogger(transportFactory('all.log'));
 function Log (ns = 'Logger', log = logger) {
   ns += '::';
   return [
-    'log', 'error', 'warn', 'info', 'debug'
+    'log', 'error', 'warn', 'info', 'debug',
   ].reduce((type, fn) => {
     if (fn === 'error') {
       type[fn] = (err) => {

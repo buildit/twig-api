@@ -36,7 +36,7 @@ describe('config', () => {
         info: {
           host: 'local',
           protocol: 'http',
-          address: '0.0.0.0'
+          address: '0.0.0.0',
         },
       };
       const contextualConfig = config.getContextualConfig(req);
@@ -50,7 +50,7 @@ describe('config', () => {
         info: {
           host: 'local',
           protocol: 'http',
-          address: '0.0.0.0'
+          address: '0.0.0.0',
         },
       };
       const contextualConfig = config.getContextualConfig(req);
@@ -62,7 +62,7 @@ describe('config', () => {
         info: {
           host: 'localhost',
           protocol: 'http',
-          address: '0.0.0.0'
+          address: '0.0.0.0',
         },
       };
       const contextualConfig = config.getContextualConfig(req);
@@ -74,7 +74,7 @@ describe('config', () => {
         info: {
           host: 'foo',
           protocol: 'http',
-          address: '0.0.0.0'
+          address: '0.0.0.0',
         },
       };
       const contextualConfig = config.getContextualConfig(req);
@@ -86,7 +86,7 @@ describe('config', () => {
         info: {
           host: 'twig-api.riglet',
           protocol: 'http',
-          address: '0.0.0.0'
+          address: '0.0.0.0',
         },
       };
       const contextualConfig = config.getContextualConfig(req);
@@ -98,7 +98,7 @@ describe('config', () => {
         info: {
           host: 'twig-api.buildit.tools',
           protocol: 'http',
-          address: '0.0.0.0'
+          address: '0.0.0.0',
         },
       };
       const contextualConfig = config.getContextualConfig(req);
@@ -110,7 +110,7 @@ describe('config', () => {
         info: {
           host: 'twig-api',
           protocol: 'http',
-          address: '0.0.0.0'
+          address: '0.0.0.0',
         },
       };
       const contextualConfig = config.getContextualConfig(req);
@@ -122,7 +122,7 @@ describe('config', () => {
         info: {
           host: 'staging.twig-api.riglet',
           protocol: 'http',
-          address: '0.0.0.0'
+          address: '0.0.0.0',
         },
       };
       const contextualConfig = config.getContextualConfig(req);
@@ -134,7 +134,7 @@ describe('config', () => {
         info: {
           host: 'staging-twig-api.buildit.tools',
           protocol: 'http',
-          address: '0.0.0.0'
+          address: '0.0.0.0',
         },
       };
       const contextualConfig = config.getContextualConfig(req);
@@ -154,7 +154,7 @@ describe('config', () => {
         info: {
           host: 'local',
           protocol: 'http',
-          address: '0.0.0.0'
+          address: '0.0.0.0',
         },
       };
       const contextualConfig = config.getContextualConfig(req);
@@ -168,7 +168,7 @@ describe('config', () => {
         info: {
           host: 'local',
           protocol: 'http',
-          address: '0.0.0.0'
+          address: '0.0.0.0',
         },
       };
       const contextualConfig = config.getContextualConfig(req);

@@ -37,14 +37,14 @@ const createTwigletRequest = Joi.object({
     .disallow(),
   commitMessage: Joi.string()
     .required()
-    .description('the initial commit message')
+    .description('the initial commit message'),
 }).label('Twiglet Creation Request');
 
 const attributes = Joi.array().items(
   Joi.object({
     key: Joi.string().required(),
-    value: Joi.any()
-  }).label('attribute')
+    value: Joi.any(),
+  }).label('attribute'),
 );
 
 const Link = Joi.object({
@@ -62,7 +62,7 @@ const Link = Joi.object({
     .required()
     .description('the id of the target node'),
   _color: Joi.string().description('overrides the default color of the link'),
-  _size: Joi.number().description('overrides the default thickness of the link')
+  _size: Joi.number().description('overrides the default thickness of the link'),
 }).label('Link');
 
 const Node = Joi.object({
@@ -73,7 +73,7 @@ const Node = Joi.object({
       .description('an id, use UUIDv4, etc to generate'),
     Joi.number()
       .required()
-      .description('an id, use UUIDv4, etc to generate')
+      .description('an id, use UUIDv4, etc to generate'),
   ],
   location: Joi.string()
     .allow('')
@@ -87,7 +87,7 @@ const Node = Joi.object({
     Joi.string()
       .required()
       .allow(null)
-      .description('the name of the node')
+      .description('the name of the node'),
   ],
   type: Joi.string()
     .required()
@@ -95,7 +95,7 @@ const Node = Joi.object({
   x: Joi.number().description('the horizontal position of the node'),
   y: Joi.number().description('the vertical position of the node'),
   _color: Joi.string().description('overrides the model color of the node'),
-  _size: Joi.number().description('overrides the model size of the node')
+  _size: Joi.number().description('overrides the model size of the node'),
 }).label('Node');
 
 const jsonTwigletRequest = Joi.object({
@@ -121,13 +121,13 @@ const jsonTwigletRequest = Joi.object({
             Joi.object({
               name: Joi.string().required(),
               dataType: Joi.string().required(),
-              required: Joi.bool().required()
-            })
+              required: Joi.bool().required(),
+            }),
           )
           .description('the entities of the model')
-          .required()
-      }).required()
-    )
+          .required(),
+      }).required(),
+    ),
   }).required(),
   views: Joi.array()
     .items(
@@ -145,7 +145,7 @@ const jsonTwigletRequest = Joi.object({
               .allow(''),
             Joi.string()
               .required()
-              .allow(null)
+              .allow(null),
           ],
           filters: Joi.object().required(),
           forceChargeStrength: Joi.number().required(),
@@ -161,9 +161,9 @@ const jsonTwigletRequest = Joi.object({
           showLinkLabels: Joi.boolean().required(),
           showNodeLabels: Joi.boolean().required(),
           treeMode: Joi.boolean().required(),
-          traverseDepth: Joi.number().required()
-        })
-      })
+          traverseDepth: Joi.number().required(),
+        }),
+      }),
     )
     .required(),
   events: Joi.array().items(
@@ -178,24 +178,24 @@ const jsonTwigletRequest = Joi.object({
       nodes: Joi.array()
         .items(Link)
         .required(),
-      id: Joi.string().required()
-    })
+      id: Joi.string().required(),
+    }),
   ),
   sequences: Joi.array().items(
     Joi.object({
       description: Joi.string().allow(''),
       events: Joi.array().required(),
       id: Joi.string().required(),
-      name: Joi.string().required()
-    })
-  )
+      name: Joi.string().required(),
+    }),
+  ),
 });
 
 const baseTwigletRequest = Joi.object({
   name: Joi.string().required(),
   description: Joi.string()
     .required()
-    .allow('')
+    .allow(''),
 });
 
 const updateTwigletRequest = baseTwigletRequest
@@ -210,7 +210,7 @@ const updateTwigletRequest = baseTwigletRequest
       .required(Link)
       .label('Link[]'),
     commitMessage: Joi.string().required(),
-    doReplacement: Joi.boolean()
+    doReplacement: Joi.boolean(),
   })
   .label('Put Twiglet Request');
 
@@ -232,7 +232,7 @@ const patchTwigletRequest = Joi.object({
     .label('Link[]'),
   commitMessage: Joi.string()
     .required()
-    .description('the commit message associated with this update')
+    .description('the commit message associated with this update'),
 }).label('Twiglet Patch');
 
 const baseTwigletResponse = {
@@ -256,7 +256,7 @@ const baseTwigletResponse = {
     .required(),
   sequences_url: Joi.string()
     .uri()
-    .required()
+    .required(),
 };
 
 const getTwigletResponse = updateTwigletRequest.keys(baseTwigletResponse).keys({
@@ -265,8 +265,8 @@ const getTwigletResponse = updateTwigletRequest.keys(baseTwigletResponse).keys({
     message: Joi.string().required(),
     user: Joi.string().required(),
     timestamp: Joi.date().iso(),
-    replacement: Joi.bool()
-  })
+    replacement: Joi.bool(),
+  }),
 });
 
 const getTwigletsResponse = Joi.array()
@@ -306,7 +306,7 @@ async function getTwiglet (name, urlBuilder, contextualConfig) {
   const { twigletInfoOrError, twigletData } = await getTwigletInfoAndMakeDB({
     name,
     contextualConfig,
-    twigletKeys: ['nodes', 'links', 'changelog']
+    twigletKeys: ['nodes', 'links', 'changelog'],
   });
   const cleanedTwigletData = R.omit(['changelog', 'views_2', 'events', 'sequences'], twigletData);
   const presentationTwigletData = {
@@ -322,7 +322,7 @@ async function getTwiglet (name, urlBuilder, contextualConfig) {
     views_url: urlBuilder(`/v2/twiglets/${name}/views`),
     json_url: urlBuilder(`/v2/twiglets/${name}.json`),
     events_url: urlBuilder(`/v2/twiglets/${name}/events`),
-    sequences_url: urlBuilder(`/v2/twiglets/${name}/sequences`)
+    sequences_url: urlBuilder(`/v2/twiglets/${name}/sequences`),
   };
   return R.merge(cleanedTwigletData, presentationTwigletData);
 }
@@ -338,16 +338,16 @@ function ensureEntitiesHaveAttributesAndType (entities) {
     let entity = entities[key];
     if (!entity.attributes) {
       entity = R.merge(entity, {
-        attributes: []
+        attributes: [],
       });
     }
     if (!entity.type) {
       entity = R.merge(entity, {
-        type: key
+        type: key,
       });
     }
     return R.merge(object, {
-      [key]: entity
+      [key]: entity,
     });
   }, {});
 }
@@ -366,34 +366,34 @@ function checkJsonParsableIfExists (json) {
 }
 
 const seedTwiglet = ({
-  createdDb, links, model, nodes, views, events, sequences
+  createdDb, links, model, nodes, views, events, sequences,
 }) => Promise.all([
   createdDb.bulkDocs([
     {
       _id: 'links',
-      data: links
+      data: links,
     },
     {
       _id: 'model',
-      data: model
+      data: model,
     },
     {
       _id: 'nodes',
-      data: nodes
+      data: nodes,
     },
     {
       _id: 'views_2',
-      data: views
+      data: views,
     },
     {
       _id: 'events',
-      data: events || []
+      data: events || [],
     },
     {
       _id: 'sequences',
-      data: sequences || []
-    }
-  ])
+      data: sequences || [],
+    },
+  ]),
 ]);
 
 const createTwigletHandler = async (request, h) => {
@@ -420,17 +420,17 @@ const createTwigletHandler = async (request, h) => {
   else if (request.payload.cloneTwiglet && request.payload.cloneTwiglet !== 'N/A') {
     const twigletToBeClonedInfo = await getTwigletInfoByName(
       request.payload.cloneTwiglet,
-      contextualConfig
+      contextualConfig,
     );
     const clonedDb = new PouchDB(
       contextualConfig.getTenantDatabaseString(twigletToBeClonedInfo.twigId),
       {
-        skip_setup: true
-      }
+        skip_setup: true,
+      },
     );
     const twigletDocs = await clonedDb.allDocs({
       include_docs: true,
-      keys: ['links', 'model', 'nodes', 'views_2', 'events', 'sequences']
+      keys: ['links', 'model', 'nodes', 'views_2', 'events', 'sequences'],
     });
     await seedTwiglet({
       createdDb,
@@ -439,7 +439,7 @@ const createTwigletHandler = async (request, h) => {
       nodes: twigletDocs.rows[2].doc.data,
       views: twigletDocs.rows[3].doc.data,
       events: twigletDocs.rows[4].doc.data,
-      sequences: twigletDocs.rows[5].doc.data
+      sequences: twigletDocs.rows[5].doc.data,
     });
   }
   else {
@@ -449,14 +449,14 @@ const createTwigletHandler = async (request, h) => {
       model: { entities: ensureEntitiesHaveAttributesAndType(model.data.entities) },
       links: [],
       views: [],
-      nodes: []
+      nodes: [],
     });
   }
   await Changelog.addCommitMessage(
     contextualConfig,
     twigletInfo.id,
     request.payload.commitMessage,
-    request.auth.credentials.user.name
+    request.auth.credentials.user.name,
   );
   const twiglet = await getTwiglet(request.payload.name, request.buildUrl, contextualConfig);
   return h.response(twiglet).created(twiglet.url);
@@ -465,7 +465,7 @@ const createTwigletHandler = async (request, h) => {
 const getTwigletsHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const db = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'), {
-    skip_setup: true
+    skip_setup: true,
   });
   const doc = await db.allDocs({ include_docs: true });
   const twiglets = doc.rows.map(twiglet => R.merge(R.omit(['_rev', '_id'], twiglet.doc), {
@@ -475,7 +475,7 @@ const getTwigletsHandler = async (request) => {
     views_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}/views`),
     json_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}.json`),
     events_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}/events`),
-    sequences_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}/sequences`)
+    sequences_url: request.buildUrl(`/v2/twiglets/${twiglet.doc.name}/sequences`),
   }));
   return twiglets;
 };
@@ -487,7 +487,7 @@ async function throwIfInvalidRevisions (
   linksRevision,
   name,
   urlBuilder,
-  contextualConfig
+  contextualConfig,
 ) {
   const splitRevs = payloadRevisions.split(':');
   if (
@@ -505,7 +505,7 @@ function throwIfInvalidRevsCount (revs) {
   const splitRevs = revs.split(':');
   if (splitRevs.length !== 3) {
     throw Boom.badRequest(
-      '_rev must be in the form of twigletInfoOrError._rev:nodes._rev:links._rev'
+      '_rev must be in the form of twigletInfoOrError._rev:nodes._rev:links._rev',
     );
   }
 }
@@ -518,7 +518,7 @@ const putTwigletHandler = async (request) => {
   const { twigletInfoOrError, db, twigletData } = await getTwigletInfoAndMakeDB({
     name: request.params.name,
     contextualConfig,
-    twigletKeys: ['nodes', 'links', 'model']
+    twigletKeys: ['nodes', 'links', 'model'],
   });
 
   if (!twigletInfoOrError._id) {
@@ -531,7 +531,7 @@ const putTwigletHandler = async (request) => {
     twigletData.links._rev,
     request.params.name,
     request.buildUrl,
-    contextualConfig
+    contextualConfig,
   );
 
   throwIfNodesNotInModel(twigletData.model.data, request.payload.nodes);
@@ -551,8 +551,8 @@ const putTwigletHandler = async (request) => {
       twigIdVar,
       request.payload.commitMessage,
       request.auth.credentials.user.name,
-      request.payload.doReplacement
-    )
+      request.payload.doReplacement,
+    ),
   ]);
 
   const twiglet = await getTwiglet(request.payload.name, request.buildUrl, contextualConfig);
@@ -567,7 +567,7 @@ const patchTwigletHandler = async (request) => {
   const { twigletInfoOrError, db, twigletData } = await getTwigletInfoAndMakeDB({
     name: request.params.name,
     contextualConfig,
-    twigletKeys: ['nodes', 'links', 'model']
+    twigletKeys: ['nodes', 'links', 'model'],
   });
 
   if (!twigletInfoOrError._id) {
@@ -580,7 +580,7 @@ const patchTwigletHandler = async (request) => {
     twigletData.links._rev,
     request.params.name,
     request.buildUrl,
-    contextualConfig
+    contextualConfig,
   );
 
   if (request.payload.nodes) {
@@ -601,14 +601,14 @@ const patchTwigletHandler = async (request) => {
       twigIdVar,
       request.payload.commitMessage,
       request.auth.credentials.user.name,
-      false
-    )
+      false,
+    ),
   ]);
 
   const twiglet = await getTwiglet(
     request.payload.name || request.params.name,
     request.buildUrl,
-    contextualConfig
+    contextualConfig,
   );
   return twiglet;
 };
@@ -618,7 +618,7 @@ const deleteTwigletHandler = async (request, h) => {
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
   const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
     name: request.params.name,
-    contextualConfig
+    contextualConfig,
   });
   if (!twigletInfoOrError._id) {
     return Boom.boomify(twigletInfoOrError);
@@ -636,11 +636,11 @@ const getTwigletJsonHandler = async (request, reply) => {
   const contextualConfig = getContextualConfig(request);
   const { db } = await getTwigletInfoAndMakeDB({
     name: request.params.name,
-    contextualConfig
+    contextualConfig,
   });
   const twigletDocs = await db.allDocs({
     include_docs: true,
-    keys: ['nodes', 'links', 'model', 'views_2', 'events', 'sequences']
+    keys: ['nodes', 'links', 'model', 'views_2', 'events', 'sequences'],
   });
   const twigletData = twigletDocs.rows.reduce((obj, row) => {
     if (row.doc && row.doc.data) {
@@ -678,13 +678,13 @@ module.exports = {
               console.error(err);
               throw err;
             }
-          }
+          },
         },
         response: {
-          schema: getTwigletResponse
+          schema: getTwigletResponse,
         },
-        tags: ['api']
-      }
+        tags: ['api'],
+      },
     },
     {
       method: ['GET'],
@@ -692,13 +692,13 @@ module.exports = {
       handler: wrapTryCatchWithBoomify(logger, getTwigletsHandler),
       options: {
         auth: {
-          mode: 'optional'
+          mode: 'optional',
         },
         response: {
-          schema: getTwigletsResponse
+          schema: getTwigletsResponse,
         },
-        tags: ['api']
-      }
+        tags: ['api'],
+      },
     },
     {
       method: ['GET'],
@@ -706,13 +706,13 @@ module.exports = {
       handler: wrapTryCatchWithBoomify(logger, getTwigletHandler),
       options: {
         auth: {
-          mode: 'optional'
+          mode: 'optional',
         },
         response: {
-          schema: getTwigletResponse
+          schema: getTwigletResponse,
         },
-        tags: ['api']
-      }
+        tags: ['api'],
+      },
     },
     {
       method: ['GET'],
@@ -720,13 +720,13 @@ module.exports = {
       handler: wrapTryCatchWithBoomify(logger, getTwigletJsonHandler),
       options: {
         auth: {
-          mode: 'optional'
+          mode: 'optional',
         },
         response: {
-          schema: jsonTwigletRequest
+          schema: jsonTwigletRequest,
         },
-        tags: ['api']
-      }
+        tags: ['api'],
+      },
     },
     {
       method: ['PUT'],
@@ -734,13 +734,13 @@ module.exports = {
       handler: wrapTryCatchWithBoomify(logger, putTwigletHandler),
       options: {
         validate: {
-          payload: updateTwigletRequest
+          payload: updateTwigletRequest,
         },
         response: {
-          schema: getTwigletResponse
+          schema: getTwigletResponse,
         },
-        tags: ['api']
-      }
+        tags: ['api'],
+      },
     },
     {
       method: ['PATCH'],
@@ -748,21 +748,21 @@ module.exports = {
       handler: wrapTryCatchWithBoomify(logger, patchTwigletHandler),
       options: {
         validate: {
-          payload: patchTwigletRequest
+          payload: patchTwigletRequest,
         },
         response: {
-          schema: getTwigletResponse
+          schema: getTwigletResponse,
         },
-        tags: ['api']
-      }
+        tags: ['api'],
+      },
     },
     {
       method: ['DELETE'],
       path: '/v2/twiglets/{name}',
       handler: wrapTryCatchWithBoomify(logger, deleteTwigletHandler),
       options: {
-        tags: ['api']
-      }
-    }
-  ]
+        tags: ['api'],
+      },
+    },
+  ],
 };
