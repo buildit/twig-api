@@ -31,7 +31,13 @@ function wrapTryCatchWithBoomify (logger, handlerFn) {
   };
 }
 
-const getTwigletInfoAndMakeDB = async ({ name, contextualConfig, twigletKeys }) => {
+const getTwigletInfoDbAndData = async ({
+  name,
+  contextualConfig,
+  twigletKeys,
+  tableString,
+  seedEmptyFunc,
+}) => {
   const twigletInfoOrError = await getTwigletInfoByName(name, contextualConfig);
   const db = new PouchDB(contextualConfig.getTenantDatabaseString(twigletInfoOrError.twigId), {
     skip_setup: true,
@@ -42,6 +48,8 @@ const getTwigletInfoAndMakeDB = async ({ name, contextualConfig, twigletKeys }) 
       keys: twigletKeys,
     })
     : undefined;
+  const dataOrNot = tableString ? await db.get(tableString) : undefined;
+  const data = seedEmptyFunc ? await db.get(tableString).catch(seedEmptyFunc(db)) : dataOrNot;
 
   return Object.assign(
     {
@@ -56,10 +64,15 @@ const getTwigletInfoAndMakeDB = async ({ name, contextualConfig, twigletKeys }) 
         }, {}),
       }
       : {},
+    data
+      ? {
+        data,
+      }
+      : {},
   );
 };
 
 module.exports = {
   wrapTryCatchWithBoomify,
-  getTwigletInfoAndMakeDB,
+  getTwigletInfoDbAndData,
 };

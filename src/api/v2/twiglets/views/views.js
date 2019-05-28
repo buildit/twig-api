@@ -6,7 +6,7 @@ const HttpStatus = require('http-status-codes');
 const logger = require('../../../../log')('VIEWS');
 const Changelog = require('../changelog');
 const { getContextualConfig } = require('../../../../config');
-const { wrapTryCatchWithBoomify, getTwigletInfoAndMakeDB } = require('../../helpers');
+const { wrapTryCatchWithBoomify, getTwigletInfoDbAndData } = require('../../helpers');
 
 const getViewsResponse = Joi.array().items(
   Joi.object({
@@ -74,8 +74,11 @@ const getViewResponse = createViewRequest.keys({
 
 const getView = async (name, viewName, contextualConfig) => {
   const twigletName = name;
-  const { db } = await getTwigletInfoAndMakeDB({ name: twigletName, contextualConfig });
-  const viewsRaw = await db.get('views_2');
+  const { data: viewsRaw } = await getTwigletInfoDbAndData({
+    name: twigletName,
+    contextualConfig,
+    tableString: 'views_2',
+  });
   if (viewsRaw.data) {
     const viewArray = viewsRaw.data.filter(row => row.name === viewName);
     if (viewArray.length) {
@@ -88,11 +91,11 @@ const getView = async (name, viewName, contextualConfig) => {
 const getViewsHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    const { db } = await getTwigletInfoAndMakeDB({
+    const { data: viewsRaw } = await getTwigletInfoDbAndData({
       name: request.params.twigletName,
       contextualConfig,
+      tableString: 'views_2',
     });
-    const viewsRaw = await db.get('views_2');
     const views = viewsRaw.data.map(item => ({
       description: item.description,
       name: item.name,
@@ -148,11 +151,12 @@ async function throwIfViewNameNotUnique (twigletName, viewName, contextualConfig
 
 const postViewsHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
+  const { twigletInfoOrError, db, data: doc } = await getTwigletInfoDbAndData({
     name: request.params.twigletName,
     contextualConfig,
+    tableString: 'views_2',
+    seedEmptyFunc: seedWithEmptyViews,
   });
-  const doc = await db.get('views_2').catch(seedWithEmptyViews);
   const viewName = request.payload.name;
   await throwIfViewNameNotUnique(request.params.twigletName, viewName, contextualConfig);
   doc.data.push(request.payload);
@@ -180,11 +184,11 @@ const postViewsHandler = async (request, h) => {
 
 const putViewHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
-  const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
+  const { twigletInfoOrError, db, data: doc } = await getTwigletInfoDbAndData({
     name: request.params.twigletName,
     contextualConfig,
+    tableString: 'views_2',
   });
-  const doc = await db.get('views_2');
   const viewIndex = doc.data.findIndex(view => view.name === request.params.viewName);
   doc.data[viewIndex] = request.payload;
   let commitMessage = `View ${request.payload.name} edited`;
@@ -215,11 +219,11 @@ const putViewHandler = async (request) => {
 
 const deleteViewHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
+  const { twigletInfoOrError, db, data: doc } = await getTwigletInfoDbAndData({
     name: request.params.twigletName,
     contextualConfig,
+    tableString: 'views_2',
   });
-  const doc = await db.get('views_2');
   const viewIndex = doc.data.findIndex(view => view.name === request.params.viewName);
   doc.data.splice(viewIndex, 1);
   await Promise.all([

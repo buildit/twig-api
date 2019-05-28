@@ -7,7 +7,7 @@ const HttpStatus = require('http-status-codes');
 const logger = require('../../../../log')('SEQUENCES');
 const { getContextualConfig } = require('../../../../config');
 const { wrapTryCatchWithBoomify } = require('../../helpers');
-const { getTwigletInfoAndMakeDB } = require('../../helpers');
+const { getTwigletInfoDbAndData } = require('../../helpers');
 
 const getSequenceResponse = Joi.object({
   description: Joi.string().allow(''),
@@ -40,8 +40,11 @@ const createSequenceRequest = Joi.object({
 });
 
 const getSequence = async (twigletName, sequenceId, contextualConfig) => {
-  const { db } = await getTwigletInfoAndMakeDB({ name: twigletName, contextualConfig });
-  const sequencesRaw = await db.get('sequences');
+  const { data: sequencesRaw } = await getTwigletInfoDbAndData({
+    name: twigletName,
+    contextualConfig,
+    tableString: 'sequences',
+  });
   if (sequencesRaw.data) {
     const sequenceArray = sequencesRaw.data.filter(row => row.id === sequenceId);
     if (sequenceArray.length) {
@@ -58,9 +61,12 @@ const getSequenceDetails = async (twigletName, sequenceId, contextualConfig) => 
     return map;
   }, {});
 
-  const { db } = await getTwigletInfoAndMakeDB({ name: twigletName, contextualConfig });
+  const { data: eventsRaw } = await getTwigletInfoDbAndData({
+    name: twigletName,
+    contextualConfig,
+    tableString: 'events',
+  });
 
-  const eventsRaw = await db.get('events');
   if (eventsRaw.data) {
     sequence.events = eventsRaw.data.filter(row => eventsMap[row.id]);
     return sequence;
@@ -72,11 +78,11 @@ const getSequenceDetails = async (twigletName, sequenceId, contextualConfig) => 
 const getSequencesHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    const { db } = await getTwigletInfoAndMakeDB({
+    const { data: sequences } = await getTwigletInfoDbAndData({
       name: request.params.twigletName,
       contextualConfig,
+      tableString: 'sequences',
     });
-    const sequences = await db.get('sequences');
     const sequencesArray = sequences.data.map(item => ({
       description: item.description,
       events: item.events,
@@ -150,11 +156,12 @@ function throwIfSequenceNameNotUnique (sequences, name) {
 }
 const postSequencesHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const { db } = await getTwigletInfoAndMakeDB({
+  const { db, data: doc } = await getTwigletInfoDbAndData({
     name: request.params.twigletName,
     contextualConfig,
+    tableString: 'sequences',
+    seedEmptyFunc: seedWithEmptySequences,
   });
-  const doc = await db.get('sequences').catch(seedWithEmptySequences(db));
   throwIfSequenceNameNotUnique(doc.data, request.payload.name);
   request.payload.id = uuidV4();
   doc.data.push(request.payload);
@@ -177,11 +184,11 @@ const postSequencesHandler = async (request, h) => {
 
 const putSequenceHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
-  const { db } = await getTwigletInfoAndMakeDB({
+  const { db, data: doc } = await getTwigletInfoDbAndData({
     name: request.params.twigletName,
     contextualConfig,
+    tableString: 'sequences',
   });
-  const doc = await db.get('sequences');
   const sequenceIndex = doc.data.findIndex(sequence => sequence.id === request.params.sequenceId);
   doc.data.splice(sequenceIndex, 1);
 
@@ -209,11 +216,11 @@ const putSequenceHandler = async (request) => {
 
 const deleteSequenceHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const { db } = await getTwigletInfoAndMakeDB({
+  const { db, data: doc } = await getTwigletInfoDbAndData({
     name: request.params.twigletName,
     contextualConfig,
+    tableString: 'sequences',
   });
-  const doc = await db.get('sequences');
   const sequenceIndex = doc.data.findIndex(sequence => sequence.id === request.params.sequenceId);
   doc.data.splice(sequenceIndex, 1);
   await db.put(doc);

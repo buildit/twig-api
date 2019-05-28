@@ -7,7 +7,7 @@ const R = require('ramda');
 const HttpStatus = require('http-status-codes');
 const { getContextualConfig } = require('../../../../config');
 const logger = require('../../../../log')('EVENTS');
-const { wrapTryCatchWithBoomify, getTwigletInfoAndMakeDB } = require('../../helpers');
+const { wrapTryCatchWithBoomify, getTwigletInfoDbAndData } = require('../../helpers');
 
 const getEventsResponse = Joi.array().items(
   Joi.object({
@@ -72,11 +72,11 @@ const getEventResponse = Event.keys({
 });
 
 const getEvent = async (twigletName, eventId, contextualConfig) => {
-  const { db } = await getTwigletInfoAndMakeDB({
+  const { data: eventsRaw } = await getTwigletInfoDbAndData({
     name: twigletName,
     contextualConfig,
+    tableString: 'events',
   });
-  const eventsRaw = await db.get('events');
   if (eventsRaw.data) {
     const eventArray = eventsRaw.data.filter(row => row.id === eventId);
     if (eventArray.length) {
@@ -89,11 +89,11 @@ const getEvent = async (twigletName, eventId, contextualConfig) => {
 const getEventsHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    const { db } = await getTwigletInfoAndMakeDB({
+    const { data: events } = await getTwigletInfoDbAndData({
       name: request.params.twigletName,
       contextualConfig,
+      tableString: 'events',
     });
-    const events = await db.get('events');
     const eventsArray = events.data.map(item => ({
       id: item.id,
       name: item.name,
@@ -145,11 +145,12 @@ function seedWithEmptyEvents (db) {
 
 const postEventsHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const { db } = await getTwigletInfoAndMakeDB({
+  const { db, data: doc } = await getTwigletInfoDbAndData({
     name: request.params.twigletName,
     contextualConfig,
+    tableString: 'events',
+    seedEmptyFunc: seedWithEmptyEvents,
   });
-  const doc = await db.get('events').catch(seedWithEmptyEvents(db));
   if (doc.data.some(event => event.name === request.payload.name)) {
     throw Boom.conflict('Event Name must be unique');
   }
@@ -166,11 +167,11 @@ const postEventsHandler = async (request, h) => {
 
 const deleteEventHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const { db } = await getTwigletInfoAndMakeDB({
+  const { db, data: doc } = await getTwigletInfoDbAndData({
     name: request.params.twigletName,
     contextualConfig,
+    tableString: 'events',
   });
-  const doc = await db.get('events');
   const eventIndex = doc.data.findIndex(event => event.id === request.params.eventId);
   doc.data.splice(eventIndex, 1);
   await db.put(doc);
@@ -180,11 +181,11 @@ const deleteEventHandler = async (request, h) => {
 const deleteAllEventsHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    const { db } = await getTwigletInfoAndMakeDB({
+    const { db, data: events } = await getTwigletInfoDbAndData({
       name: request.params.twigletName,
       contextualConfig,
+      tableString: 'events',
     });
-    const events = await db.get('events');
     await db.remove(events._id, events._rev);
     return h.response().code(HttpStatus.NO_CONTENT);
   }

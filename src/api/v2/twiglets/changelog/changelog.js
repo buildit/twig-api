@@ -6,7 +6,7 @@ const Joi = require('@hapi/joi');
 const toJSON = require('utils-error-to-json');
 const { getContextualConfig } = require('../../../../config');
 const logger = require('../../../../log')('CHANGELOG');
-const { getTwigletInfoAndMakeDB } = require('../../helpers');
+const { getTwigletInfoDbAndData } = require('../../helpers');
 
 // probably want to return raw array rather than object (been flipping on this)
 // but that would now be a breaking change
@@ -70,7 +70,7 @@ async function addCommitMessage (
 const getChangelogHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
+    const { twigletInfoOrError, db } = await getTwigletInfoDbAndData({
       name: request.params.name,
       contextualConfig,
     });

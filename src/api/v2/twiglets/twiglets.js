@@ -11,7 +11,7 @@ const logger = require('../../../log')('TWIGLETS');
 const Changelog = require('./changelog');
 const Model = require('../models/');
 const { getTwigletInfoByName } = require('./twiglets.helpers');
-const { wrapTryCatchWithBoomify, getTwigletInfoAndMakeDB } = require('../helpers');
+const { wrapTryCatchWithBoomify, getTwigletInfoDbAndData } = require('../helpers');
 
 const createTwigletRequest = Joi.object({
   name: Joi.string()
@@ -303,7 +303,7 @@ function linkCleaner (l) {
 }
 
 async function getTwiglet (name, urlBuilder, contextualConfig) {
-  const { twigletInfoOrError, twigletData } = await getTwigletInfoAndMakeDB({
+  const { twigletInfoOrError, twigletData } = await getTwigletInfoDbAndData({
     name,
     contextualConfig,
     twigletKeys: ['nodes', 'links', 'changelog'],
@@ -515,7 +515,7 @@ const putTwigletHandler = async (request) => {
 
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  const { twigletInfoOrError, db, twigletData } = await getTwigletInfoAndMakeDB({
+  const { twigletInfoOrError, db, twigletData } = await getTwigletInfoDbAndData({
     name: request.params.name,
     contextualConfig,
     twigletKeys: ['nodes', 'links', 'model'],
@@ -564,7 +564,7 @@ const patchTwigletHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
 
-  const { twigletInfoOrError, db, twigletData } = await getTwigletInfoAndMakeDB({
+  const { twigletInfoOrError, db, twigletData } = await getTwigletInfoDbAndData({
     name: request.params.name,
     contextualConfig,
     twigletKeys: ['nodes', 'links', 'model'],
@@ -616,7 +616,7 @@ const patchTwigletHandler = async (request) => {
 const deleteTwigletHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
+  const { twigletInfoOrError, db } = await getTwigletInfoDbAndData({
     name: request.params.name,
     contextualConfig,
   });
@@ -634,7 +634,7 @@ function sanitizeModel (model) {
 
 const getTwigletJsonHandler = async (request, reply) => {
   const contextualConfig = getContextualConfig(request);
-  const { db } = await getTwigletInfoAndMakeDB({
+  const { db } = await getTwigletInfoDbAndData({
     name: request.params.name,
     contextualConfig,
   });
