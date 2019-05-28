@@ -2,29 +2,36 @@
 
 const Boom = require('@hapi/boom');
 const Joi = require('@hapi/joi');
-const PouchDb = require('pouchdb');
 const uuidV4 = require('uuid/v4');
 const HttpStatus = require('http-status-codes');
 const logger = require('../../../../log')('SEQUENCES');
 const { getContextualConfig } = require('../../../../config');
-const { getTwigletInfoByName } = require('../twiglets.helpers');
 const { wrapTryCatchWithBoomify } = require('../../helpers');
+const { getTwigletInfoAndMakeDB } = require('../../helpers');
 
 const getSequenceResponse = Joi.object({
   description: Joi.string().allow(''),
   id: Joi.string().required(),
   name: Joi.string().required(),
   events: Joi.array().required(),
-  url: Joi.string().uri().required(),
+  url: Joi.string()
+    .uri()
+    .required(),
 });
 
-const getSequencesResponse = Joi.array().items(Joi.object({
-  description: Joi.string().allow(''),
-  events: Joi.array().items(Joi.string()).required(),
-  name: Joi.string().required(),
-  id: Joi.string().required(),
-  url: Joi.string().uri().required(),
-}));
+const getSequencesResponse = Joi.array().items(
+  Joi.object({
+    description: Joi.string().allow(''),
+    events: Joi.array()
+      .items(Joi.string())
+      .required(),
+    name: Joi.string().required(),
+    id: Joi.string().required(),
+    url: Joi.string()
+      .uri()
+      .required(),
+  }),
+);
 
 const createSequenceRequest = Joi.object({
   description: Joi.string().allow(''),
@@ -33,10 +40,7 @@ const createSequenceRequest = Joi.object({
 });
 
 const getSequence = async (twigletName, sequenceId, contextualConfig) => {
-  const twigletInfo = await getTwigletInfoByName(twigletName, contextualConfig);
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
-    skip_setup: true
-  });
+  const { db } = await getTwigletInfoAndMakeDB({ name: twigletName, contextualConfig });
   const sequencesRaw = await db.get('sequences');
   if (sequencesRaw.data) {
     const sequenceArray = sequencesRaw.data.filter(row => row.id === sequenceId);
@@ -54,10 +58,7 @@ const getSequenceDetails = async (twigletName, sequenceId, contextualConfig) => 
     return map;
   }, {});
 
-  const twigletInfo = await getTwigletInfoByName(twigletName, contextualConfig);
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
-    skip_setup: true
-  });
+  const { db } = await getTwigletInfoAndMakeDB({ name: twigletName, contextualConfig });
 
   const eventsRaw = await db.get('events');
   if (eventsRaw.data) {
@@ -71,21 +72,18 @@ const getSequenceDetails = async (twigletName, sequenceId, contextualConfig) => 
 const getSequencesHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    const twigletInfo = await getTwigletInfoByName(request.params.twigletName, contextualConfig);
-    const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
-      skip_setup: true
+    const { db } = await getTwigletInfoAndMakeDB({
+      name: request.params.twigletName,
+      contextualConfig,
     });
     const sequences = await db.get('sequences');
-    const sequencesArray = sequences.data
-      .map(item => ({
-        description: item.description,
-        events: item.events,
-        id: item.id,
-        name: item.name,
-        url: request.buildUrl(
-          `/v2/twiglets/${request.params.twigletName}/sequences/${item.id}`
-        )
-      }));
+    const sequencesArray = sequences.data.map(item => ({
+      description: item.description,
+      events: item.events,
+      id: item.id,
+      name: item.name,
+      url: request.buildUrl(`/v2/twiglets/${request.params.twigletName}/sequences/${item.id}`),
+    }));
     return sequencesArray;
   }
   catch (error) {
@@ -98,8 +96,11 @@ const getSequencesHandler = async (request) => {
 
 const getSequenceHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
-  const sequence = await getSequence(request.params.twigletName, request.params.sequenceId,
-    contextualConfig);
+  const sequence = await getSequence(
+    request.params.twigletName,
+    request.params.sequenceId,
+    contextualConfig,
+  );
   const { sequenceId } = request.params;
   const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
   const sequenceResponse = {
@@ -107,15 +108,18 @@ const getSequenceHandler = async (request) => {
     description: sequence.description,
     name: sequence.name,
     events: sequence.events,
-    url: request.buildUrl(sequenceUrl)
+    url: request.buildUrl(sequenceUrl),
   };
   return sequenceResponse;
 };
 
 const getSequenceDetailsHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
-  const sequence = await getSequenceDetails(request.params.twigletName, request.params.sequenceId,
-    contextualConfig);
+  const sequence = await getSequenceDetails(
+    request.params.twigletName,
+    request.params.sequenceId,
+    contextualConfig,
+  );
   const { sequenceId } = request.params;
   const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
   const sequenceResponse = {
@@ -123,7 +127,7 @@ const getSequenceDetailsHandler = async (request) => {
     description: sequence.description,
     name: sequence.name,
     events: sequence.events,
-    url: request.buildUrl(sequenceUrl)
+    url: request.buildUrl(sequenceUrl),
   };
   return sequenceResponse;
 };
@@ -146,17 +150,20 @@ function throwIfSequenceNameNotUnique (sequences, name) {
 }
 const postSequencesHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfo = await getTwigletInfoByName(request.params.twigletName, contextualConfig);
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
-    skip_setup: true
+  const { db } = await getTwigletInfoAndMakeDB({
+    name: request.params.twigletName,
+    contextualConfig,
   });
   const doc = await db.get('sequences').catch(seedWithEmptySequences(db));
   throwIfSequenceNameNotUnique(doc.data, request.payload.name);
   request.payload.id = uuidV4();
   doc.data.push(request.payload);
   await db.put(doc);
-  const newSequence = await getSequence(request.params.twigletName, request.payload.id,
-    contextualConfig);
+  const newSequence = await getSequence(
+    request.params.twigletName,
+    request.payload.id,
+    contextualConfig,
+  );
   const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${newSequence.id}`;
   const sequenceResponse = {
     id: newSequence.id,
@@ -170,14 +177,12 @@ const postSequencesHandler = async (request, h) => {
 
 const putSequenceHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfo = await getTwigletInfoByName(request.params.twigletName, contextualConfig);
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
-    skip_setup: true
+  const { db } = await getTwigletInfoAndMakeDB({
+    name: request.params.twigletName,
+    contextualConfig,
   });
   const doc = await db.get('sequences');
-  const sequenceIndex = doc.data.findIndex(
-    sequence => sequence.id === request.params.sequenceId
-  );
+  const sequenceIndex = doc.data.findIndex(sequence => sequence.id === request.params.sequenceId);
   doc.data.splice(sequenceIndex, 1);
 
   throwIfSequenceNameNotUnique(doc.data, request.payload.name);
@@ -185,8 +190,11 @@ const putSequenceHandler = async (request) => {
   request.payload.id = request.params.sequenceId;
   doc.data.push(request.payload);
   await db.put(doc);
-  const newSequence = await getSequence(request.params.twigletName, request.params.sequenceId,
-    contextualConfig);
+  const newSequence = await getSequence(
+    request.params.twigletName,
+    request.params.sequenceId,
+    contextualConfig,
+  );
   const { sequenceId } = request.params;
   const sequenceUrl = `/v2/twiglets/${request.params.twigletName}/sequences/${sequenceId}`;
   const sequenceResponse = {
@@ -194,100 +202,99 @@ const putSequenceHandler = async (request) => {
     description: newSequence.description,
     name: newSequence.name,
     events: newSequence.events,
-    url: request.buildUrl(sequenceUrl)
+    url: request.buildUrl(sequenceUrl),
   };
   return sequenceResponse;
 };
 
 const deleteSequenceHandler = async (request, h) => {
   const contextualConfig = getContextualConfig(request);
-  const twigletInfo = await getTwigletInfoByName(request.params.twigletName, contextualConfig);
-  const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
-    skip_setup: true
+  const { db } = await getTwigletInfoAndMakeDB({
+    name: request.params.twigletName,
+    contextualConfig,
   });
   const doc = await db.get('sequences');
-  const sequenceIndex = doc.data.findIndex(
-    sequence => sequence.id === request.params.sequenceId
-  );
+  const sequenceIndex = doc.data.findIndex(sequence => sequence.id === request.params.sequenceId);
   doc.data.splice(sequenceIndex, 1);
   await db.put(doc);
   return h.response().code(HttpStatus.NO_CONTENT);
 };
 
-module.exports.routes = [{
-  method: ['GET'],
-  path: '/v2/twiglets/{twigletName}/sequences',
-  handler: wrapTryCatchWithBoomify(logger, getSequencesHandler),
-  options: {
-    auth: {
-      mode: 'optional'
+module.exports.routes = [
+  {
+    method: ['GET'],
+    path: '/v2/twiglets/{twigletName}/sequences',
+    handler: wrapTryCatchWithBoomify(logger, getSequencesHandler),
+    options: {
+      auth: {
+        mode: 'optional',
+      },
+      response: {
+        schema: getSequencesResponse,
+      },
+      tags: ['api'],
     },
-    response: {
-      schema: getSequencesResponse
+  },
+  {
+    method: ['GET'],
+    path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}',
+    handler: wrapTryCatchWithBoomify(logger, getSequenceHandler),
+    options: {
+      auth: {
+        mode: 'optional',
+      },
+      response: {
+        schema: getSequenceResponse,
+      },
+      tags: ['api'],
     },
-    tags: ['api'],
-  }
-},
-{
-  method: ['GET'],
-  path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}',
-  handler: wrapTryCatchWithBoomify(logger, getSequenceHandler),
-  options: {
-    auth: {
-      mode: 'optional'
+  },
+  {
+    method: ['GET'],
+    path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}/details',
+    handler: wrapTryCatchWithBoomify(logger, getSequenceDetailsHandler),
+    options: {
+      auth: {
+        mode: 'optional',
+      },
+      // response: { schema: getSequenceResponse },
+      tags: ['api'],
     },
-    response: {
-      schema: getSequenceResponse
+  },
+  {
+    method: ['POST'],
+    path: '/v2/twiglets/{twigletName}/sequences',
+    handler: wrapTryCatchWithBoomify(logger, postSequencesHandler),
+    options: {
+      validate: {
+        payload: createSequenceRequest,
+      },
+      response: {
+        schema: getSequenceResponse,
+      },
+      tags: ['api'],
     },
-    tags: ['api'],
-  }
-},
-{
-  method: ['GET'],
-  path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}/details',
-  handler: wrapTryCatchWithBoomify(logger, getSequenceDetailsHandler),
-  options: {
-    auth: {
-      mode: 'optional'
+  },
+  {
+    method: ['PUT'],
+    path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}',
+    handler: wrapTryCatchWithBoomify(logger, putSequenceHandler),
+    options: {
+      validate: {
+        payload: createSequenceRequest,
+      },
+      response: {
+        schema: getSequenceResponse,
+      },
+      tags: ['api'],
     },
-    // response: { schema: getSequenceResponse },
-    tags: ['api'],
-  }
-},
-{
-  method: ['POST'],
-  path: '/v2/twiglets/{twigletName}/sequences',
-  handler: wrapTryCatchWithBoomify(logger, postSequencesHandler),
-  options: {
-    validate: {
-      payload: createSequenceRequest,
+  },
+  {
+    method: ['DELETE'],
+    path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}',
+    handler: wrapTryCatchWithBoomify(logger, deleteSequenceHandler),
+    options: {
+      tags: ['api'],
     },
-    response: {
-      schema: getSequenceResponse
-    },
-    tags: ['api'],
-  }
-},
-{
-  method: ['PUT'],
-  path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}',
-  handler: wrapTryCatchWithBoomify(logger, putSequenceHandler),
-  options: {
-    validate: {
-      payload: createSequenceRequest,
-    },
-    response: {
-      schema: getSequenceResponse
-    },
-    tags: ['api'],
-  }
-},
-{
-  method: ['DELETE'],
-  path: '/v2/twiglets/{twigletName}/sequences/{sequenceId}',
-  handler: wrapTryCatchWithBoomify(logger, deleteSequenceHandler),
-  options: {
-    tags: ['api']
-  }
-}
+  },
 ];

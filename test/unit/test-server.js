@@ -14,8 +14,8 @@ async function init (routes) {
   server.auth.strategy('session', 'cookie', {
     cookie: {
       password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
-      isSecure: false
-    }
+      isSecure: false,
+    },
   });
 
   server.auth.default('session');

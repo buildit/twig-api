@@ -28,15 +28,15 @@ function twigletDocs (keys) {
           {
             id: 'node201',
             name: 'node 1',
-            type: 'ent1'
+            type: 'ent1',
           },
           {
             id: 'node202',
             name: 'node 2',
-            type: 'ent2'
-          }
-        ]
-      }
+            type: 'ent2',
+          },
+        ],
+      },
     },
     {
       id: 'links',
@@ -52,9 +52,9 @@ function twigletDocs (keys) {
             id: 'link202',
             source: 'node202',
             target: 'node201',
-          }
-        ]
-      }
+          },
+        ],
+      },
     },
     {
       id: 'changelog',
@@ -64,15 +64,15 @@ function twigletDocs (keys) {
           {
             user: 'test@test.com',
             message: 'this one should be returned',
-            timestamp: '2017-02-09T20:12:33.805Z'
+            timestamp: '2017-02-09T20:12:33.805Z',
           },
           {
             user: 'test2@test.com',
             message: 'older log, should not come through',
-            timestamp: '2017-02-07T20:12:33.805Z'
-          }
-        ]
-      }
+            timestamp: '2017-02-07T20:12:33.805Z',
+          },
+        ],
+      },
     },
     {
       id: 'views_2',
@@ -88,7 +88,7 @@ function twigletDocs (keys) {
               currentNode: null,
               filters: {
                 attributes: [],
-                types: { }
+                types: { },
               },
               forceChargeStrength: 0.1,
               forceGravityX: 0.1,
@@ -102,10 +102,10 @@ function twigletDocs (keys) {
               showNodeLabels: false,
               traverseDepth: 3,
               treeMode: false,
-            }
-          }
-        ]
-      }
+            },
+          },
+        ],
+      },
     },
     {
       id: 'events',
@@ -128,9 +128,9 @@ function twigletDocs (keys) {
                 target: 'c11000af-c3a5-4db8-a7ea-74255c6d672e',
                 attrs: [
                   { key: 'key1', value: 'value1' },
-                  { key: 'key2', value: 'value2' }
+                  { key: 'key2', value: 'value2' },
                 ],
-              }
+              },
             ],
             nodes: [
               {
@@ -151,7 +151,7 @@ function twigletDocs (keys) {
                 y: 100,
                 attrs: [
                   { key: 'key1', value: 'value1' },
-                  { key: 'key2', value: 'value2' }
+                  { key: 'key2', value: 'value2' },
                 ],
               },
               {
@@ -162,7 +162,7 @@ function twigletDocs (keys) {
                 x: 1000,
                 y: 900,
                 attrs: [],
-              }
+              },
             ],
             name: 'event name',
           },
@@ -173,8 +173,8 @@ function twigletDocs (keys) {
             nodes: [],
             name: 'event 2',
           },
-        ]
-      }
+        ],
+      },
     },
     {
       id: 'sequences',
@@ -187,8 +187,8 @@ function twigletDocs (keys) {
             description: 'description of sequence',
             events: [
               'f6b49795-0418-4ebd-ae52-adeb96885119',
-              '1ff70005-08d6-4131-a8c9-e08f276a975b'
-            ]
+              '1ff70005-08d6-4131-a8c9-e08f276a975b',
+            ],
           },
           {
             id: 'ae2c4536-e0bb-43ed-a7c5-18cb23315a50',
@@ -196,11 +196,11 @@ function twigletDocs (keys) {
             events: [
               'f6b49795-0418-4ebd-ae52-adeb96885119',
               '1ff70005-08d6-4131-a8c9-e08f276a975b',
-              '2a0e95d9-91c5-4a64-b283-bd94195a8ef6'
-            ]
-          }
-        ]
-      }
+              '2a0e95d9-91c5-4a64-b283-bd94195a8ef6',
+            ],
+          },
+        ],
+      },
     },
     {
       id: 'model',
@@ -210,9 +210,9 @@ function twigletDocs (keys) {
           entities: {
             ent1: {},
             ent2: {},
-          }
-        }
-      }
+          },
+        },
+      },
     },
   ];
   if (!keys) {
@@ -235,7 +235,7 @@ describe('/v2/twiglets', () => {
   describe('getTwigletsHandler', () => {
     const req = {
       method: 'get',
-      url: '/v2/twiglets'
+      url: '/v2/twiglets',
     };
 
     it('returns an empty list of twiglets', () => {
@@ -271,9 +271,9 @@ describe('/v2/twiglets', () => {
                 _rev: 'rev2',
                 name: 'second',
                 description: 'the second one',
-              }
+              },
             },
-          ]
+          ],
         };
         sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.resolve(twiglets));
         results = (yield server.inject(req)).result;
@@ -303,7 +303,7 @@ describe('/v2/twiglets', () => {
       it('relays errors from the database with correct error codes', () => {
         sinon.stub(PouchDb.prototype, 'allDocs').throws({
           status: '404',
-          message: 'this twiglet can not be found!'
+          message: 'this twiglet can not be found!',
         });
 
         return server.inject(req)
@@ -315,7 +315,7 @@ describe('/v2/twiglets', () => {
 
       it('returns 500 if there is no status from the database', () => {
         sinon.stub(PouchDb.prototype, 'allDocs').throws({
-          message: 'this message will not be pushed to the user'
+          message: 'this message will not be pushed to the user',
         });
 
         return server.inject(req)
@@ -331,7 +331,7 @@ describe('/v2/twiglets', () => {
   describe('getTwiglet', () => {
     const req = {
       method: 'get',
-      url: '/v2/twiglets/Some%20Twiglet'
+      url: '/v2/twiglets/Some%20Twiglet',
     };
     let twiglet;
     describe('successes', () => {
@@ -381,7 +381,7 @@ describe('/v2/twiglets', () => {
       it('relays errors from the database with correct error codes', () => {
         sinon.stub(PouchDb.prototype, 'allDocs').throws({
           status: '402',
-          message: 'Unauthorized'
+          message: 'Unauthorized',
         });
 
         return server.inject(req)
@@ -393,7 +393,7 @@ describe('/v2/twiglets', () => {
 
       it('returns 500 if there is no status from the database', () => {
         sinon.stub(PouchDb.prototype, 'allDocs').returns(Promise.reject(new Error({
-          message: 'this message will not be pushed to the user'
+          message: 'this message will not be pushed to the user',
         })));
 
         return server.inject(req)
@@ -416,7 +416,7 @@ describe('/v2/twiglets', () => {
           description: 'a description',
           model: 'some model',
           commitMessage: 'Creation',
-          cloneTwiglet: 'N/A'
+          cloneTwiglet: 'N/A',
         },
         auth: {
           strategy: 'session',
@@ -427,7 +427,7 @@ describe('/v2/twiglets', () => {
               name: 'Ben Hernandez',
             },
           },
-        }
+        },
       };
     }
 
@@ -445,9 +445,9 @@ describe('/v2/twiglets', () => {
               data: {
                 name: 'some model',
                 entities: {},
-              }
-            }
-          }]
+              },
+            },
+          }],
         });
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs(['nodes', 'links', 'changelog']));
@@ -465,7 +465,7 @@ describe('/v2/twiglets', () => {
       it('returns the newly created twiglet', () => expect(twiglet).to.include.keys({ name: 'Some Name' }));
 
       it('creates the twiglet in the twiglets list database', () => expect(post.getCall(0).args[0]).to.have.keys(
-        { name: 'some name', description: 'a description', _id: 'some id' }
+        { name: 'some name', description: 'a description', _id: 'some id' },
       ));
 
       it('logs the post to the commit log.', () => expect(put.getCall(0).args[0]).to.include.keys({ _id: 'changelog' }));
@@ -489,11 +489,11 @@ describe('/v2/twiglets', () => {
                   ent2: {
                     class: 'some other class',
                     attributes: [{ name: 'name1', dataType: 'string', required: true }],
-                  }
-                }
-              }
-            }
-          }]
+                  },
+                },
+              },
+            },
+          }],
         });
         allDocs.onThirdCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
         allDocs.onCall(3).resolves(twigletDocs(['nodes', 'links', 'changelog']));
@@ -529,8 +529,8 @@ describe('/v2/twiglets', () => {
           model: {
             entities: {
               ent1: {},
-              ent2: {}
-            }
+              ent2: {},
+            },
           },
           nodes: [
             {
@@ -540,10 +540,10 @@ describe('/v2/twiglets', () => {
             {
               id: 'some other node',
               type: 'ent2',
-            }
+            },
           ],
           links: [{
-            id: 'some link'
+            id: 'some link',
           }],
           views: [{
             links: {},
@@ -566,7 +566,7 @@ describe('/v2/twiglets', () => {
               showNodeLabels: true,
               treeMode: true,
               traverseDepth: 3,
-            }
+            },
           }],
           events: [
             {
@@ -574,8 +574,8 @@ describe('/v2/twiglets', () => {
               links: [],
               name: 'some event',
               nodes: [],
-              id: 'some event id'
-            }
+              id: 'some event id',
+            },
           ],
           sequences: [
             {
@@ -583,7 +583,7 @@ describe('/v2/twiglets', () => {
               events: ['a', 'b'],
               id: 'some sequence id',
               name: 'some sequence name',
-            }
+            },
           ],
         };
       }
@@ -614,7 +614,7 @@ describe('/v2/twiglets', () => {
       });
 
       it('creates the twiglet in the twiglets list database', () => expect(post.getCall(0).args[0]).to.have.keys(
-        { name: 'some name', description: 'a description', _id: 'some id' }
+        { name: 'some name', description: 'a description', _id: 'some id' },
       ));
 
       it('pushes the json data to the bulkDocs call', () => {
@@ -647,7 +647,7 @@ describe('/v2/twiglets', () => {
             { doc: { data: 'a view' } },
             { doc: { data: 'an event' } },
             { doc: { data: 'a sequence' } },
-          ]
+          ],
         };
       }
       beforeEach(function* foo () {
@@ -673,7 +673,7 @@ describe('/v2/twiglets', () => {
       it('returns the newly created twiglet', () => expect(twiglet).to.include.keys({ name: 'Some Name' }));
 
       it('creates the twiglet in the twiglets list database', () => expect(post.getCall(0).args[0]).to.have.keys(
-        { name: 'some name', description: 'a description', _id: 'some id' }
+        { name: 'some name', description: 'a description', _id: 'some id' },
       ));
 
 
@@ -770,13 +770,13 @@ describe('/v2/twiglets', () => {
             {
               id: 'node1',
               name: 'node 1',
-              type: 'ent1'
+              type: 'ent1',
             },
             {
               id: 'node2',
               name: 'node 2',
-              type: 'ent2'
-            }
+              type: 'ent2',
+            },
           ],
           links: [
             {
@@ -788,9 +788,9 @@ describe('/v2/twiglets', () => {
               id: 'link 2',
               source: 'node2',
               target: 'node1',
-            }
+            },
           ],
-          commitMessage: 'an update'
+          commitMessage: 'an update',
         },
       };
     }
@@ -932,13 +932,13 @@ describe('/v2/twiglets', () => {
             {
               id: 'some new node id',
               name: 'node 1',
-              type: 'ent1'
+              type: 'ent1',
             },
             {
               id: 'some other new node id',
               name: 'node 2',
-              type: 'ent2'
-            }
+              type: 'ent2',
+            },
           ],
           links: [
             {
@@ -950,9 +950,9 @@ describe('/v2/twiglets', () => {
               id: 'some other new node id',
               source: 'some other new node id',
               target: 'some new node id',
-            }
+            },
           ],
-          commitMessage: 'an update'
+          commitMessage: 'an update',
         },
       };
     }
@@ -1171,7 +1171,7 @@ describe('/v2/twiglets', () => {
               name: 'Ben Hernandez',
             },
           },
-        }
+        },
       };
     }
 
@@ -1206,5 +1206,5 @@ describe('/v2/twiglets', () => {
 
 module.exports = {
   twigletInfo,
-  twigletDocs
+  twigletDocs,
 };

@@ -9,20 +9,32 @@ const logger = require('../../../log')('MODELS');
 const { wrapTryCatchWithBoomify } = require('../helpers');
 
 const createModelRequest = Joi.object({
-  cloneModel: Joi.string().allow('').allow(null),
+  cloneModel: Joi.string()
+    .allow('')
+    .allow(null),
   commitMessage: Joi.string().required(),
-  entities: Joi.object().pattern(/[\S\s]*/, Joi.object({
-    class: Joi.string().required(),
-    color: Joi.string(),
-    image: Joi.string().required(),
-    size: [Joi.string().allow('').allow(null), Joi.number()],
-    type: Joi.string(),
-    attributes: Joi.array().items(Joi.object({
-      name: Joi.string().required(),
-      dataType: Joi.string().required(),
-      required: Joi.bool().required(),
-    })),
-  })),
+  entities: Joi.object().pattern(
+    /[\S\s]*/,
+    Joi.object({
+      class: Joi.string().required(),
+      color: Joi.string(),
+      image: Joi.string().required(),
+      size: [
+        Joi.string()
+          .allow('')
+          .allow(null),
+        Joi.number(),
+      ],
+      type: Joi.string(),
+      attributes: Joi.array().items(
+        Joi.object({
+          name: Joi.string().required(),
+          dataType: Joi.string().required(),
+          required: Joi.bool().required(),
+        }),
+      ),
+    }),
+  ),
   name: Joi.string().required(),
 });
 
@@ -32,8 +44,12 @@ const updateModelRequest = createModelRequest.keys({
 });
 
 const getModelResponse = updateModelRequest.keys({
-  url: Joi.string().uri().required(),
-  changelog_url: Joi.string().uri().required(),
+  url: Joi.string()
+    .uri()
+    .required(),
+  changelog_url: Joi.string()
+    .uri()
+    .required(),
   commitMessage: Joi.invalid(),
   latestCommit: Joi.object({
     message: Joi.string().required(),
@@ -43,10 +59,12 @@ const getModelResponse = updateModelRequest.keys({
   }),
 });
 
-const getModelsResponse = Joi.array().items(Joi.object({
-  name: Joi.string().required(),
-  url: Joi.string().required(),
-}));
+const getModelsResponse = Joi.array().items(
+  Joi.object({
+    name: Joi.string().required(),
+    url: Joi.string().required(),
+  }),
+);
 
 const getModelWithDb = async (name, db) => {
   const modelsRaw = await db.allDocs({ include_docs: true });
@@ -62,18 +80,19 @@ const getModelWithContextualConfig = async (name, contextualConfig) => {
   return getModelWithDb(name, db);
 };
 
-
 async function postModel (db, name, entities, commitMessage, userName, cloneFromName = null) {
   const modelToCreate = {
     data: {
       entities,
-      changelog: [{
-        message: commitMessage,
-        user: userName,
-        timestamp: new Date().toISOString(),
-      }],
+      changelog: [
+        {
+          message: commitMessage,
+          user: userName,
+          timestamp: new Date().toISOString(),
+        },
+      ],
       name,
-    }
+    },
   };
   if (cloneFromName) {
     const cloneSource = await getModelWithDb(cloneFromName, db);
@@ -91,7 +110,7 @@ function formatModelResponse (model, urlBuilder) {
       ? model.data.changelog[0]
       : { message: 'no history', user: 'robot@buildit', timestamp: new Date().toISOString() },
     url: urlBuilder(`/v2/models/${model.data.name}`),
-    changelog_url: urlBuilder(`/v2/models/${model.data.name}/changelog`)
+    changelog_url: urlBuilder(`/v2/models/${model.data.name}/changelog`),
   };
 }
 
@@ -110,10 +129,16 @@ const postModelsHandler = async (request, h) => {
   }
 
   const {
-    name, entities, commitMessage, cloneModel
+    name, entities, commitMessage, cloneModel,
   } = request.payload;
-  await postModel(db, name, entities, commitMessage,
-    request.auth.credentials.user.name, cloneModel);
+  await postModel(
+    db,
+    name,
+    entities,
+    commitMessage,
+    request.auth.credentials.user.name,
+    cloneModel,
+  );
   const newModel = await getModelWithDb(request.payload.name, db);
   return h.response(formatModelResponse(newModel, request.buildUrl)).code(HttpStatus.CREATED);
 };
@@ -122,11 +147,10 @@ const getModelsHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const db = new PouchDB(contextualConfig.getTenantDatabaseString('organisation-models'));
   const modelsRaw = await db.allDocs({ include_docs: true });
-  const orgModels = modelsRaw.rows
-    .map(row => ({
-      name: row.doc.data.name,
-      url: request.buildUrl(`/v2/models/${row.doc.data.name}`),
-    }));
+  const orgModels = modelsRaw.rows.map(row => ({
+    name: row.doc.data.name,
+    url: request.buildUrl(`/v2/models/${row.doc.data.name}`),
+  }));
   return orgModels;
 };
 
@@ -169,7 +193,7 @@ const putModelHandler = async (request) => {
       _rev: model._rev,
       latestCommit: model.data.changelog[0],
       url: request.buildUrl(`/v2/models/${model.data.name}`),
-      changelog_url: request.buildUrl(`/v2/models/${model.data.name}/changelog`)
+      changelog_url: request.buildUrl(`/v2/models/${model.data.name}/changelog`),
     };
     const boomError = Boom.conflict('Conflict, bad revision number');
     boomError.model = modelResponse;
@@ -203,11 +227,11 @@ const routes = [
     handler: wrapTryCatchWithBoomify(logger, postModelsHandler),
     config: {
       validate: {
-        payload: createModelRequest
+        payload: createModelRequest,
       },
       response: { schema: getModelResponse },
       tags: ['api'],
-    }
+    },
   },
   {
     method: ['GET'],
@@ -217,7 +241,7 @@ const routes = [
       auth: { mode: 'optional' },
       response: { schema: getModelsResponse },
       tags: ['api'],
-    }
+    },
   },
   {
     method: ['GET'],
@@ -227,7 +251,7 @@ const routes = [
       auth: { mode: 'optional' },
       response: { schema: getModelResponse },
       tags: ['api'],
-    }
+    },
   },
   {
     method: ['PUT'],
@@ -235,11 +259,11 @@ const routes = [
     handler: putModelHandler,
     config: {
       validate: {
-        payload: updateModelRequest
+        payload: updateModelRequest,
       },
       response: { schema: getModelResponse },
       tags: ['api'],
-    }
+    },
   },
   {
     method: ['DELETE'],
@@ -247,7 +271,7 @@ const routes = [
     handler: wrapTryCatchWithBoomify(logger, deleteModelsHandler),
     config: {
       tags: ['api'],
-    }
+    },
   },
 ];
 

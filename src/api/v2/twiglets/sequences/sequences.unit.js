@@ -170,9 +170,9 @@ describe('/v2/Twiglet::Sequences', () => {
           name: 'Sequence of Hires',
           events: [
             '1ff70005-08d6-4131-a8c9-e08f276a975b',
-            '2a0e95d9-91c5-4a64-b283-bd94195a8ef6'
-          ]
-        }
+            '2a0e95d9-91c5-4a64-b283-bd94195a8ef6',
+          ],
+        },
       };
     }
 
@@ -275,9 +275,9 @@ describe('/v2/Twiglet::Sequences', () => {
           name: 'new sequence name',
           events: [
             'f6b49795-0418-4ebd-ae52-adeb96885119',
-            '1ff70005-08d6-4131-a8c9-e08f276a975b'
-          ]
-        }
+            '1ff70005-08d6-4131-a8c9-e08f276a975b',
+          ],
+        },
       };
     }
 
@@ -366,7 +366,7 @@ describe('/v2/Twiglet::Sequences', () => {
               name: 'Ben Hernandez',
             },
           },
-        }
+        },
       };
     }
 

@@ -18,7 +18,7 @@ describe('/v2/login', () => {
       chai.request(url).post('/v2/login')
         .send({
           email: 'foo@bar.com',
-          password: 'baz'
+          password: 'baz',
         })
         .end((err, res) => {
           expect(res).to.have.status(401);
@@ -30,7 +30,7 @@ describe('/v2/login', () => {
       chai.request(url).post('/v2/login')
         .send({
           email: 'foo',
-          password: 'baz'
+          password: 'baz',
         })
         .end((err, res) => {
           expect(res).to.have.status(400);
@@ -42,7 +42,7 @@ describe('/v2/login', () => {
       chai.request(url).post('/v2/login')
         .send({
           email: 'foo@bar.com',
-          password: ''
+          password: '',
         })
         .end((err, res) => {
           expect(res).to.have.status(400);
@@ -73,8 +73,8 @@ describe('/v2/login', () => {
         expect(res.body).to.deep.eq({
           user: {
             id: 'local@user.com',
-            name: 'local@user.com'
-          }
+            name: 'local@user.com',
+          },
         });
       });
     });

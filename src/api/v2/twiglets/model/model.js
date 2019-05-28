@@ -46,16 +46,16 @@ function ensureEntitiesHaveAttributesAndType (entities) {
     let entity = entities[key];
     if (!entity.attributes) {
       entity = R.merge(entity, {
-        attributes: []
+        attributes: [],
       });
     }
     if (!entity.type) {
       entity = R.merge(entity, {
-        type: key
+        type: key,
       });
     }
     return R.merge(object, {
-      [key]: entity
+      [key]: entity,
     });
   }, {});
 }
@@ -65,7 +65,7 @@ const getModelHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const twigletInfo = await getTwigletInfoByName(request.params.name, contextualConfig);
   const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
-    skip_setup: true
+    skip_setup: true,
   });
   const doc = await db.get('model');
   return {
@@ -114,7 +114,7 @@ const putModelHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const twigletInfo = await getTwigletInfoByName(request.params.name, contextualConfig);
   const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfo._id), {
-    skip_setup: true
+    skip_setup: true,
   });
   const doc = await db.get('model');
   if (doc._rev !== request.payload._rev) {
@@ -131,7 +131,7 @@ const putModelHandler = async (request) => {
     twigletInfo._id,
     request.payload.commitMessage,
     request.auth.credentials.user.name,
-    false
+    false,
   );
   return {
     _rev: doc._rev,
@@ -145,13 +145,13 @@ module.exports.routes = [{
   handler: wrapTryCatchWithBoomify(logger, getModelHandler),
   options: {
     auth: {
-      mode: 'optional'
+      mode: 'optional',
     },
     response: {
-      schema: twigletModelBase
+      schema: twigletModelBase,
     },
     tags: ['api'],
-  }
+  },
 },
 {
   method: ['PUT'],
@@ -162,9 +162,9 @@ module.exports.routes = [{
       payload: twigletModelBase,
     },
     response: {
-      schema: twigletModelBase
+      schema: twigletModelBase,
     },
     tags: ['api'],
-  }
+  },
 },
 ];

@@ -162,7 +162,7 @@ describe('/v2/Twiglet::Events', () => {
         payload: {
           description: 'some description',
           name: 'Ben got fired',
-        }
+        },
       };
     }
 
@@ -177,14 +177,14 @@ describe('/v2/Twiglet::Events', () => {
             {
               doc: {
                 data: [],
-              }
+              },
             },
             {
               doc: {
                 data: [],
-              }
-            }
-          ]
+              },
+            },
+          ],
         });
         sinon.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
         put = sinon.stub(PouchDb.prototype, 'put').resolves('');
@@ -219,14 +219,14 @@ describe('/v2/Twiglet::Events', () => {
             {
               doc: {
                 data: [],
-              }
+              },
             },
             {
               doc: {
                 data: [],
-              }
-            }
-          ]
+              },
+            },
+          ],
         });
         const get = sinon.stub(PouchDb.prototype, 'get')
           .resolves(twigletDocs().rows[4].doc);
@@ -261,14 +261,14 @@ describe('/v2/Twiglet::Events', () => {
             {
               doc: {
                 data: [],
-              }
+              },
             },
             {
               doc: {
                 data: [],
-              }
-            }
-          ]
+              },
+            },
+          ],
         });
         sinon.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
         const request = req();
@@ -285,14 +285,14 @@ describe('/v2/Twiglet::Events', () => {
             {
               doc: {
                 data: [],
-              }
+              },
             },
             {
               doc: {
                 data: [],
-              }
-            }
-          ]
+              },
+            },
+          ],
         });
         sinon.stub(PouchDb.prototype, 'get').resolves(twigletDocs().rows[4].doc);
         sinon.stub(PouchDb.prototype, 'put').rejects({ status: 420 });
@@ -318,7 +318,7 @@ describe('/v2/Twiglet::Events', () => {
               name: 'Ben Hernandez',
             },
           },
-        }
+        },
       };
     }
 
@@ -370,7 +370,7 @@ describe('/v2/Twiglet::Events', () => {
               name: 'Ben Hernandez',
             },
           },
-        }
+        },
       };
     }
 

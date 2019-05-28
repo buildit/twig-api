@@ -27,7 +27,7 @@ const validateMothershipJwt = (token) => {
   const oidConfigUrl = 'https://login.microsoftonline.com/258ac4e4-146a-411e-9dc8-79a9e12fd6da/.well-known/openid-configuration';
 
   const decodedJwt = jwt.decode(token, {
-    complete: true
+    complete: true,
   });
 
   function findKeyAsCert (keys, jwtKid) {
@@ -37,11 +37,11 @@ ${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
   }
 
   return rp.get({
-    url: oidConfigUrl
+    url: oidConfigUrl,
   })
     .then(oidConfig => JSON.parse(oidConfig))
     .then(oidConfig => rp.get({
-      url: oidConfig.jwks_uri
+      url: oidConfig.jwks_uri,
     }))
     .then(keys => JSON.parse(keys))
     .then((keys) => {
@@ -50,7 +50,7 @@ ${keys.keys.filter(key => key.kid === jwtKid)[0].x5c[0]}
     })
     .then(verified => ({
       id: verified.upn,
-      name: verified.name
+      name: verified.name,
     }));
 };
 
@@ -61,7 +61,7 @@ const validateLocal = (email, password) => {
 
   return {
     id: email,
-    name: email
+    name: email,
   };
 };
 
@@ -71,7 +71,7 @@ const login = (request) => {
     if (config.DB_URL.includes('localhost') || enableTestUser === true || enableTestUser === 'true') {
       const user = validateLocal(request.payload.email, request.payload.password);
       request.cookieAuth.set({
-        user
+        user,
       });
       return { user };
     }
@@ -86,10 +86,10 @@ const validateJwt = async (request) => {
   try {
     const user = await validateMothershipJwt(request.payload.jwt);
     request.cookieAuth.set({
-      user
+      user,
     });
     return {
-      user
+      user,
     };
   }
   catch (error) {
@@ -110,20 +110,20 @@ module.exports.routes = [{
   options: {
     auth: {
       mode: 'try',
-      strategy: 'session'
+      strategy: 'session',
     },
     validate: {
       payload: Joi.object({
         email: Joi.string().email().required().trim(),
-        password: Joi.string().required().trim()
-      })
+        password: Joi.string().required().trim(),
+      }),
     },
     tags: ['api'],
     plugins: {
       'hapi-swagger': {
-        payloadType: 'form'
-      }
-    }
+        payloadType: 'form',
+      },
+    },
   },
 },
 {
@@ -133,7 +133,7 @@ module.exports.routes = [{
   options: {
     auth: false,
     tags: ['api'],
-  }
+  },
 },
 {
   method: 'POST',
@@ -142,6 +142,6 @@ module.exports.routes = [{
   options: {
     auth: false,
     tags: ['api'],
-  }
-}
+  },
+},
 ];

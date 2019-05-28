@@ -42,5 +42,5 @@ async function throwIfTwigletNameNotUnique (name, db) {
 
 module.exports = {
   getTwigletInfoByName,
-  throwIfTwigletNameNotUnique
+  throwIfTwigletNameNotUnique,
 };

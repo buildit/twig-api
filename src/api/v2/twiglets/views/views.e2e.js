@@ -7,7 +7,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
 const {
-  authAgent, anonAgent, url, addWait
+  authAgent, anonAgent, url, addWait,
 } = require('../../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
@@ -48,7 +48,7 @@ function baseView () {
       currentNode: null,
       filters: [{
         attributes: [],
-        types: { }
+        types: { },
       }],
       forceChargeStrength: 0.1,
       forceGravityX: 0.1,
@@ -62,7 +62,7 @@ function baseView () {
       showNodeLabels: false,
       traverseDepth: 3,
       treeMode: false,
-    }
+    },
   };
 }
 
@@ -89,7 +89,7 @@ describe('views', () => {
       it('has an entity response', () => {
         expect(res.body).to.contain.keys({
           name: baseView().name,
-          url: `${url}/twiglets/${baseTwiglet().name}/views/${baseView().name}`
+          url: `${url}/twiglets/${baseTwiglet().name}/views/${baseView().name}`,
         });
       });
     });

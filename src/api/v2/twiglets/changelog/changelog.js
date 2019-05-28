@@ -6,18 +6,22 @@ const Joi = require('@hapi/joi');
 const toJSON = require('utils-error-to-json');
 const { getContextualConfig } = require('../../../../config');
 const logger = require('../../../../log')('CHANGELOG');
-const { getTwigletInfoByName } = require('../twiglets.helpers');
+const { getTwigletInfoAndMakeDB } = require('../../helpers');
 
 // probably want to return raw array rather than object (been flipping on this)
 // but that would now be a breaking change
 // thinking was object because that is extensible to include paging metadata
 // but now maybe it's better to use Link headers (this is what GitHub does)
 const getChangelogResponse = Joi.object({
-  changelog: Joi.array().required().items(Joi.object({
-    message: Joi.string().required(),
-    user: Joi.string().required(),
-    timestamp: Joi.date().iso(),
-  }))
+  changelog: Joi.array()
+    .required()
+    .items(
+      Joi.object({
+        message: Joi.string().required(),
+        user: Joi.string().required(),
+        timestamp: Joi.date().iso(),
+      }),
+    ),
 });
 
 function createInitialChangelogIfNeeded (error) {
@@ -27,8 +31,14 @@ function createInitialChangelogIfNeeded (error) {
   return { _id: 'changelog', data: [] };
 }
 
-async function addCommitMessage (contextualConfig, _id, commitMessage, user, replacement,
-  timestamp = new Date().toISOString()) {
+async function addCommitMessage (
+  contextualConfig,
+  _id,
+  commitMessage,
+  user,
+  replacement,
+  timestamp = new Date().toISOString(),
+) {
   const db = new PouchDb(contextualConfig.getTenantDatabaseString(_id));
   try {
     const doc = await db.get('changelog').catch(createInitialChangelogIfNeeded);
@@ -60,11 +70,11 @@ async function addCommitMessage (contextualConfig, _id, commitMessage, user, rep
 const getChangelogHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   try {
-    // TODO: Make twigletInfo variable naming more consistent throughout
-    const twigletInfoOrError = await getTwigletInfoByName(request.params.name, contextualConfig);
+    const { twigletInfoOrError, db } = await getTwigletInfoAndMakeDB({
+      name: request.params.name,
+      contextualConfig,
+    });
     if (twigletInfoOrError._id) {
-      const db = new PouchDb(contextualConfig.getTenantDatabaseString(twigletInfoOrError._id),
-        { skip_setup: true });
       const doc = await db.get('changelog');
       return { changelog: doc.data };
     }
@@ -88,7 +98,7 @@ const routes = [
       auth: { mode: 'optional' },
       response: { schema: getChangelogResponse },
       tags: ['api'],
-    }
+    },
   },
 ];
 

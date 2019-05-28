@@ -8,7 +8,7 @@ const HapiSwagger = require('hapi-swagger');
 const semver = require('semver');
 const {
   version,
-  engines
+  engines,
 } = require('../package');
 const helpers = require('./server.helpers');
 const v2 = require('./api/v2');
@@ -21,9 +21,9 @@ const options = {
     title: 'Twig API',
     version,
     license: {
-      name: 'Apache-2.0'
-    }
-  }
+      name: 'Apache-2.0',
+    },
+  },
 };
 
 if (!semver.satisfies(process.version, engines.node)) {
@@ -39,18 +39,18 @@ const server = new Hapi.Server({
         'https://*.buildit.tools',
         '*://*.riglet',
         '*://*.kube.local:*',
-        'http://twig-ui-redesign-user-testing.s3-website-us-west-2.amazonaws.com'
+        'http://twig-ui-redesign-user-testing.s3-website-us-west-2.amazonaws.com',
       ],
       credentials: true,
     },
     payload: {
-      maxBytes: 500000000
-    }
-  }
+      maxBytes: 500000000,
+    },
+  },
 });
 
 server.decorate('request', 'buildUrl', request => helpers.buildUrl(request), {
-  apply: true
+  apply: true,
 });
 
 server.ext('onRequest', (req, reply) => {
@@ -73,8 +73,8 @@ async function init () {
         Vision,
         {
           plugin: HapiSwagger,
-          options
-        }
+          options,
+        },
       ],
     );
 
@@ -82,7 +82,7 @@ async function init () {
       cookie: {
         password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
         isSecure: config.SECURE_COOKIES,
-      }
+      },
     });
 
     server.auth.default('session');

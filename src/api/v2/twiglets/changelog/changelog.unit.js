@@ -48,9 +48,9 @@ describe('/v2/twiglets/{name}/changelog', () => {
           {
             user: 'foo@bar.com',
             timestamp: new Date(2000, 3, 6).toISOString(),
-            message: 'First commit'
-          }
-        ]
+            message: 'First commit',
+          },
+        ],
       }));
 
       // act

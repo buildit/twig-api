@@ -65,7 +65,7 @@ function importTwiglets (twigletsArray) {
                 user: 'A Script',
                 timestamp: new Date().toISOString(),
               },
-            ]
+            ],
           },
         ]),
       ]);
