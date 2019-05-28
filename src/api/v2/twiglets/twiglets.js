@@ -303,7 +303,7 @@ function linkCleaner (l) {
 }
 
 async function getTwiglet (name, urlBuilder, contextualConfig) {
-  const { twigletInfoOrError, twigletData } = await getTwigletInfoDbAndData({
+  const { twigletInfoOrError, data: twigletData } = await getTwigletInfoDbAndData({
     name,
     contextualConfig,
     twigletKeys: ['nodes', 'links', 'changelog'],
@@ -515,7 +515,7 @@ const putTwigletHandler = async (request) => {
 
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
-  const { twigletInfoOrError, db, twigletData } = await getTwigletInfoDbAndData({
+  const { twigletInfoOrError, db, data: twigletData } = await getTwigletInfoDbAndData({
     name: request.params.name,
     contextualConfig,
     twigletKeys: ['nodes', 'links', 'model'],
@@ -564,7 +564,7 @@ const patchTwigletHandler = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const twigletLookupDb = new PouchDB(contextualConfig.getTenantDatabaseString('twiglets'));
 
-  const { twigletInfoOrError, db, twigletData } = await getTwigletInfoDbAndData({
+  const { twigletInfoOrError, db, data: twigletData } = await getTwigletInfoDbAndData({
     name: request.params.name,
     contextualConfig,
     twigletKeys: ['nodes', 'links', 'model'],

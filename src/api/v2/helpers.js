@@ -42,7 +42,6 @@ function wrapTryCatchWithBoomify (logger, handlerFn) {
  * @return {
  *   twigletInfoOrError,
  *   db,
- *   twigletData,
  *   data,
  * }
  */
@@ -81,7 +80,7 @@ const getTwigletInfoDbAndData = async ({
     },
     twigletKeys
       ? {
-        twigletData: twigletDocs.rows.reduce((obj, row) => {
+        data: twigletDocs.rows.reduce((obj, row) => {
           obj[row.id] = row.doc;
           return obj;
         }, {}),
