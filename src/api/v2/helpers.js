@@ -48,8 +48,16 @@ const getTwigletInfoDbAndData = async ({
       keys: twigletKeys,
     })
     : undefined;
-  const dataOrNot = tableString ? await db.get(tableString) : undefined;
-  const data = seedEmptyFunc ? await db.get(tableString).catch(seedEmptyFunc(db)) : dataOrNot;
+
+  let data;
+  if (tableString) {
+    if (seedEmptyFunc) {
+      data = await db.get(tableString).catch(seedEmptyFunc(db));
+    }
+    else {
+      data = await db.get(tableString);
+    }
+  }
 
   return Object.assign(
     {
@@ -64,7 +72,7 @@ const getTwigletInfoDbAndData = async ({
         }, {}),
       }
       : {},
-    data
+    tableString
       ? {
         data,
       }
