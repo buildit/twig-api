@@ -31,6 +31,21 @@ function wrapTryCatchWithBoomify (logger, handlerFn) {
   };
 }
 
+/**
+ * In most get/put/patch requests there is a common pattern of getting twigletinfo, creating a db,
+ * and querying that db. This does those steps and returns the created data.
+ * @param {required: string} name: name of the twiglet to get
+ * @param {required: object} contextualConfig: config object
+ * @param {optional: array[string]} twigletKeys: keys to get from the db
+ * @param {optional: string} tableString: name of the table to query
+ * @param {optional: function} seedEmptyFunc: a function to replace empties
+ * @return {
+ *   twigletInfoOrError,
+ *   db,
+ *   twigletData,
+ *   data,
+ * }
+ */
 const getTwigletInfoDbAndData = async ({
   name,
   contextualConfig,
