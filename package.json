@@ -76,7 +76,6 @@
     "lint"
   ],
   "pre-push": [
-    "test:ci",
     "test:e2e:ci"
   ]
 }
