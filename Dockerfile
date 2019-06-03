@@ -1,4 +1,4 @@
-FROM node:dubnium
+FROM node:dubnium-alpine
 ENV TWIG_API_LOG_CONSOLE=true
 ENV TWIG_API_LOG_FILE=true
 ENV TWIG_API_LOG_LEVEL=info
