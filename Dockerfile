@@ -1,12 +1,12 @@
-FROM node:dubnium-alpine
+FROM node:dubnium
 ENV TWIG_API_LOG_CONSOLE=true
 ENV TWIG_API_LOG_FILE=true
 ENV TWIG_API_LOG_LEVEL=info
 ENV TWIG_API_TENANT=
 ENV TWIG_API_DB_URL=http://couch.twig.internal:5984
 
-RUN apk update && apk upgrade && \
-  apk add --no-cache openssl ca-certificates
+RUN apt-get update && apt-get upgrade && \
+  apt-get add --no-cache openssl ca-certificates
 
 RUN wget https://github.com/Droplr/aws-env/raw/b215a696d96a5d651cf21a59c27132282d463473/bin/aws-env-linux-amd64 -O /bin/aws-env && \
   chmod +x /bin/aws-env
