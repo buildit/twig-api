@@ -13,7 +13,8 @@
     "validate": "npm ls",
     "version": "git add package.json",
     "postversion": "git push && git push origin HEAD:master && git push --tags",
-    "postinstall": "check-node-version --node ${npm_package_engines_node}"
+    "postinstall": "check-node-version --node ${npm_package_engines_node}",
+    "foo": "echo \"fooo\" && exit 0"
   },
   "author": "Buildit",
   "main": "src/server.js",
@@ -76,6 +77,7 @@
     "lint"
   ],
   "pre-push": [
+    "foo",
     "test:e2e:ci"
   ]
 }
