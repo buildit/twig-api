@@ -1,35 +1,30 @@
 'use strict';
 
-const Hapi = require('hapi');
-const cookieAuth = require('hapi-auth-cookie');
-const cls = require('continuation-local-storage');
+const Hapi = require('@hapi/hapi');
+const cookieAuth = require('@hapi/cookie');
 const helpers = require('../../src/server.helpers');
 
-const ns = cls.createNamespace('hapi-request');
-const server = new Hapi.Server();
+async function init (routes) {
+  const server = new Hapi.Server();
 
-server.connection();
+  server.decorate('request', 'buildUrl', request => helpers.buildUrl(request), { apply: true });
 
-server.decorate('request', 'buildUrl', request => helpers.buildUrl(request), { apply: true });
+  await server.register([cookieAuth]);
 
-server.ext('onRequest', (req, reply) => {
-  ns.bindEmitter(req.raw.req);
-  ns.bindEmitter(req.raw.res);
-  ns.run(() => {
-    ns.set('host', 'foo');
-    reply.continue();
+  server.auth.strategy('session', 'cookie', {
+    cookie: {
+      password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
+      isSecure: false,
+    },
   });
-});
 
-server.register(cookieAuth, (err) => {
-  if (err) {
-    throw err;
-  }
+  server.auth.default('session');
 
-  server.auth.strategy('session', 'cookie', 'required', {
-    password: 'V@qj65#r6t^wvdq,p{ejrZadGHyununZ',
-    isSecure: false
-  });
-});
+  server.route(routes);
 
-module.exports = server;
+  await server.start();
+
+  return server;
+}
+
+module.exports = init;

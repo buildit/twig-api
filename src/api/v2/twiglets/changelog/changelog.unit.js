@@ -1,23 +1,22 @@
 'use strict';
 
 /* eslint no-unused-expressions: 0 */
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const sinon = require('sinon');
 const PouchDb = require('pouchdb');
+const { twigletInfo } = require('../twiglets.unit');
 const Changelog = require('./changelog');
-const server = require('../../../../../test/unit/test-server');
-const twigletInfo = require('../twiglets.unit').twigletInfo;
-
-server.route(Changelog.routes);
+const init = require('../../../../../test/unit/test-server');
 
 describe('/v2/twiglets/{name}/changelog', () => {
-  let sandbox = sinon.sandbox.create();
-  beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+  let server;
+
+  before(async () => {
+    server = await init(Changelog.routes);
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   describe('GET', () => {
@@ -28,9 +27,10 @@ describe('/v2/twiglets/{name}/changelog', () => {
 
     it('returns empty changelog', () => {
       // arrange
-      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+      const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
       allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-      sandbox.stub(PouchDb.prototype, 'get').returns(Promise.reject({ status: 404 }));
+      // sinon.stub(PouchDb.prototype, 'get').returns(Promise.reject(new Error({ status: 404 })));
+      sinon.stub(PouchDb.prototype, 'get').rejects({ status: 404 });
       // act
       return server.inject(req)
         .then((response) => {
@@ -41,23 +41,23 @@ describe('/v2/twiglets/{name}/changelog', () => {
 
     it('returns populated changelog', () => {
       // arrange
-      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+      const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
       allDocs.onFirstCall().resolves({ rows: [{ doc: (twigletInfo()) }] });
-      sandbox.stub(PouchDb.prototype, 'get').returns(Promise.resolve({
+      sinon.stub(PouchDb.prototype, 'get').returns(Promise.resolve({
         data: [
           {
             user: 'foo@bar.com',
             timestamp: new Date(2000, 3, 6).toISOString(),
-            message: 'First commit'
-          }
-        ]
+            message: 'First commit',
+          },
+        ],
       }));
 
       // act
       return server.inject(req)
         .then((response) => {
           // assert
-          expect(response.result.changelog).to.have.length.of(1);
+          expect(response.result.changelog).to.have.lengthOf(1);
           expect(response.result.changelog[0].user).to.be.eq('foo@bar.com');
           expect(response.result.changelog[0].message).to.be.eq('First commit');
           expect(response.result.changelog[0].timestamp).to.be
@@ -67,7 +67,7 @@ describe('/v2/twiglets/{name}/changelog', () => {
 
     it('fails when twiglet doesn\'t exist', () => {
       // arrange
-      const allDocs = sandbox.stub(PouchDb.prototype, 'allDocs');
+      const allDocs = sinon.stub(PouchDb.prototype, 'allDocs');
       allDocs.onFirstCall().resolves({ rows: [] });
 
       // act

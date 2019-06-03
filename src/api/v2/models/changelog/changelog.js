@@ -1,41 +1,44 @@
 'use strict';
 
-const Boom = require('boom');
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const logger = require('../../../../log')('CHANGELOG');
-const getModel = require('../models.js').getModel;
+const { getModel } = require('../models.js');
+const { wrapTryCatchWithBoomify } = require('../../helpers');
+const { getContextualConfig } = require('../../../../config');
 
 // probably want to return raw array rather than object (been flipping on this)
 // but that would now be a breaking change
 // thinking was object because that is extensible to include paging metadata
 // but now maybe it's better to use Link headers (this is what GitHub does)
 const getChangelogResponse = Joi.object({
-  changelog: Joi.array().required().items(Joi.object({
-    message: Joi.string().required(),
-    user: Joi.string().required(),
-    timestamp: Joi.date().iso(),
-    replacement: Joi.bool(),
-  }))
+  changelog: Joi.array()
+    .required()
+    .items(
+      Joi.object({
+        message: Joi.string().required(),
+        user: Joi.string().required(),
+        timestamp: Joi.date().iso(),
+        replacement: Joi.bool(),
+      }),
+    ),
 });
 
-const getChangelogHandler = (request, reply) =>
-  getModel(request.params.name)
-    .then(doc => reply({ changelog: doc.data.changelog }))
-    .catch((error) => {
-      logger.error(JSON.stringify(error));
-      return reply(Boom.create(error.status || 500, error.message, error));
-    });
+const getChangelogHandler = async (request) => {
+  const contextualConfig = getContextualConfig(request);
+  const doc = await getModel(request.params.name, contextualConfig);
+  return { changelog: doc.data.changelog };
+};
 
 const routes = [
   {
     method: ['GET'],
     path: '/v2/models/{name}/changelog',
-    handler: getChangelogHandler,
-    config: {
+    handler: wrapTryCatchWithBoomify(logger, getChangelogHandler),
+    options: {
       auth: { mode: 'optional' },
       response: { schema: getChangelogResponse },
       tags: ['api'],
-    }
+    },
   },
 ];
 

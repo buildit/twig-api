@@ -18,7 +18,7 @@ describe('/v2/login', () => {
       chai.request(url).post('/v2/login')
         .send({
           email: 'foo@bar.com',
-          password: 'baz'
+          password: 'baz',
         })
         .end((err, res) => {
           expect(res).to.have.status(401);
@@ -30,7 +30,7 @@ describe('/v2/login', () => {
       chai.request(url).post('/v2/login')
         .send({
           email: 'foo',
-          password: 'baz'
+          password: 'baz',
         })
         .end((err, res) => {
           expect(res).to.have.status(400);
@@ -42,7 +42,7 @@ describe('/v2/login', () => {
       chai.request(url).post('/v2/login')
         .send({
           email: 'foo@bar.com',
-          password: ''
+          password: '',
         })
         .end((err, res) => {
           expect(res).to.have.status(400);
@@ -52,9 +52,9 @@ describe('/v2/login', () => {
 
     describe('Good credentials', () => {
       let res;
-      before('logs in', function* () {
-        res = yield chai.request(url).post('/v2/login').send({
-          email: 'local@user',
+      before('logs in', async () => {
+        res = await chai.request(url).post('/v2/login').send({
+          email: 'local@user.com',
           password: 'password',
         });
       });
@@ -72,9 +72,9 @@ describe('/v2/login', () => {
       it('returns response', () => {
         expect(res.body).to.deep.eq({
           user: {
-            id: 'local@user',
-            name: 'local@user'
-          }
+            id: 'local@user.com',
+            name: 'local@user.com',
+          },
         });
       });
     });
@@ -85,17 +85,17 @@ describe('/logout', () => {
   describe('POST', () => {
     let response;
     describe('Authenticated agent', () => {
-      before(function* () {
+      before(async () => {
         // arrange
         const agent = chai.request.agent(url);
-        yield agent.post('/v2/login')
+        await agent.post('/v2/login')
           .send({
-            email: 'local@user',
+            email: 'local@user.com',
             password: 'password',
           });
 
         // act
-        response = yield agent.post('/v2/logout');
+        response = await agent.post('/v2/logout');
       });
 
       it('returns 204', () => {
@@ -108,8 +108,8 @@ describe('/logout', () => {
     });
 
     describe('Unauthenticated agent', () => {
-      before(function* () {
-        response = yield anonAgent.post('/v2/logout');
+      before(async () => {
+        response = await anonAgent.post('/v2/logout');
       });
 
       it('returns 204', () => {

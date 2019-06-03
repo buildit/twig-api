@@ -6,11 +6,13 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
-const { authAgent, anonAgent, url, addWait } = require('../../../../../test/e2e');
+const {
+  authAgent, anonAgent, url, addWait,
+} = require('../../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 chai.use(chaiSubset);
 
@@ -46,7 +48,7 @@ function baseView () {
       currentNode: null,
       filters: [{
         attributes: [],
-        types: { }
+        types: { },
       }],
       forceChargeStrength: 0.1,
       forceGravityX: 0.1,
@@ -60,7 +62,7 @@ function baseView () {
       showNodeLabels: false,
       traverseDepth: 3,
       treeMode: false,
-    }
+    },
   };
 }
 
@@ -69,15 +71,15 @@ describe('views', () => {
     describe('success', () => {
       let res;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        res = yield createView(baseTwiglet().name, baseView());
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        res = await createView(baseTwiglet().name, baseView());
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 201', () => {
@@ -87,7 +89,7 @@ describe('views', () => {
       it('has an entity response', () => {
         expect(res.body).to.contain.keys({
           name: baseView().name,
-          url: `${url}/twiglets/${baseTwiglet().name}/views/${baseView().name}`
+          url: `${url}/twiglets/${baseTwiglet().name}/views/${baseView().name}`,
         });
       });
     });
@@ -98,17 +100,17 @@ describe('views', () => {
       let res;
       let createdView;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        res = yield createView(baseTwiglet().name, baseView());
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        res = await createView(baseTwiglet().name, baseView());
         createdView = res.body;
-        res = yield getViews(baseTwiglet().name);
+        res = await getViews(baseTwiglet().name);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 200 (OK)', () => {
@@ -129,16 +131,16 @@ describe('views', () => {
     describe('success', () => {
       let res;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        yield createView(baseTwiglet().name, baseView());
-        res = yield getView(baseTwiglet().name, baseView().name);
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        await createView(baseTwiglet().name, baseView());
+        res = await getView(baseTwiglet().name, baseView().name);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 200 (OK)', () => {
@@ -151,17 +153,9 @@ describe('views', () => {
     });
 
     describe('(Error)', () => {
-      let promise;
-
-      before(() => {
-        promise = getView(baseTwiglet().name, 'no name');
-      });
-
-      it('returns 404', (done) => {
-        promise.catch((res) => {
-          expect(res).to.have.status(404);
-          done();
-        });
+      it('returns 404', async () => {
+        const res = await getView(baseTwiglet().name, 'no name');
+        expect(res).to.have.status(404);
       });
     });
   });
@@ -172,18 +166,18 @@ describe('views', () => {
       let updates;
       const viewName = baseView().name;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        yield createView(baseTwiglet().name, baseView());
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        await createView(baseTwiglet().name, baseView());
         updates = baseView();
         updates.name = 'a different name';
-        res = yield updateView(baseTwiglet().name, viewName, updates);
+        res = await updateView(baseTwiglet().name, viewName, updates);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 200', () => {
@@ -196,17 +190,9 @@ describe('views', () => {
     });
 
     describe('(Error)', () => {
-      let promise;
-
-      before(() => {
-        promise = getView(baseTwiglet().name, 'no name');
-      });
-
-      it('returns 404', (done) => {
-        promise.catch((res) => {
-          expect(res).to.have.status(404);
-          done();
-        });
+      it('returns 404', async () => {
+        const res = await getView(baseTwiglet().name, 'no name');
+        expect(res).to.have.status(404);
       });
     });
   });
@@ -215,32 +201,29 @@ describe('views', () => {
     describe('success', () => {
       let res;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        yield createView(baseTwiglet().name, baseView());
-        res = yield deleteView(baseTwiglet().name, baseView().name);
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        await createView(baseTwiglet().name, baseView());
+        res = await deleteView(baseTwiglet().name, baseView().name);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 204', () => {
         expect(res).to.have.status(204);
       });
 
-      it('GET view returns 404', (done) => {
-        getView(baseTwiglet().name, baseView().name)
-          .end((err, response) => {
-            expect(response).to.have.status(404);
-            done();
-          });
+      it('GET view returns 404', async () => {
+        const response = await getView(baseTwiglet().name, baseView().name);
+        expect(response).to.have.status(404);
       });
 
-      it('not included in the list of views', function* () {
-        const views = yield getViews(baseTwiglet().name);
+      it('not included in the list of views', async () => {
+        const views = await getViews(baseTwiglet().name);
         expect(views.body).to.not.deep.contains(baseTwiglet());
       });
     });

@@ -1,39 +1,45 @@
 'use strict';
 
-const ramda = require('ramda');
-const config = require('../../../config');
-const version = require('../../../../package').version;
 const rp = require('request-promise');
+const { config, getContextualConfig } = require('../../../config');
+const { version } = require('../../../../package');
+const logger = require('../../../log')('DB');
 
-const ping = (request, reply) =>
-  rp.get(config.DB_URL)
-    .catch(() => JSON.stringify({ version: 'COUCH NOT UP' }))
-    .then(couchdbResponse => JSON.parse(couchdbResponse))
-    .then(couchdbResponse => reply({
-      version,
-      couchdbVersion: couchdbResponse.version,
-      config: ramda.omit('_secrets')(config),
-      authenticated: request.auth.credentials,
-    }));
+const ping = async (request) => {
+  const contextualConfig = getContextualConfig(request);
+  let couchDbResponse = { version: 'COUCH NOT UP' };
+  try {
+    couchDbResponse = JSON.parse(await rp.get(contextualConfig.DB_URL));
+  }
+  catch (err) {
+    logger.error('Could not connect to couch');
+  }
+
+  return {
+    version,
+    couchdbVersion: couchDbResponse.version,
+    config: Object.assign({}, config, contextualConfig),
+    authenticated: request.auth.credentials,
+  };
+};
 
 module.exports.routes = [
   {
     method: ['GET'],
     path: '/v2/ping',
     handler: ping,
-    config: {
+    options: {
       auth: { mode: 'try' },
       tags: ['api'],
-    }
+    },
   },
   {
     method: ['GET'],
     path: '/ping',
     handler: ping,
-    config: {
+    options: {
       auth: { mode: 'try' },
       tags: ['api'],
-    }
+    },
   },
 ];
-

@@ -1,4 +1,3 @@
-/* eslint func-names: 0 */
 /* eslint no-unused-expressions: 0 */
 
 'use strict';
@@ -6,11 +5,13 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSubset = require('chai-subset');
-const { authAgent, anonAgent, url, addWait } = require('../../../../../test/e2e');
+const {
+  authAgent, anonAgent, url, addWait,
+} = require('../../../../../test/e2e');
 const { createTwiglet, deleteTwiglet, baseTwiglet } = require('../twiglets.e2e');
 const { createModel, deleteModel, baseModel } = require('../../models/models.e2e.js');
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 chai.use(chaiSubset);
 
@@ -44,8 +45,8 @@ function baseSequence () {
     name: 'sequence name',
     events: [
       'f6b49795-0418-4ebd-ae52-adeb96885119',
-      '1ff70005-08d6-4131-a8c9-e08f276a975b'
-    ]
+      '1ff70005-08d6-4131-a8c9-e08f276a975b',
+    ],
   };
 }
 
@@ -54,15 +55,15 @@ describe('sequences', () => {
     describe('success', () => {
       let res;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        res = yield createSequence(baseTwiglet().name, baseSequence());
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        res = await createSequence(baseTwiglet().name, baseSequence());
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 201', () => {
@@ -72,13 +73,13 @@ describe('sequences', () => {
       it('has an entity response', () => {
         expect(res.body).to.contain.keys({
           name: baseSequence().name,
-          url: `${url}/twiglets/${baseTwiglet().name}/views/${baseSequence().name}`
+          url: `${url}/twiglets/${baseTwiglet().name}/views/${baseSequence().name}`,
         });
       });
 
-      it('errors if the name has already been used', function* foo () {
+      it('errors if the name has already been used', async () => {
         try {
-          yield createSequence(baseTwiglet().name, baseSequence());
+          await createSequence(baseTwiglet().name, baseSequence());
         }
         catch (error) {
           expect(error).to.have.status(409);
@@ -91,16 +92,16 @@ describe('sequences', () => {
     describe('success', () => {
       let res;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        res = yield createSequence(baseTwiglet().name, baseSequence());
-        res = yield getSequences(baseTwiglet().name);
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        res = await createSequence(baseTwiglet().name, baseSequence());
+        res = await getSequences(baseTwiglet().name);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 200 (OK)', () => {
@@ -126,17 +127,17 @@ describe('sequences', () => {
       let res;
       let sequenceSnapshot;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        yield createSequence(baseTwiglet().name, baseSequence());
-        sequenceSnapshot = (yield getSequences(baseTwiglet().name)).body[0];
-        res = yield hitUrl(sequenceSnapshot.url);
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        await createSequence(baseTwiglet().name, baseSequence());
+        [sequenceSnapshot] = (await getSequences(baseTwiglet().name)).body;
+        res = await hitUrl(sequenceSnapshot.url);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 200 (OK)', () => {
@@ -167,19 +168,19 @@ describe('sequences', () => {
       let updates;
       let sequenceSnapshot;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        yield createSequence(baseTwiglet().name, baseSequence());
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        await createSequence(baseTwiglet().name, baseSequence());
         updates = baseSequence();
         updates.name = 'a different name';
-        sequenceSnapshot = (yield getSequences(baseTwiglet().name)).body[0];
-        res = yield updateSequence(baseTwiglet().name, sequenceSnapshot.id, updates);
+        [sequenceSnapshot] = (await getSequences(baseTwiglet().name)).body;
+        res = await updateSequence(baseTwiglet().name, sequenceSnapshot.id, updates);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 200', () => {
@@ -192,22 +193,22 @@ describe('sequences', () => {
     });
 
     describe('errors', () => {
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
-      it('fails the update if the sequence name is already being used', function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        yield createSequence(baseTwiglet().name, baseSequence());
+      it('fails the update if the sequence name is already being used', async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        await createSequence(baseTwiglet().name, baseSequence());
         const anotherSequence = baseSequence();
         anotherSequence.name = 'sequence name 2';
-        yield createSequence(baseTwiglet().name, anotherSequence);
-        const sequenceSnapshot = (yield getSequences(baseTwiglet().name)).body[1];
+        await createSequence(baseTwiglet().name, anotherSequence);
+        const sequenceSnapshot = (await getSequences(baseTwiglet().name)).body[1];
         anotherSequence.name = 'sequence name';
         try {
-          yield updateSequence(baseTwiglet().name, sequenceSnapshot.id, anotherSequence);
+          await updateSequence(baseTwiglet().name, sequenceSnapshot.id, anotherSequence);
         }
         catch (error) {
           expect(error).to.have.status(409);
@@ -221,17 +222,17 @@ describe('sequences', () => {
       let res;
       let sequenceSnapshot;
 
-      beforeEach(function* foo () {
-        yield createModel(baseModel());
-        yield createTwiglet(baseTwiglet());
-        yield createSequence(baseTwiglet().name, baseSequence());
-        sequenceSnapshot = (yield getSequences(baseTwiglet().name)).body[0];
-        res = yield hitUrl(sequenceSnapshot.url, 'delete', true);
+      beforeEach(async () => {
+        await createModel(baseModel());
+        await createTwiglet(baseTwiglet());
+        await createSequence(baseTwiglet().name, baseSequence());
+        [sequenceSnapshot] = (await getSequences(baseTwiglet().name)).body;
+        res = await hitUrl(sequenceSnapshot.url, 'delete', true);
       });
 
-      afterEach('Delete new twiglet', function* foo () {
-        yield deleteTwiglet(baseTwiglet());
-        yield deleteModel(baseModel());
+      afterEach('Delete new twiglet', async () => {
+        await deleteTwiglet(baseTwiglet());
+        await deleteModel(baseModel());
       });
 
       it('returns 204', () => {
@@ -246,8 +247,8 @@ describe('sequences', () => {
           });
       });
 
-      it('not included in the list of sequences', function* () {
-        const sequences = (yield getSequences(baseTwiglet().name)).body;
+      it('not included in the list of sequences', async () => {
+        const sequences = (await getSequences(baseTwiglet().name)).body;
         expect(sequences.length).to.equal(0);
       });
     });

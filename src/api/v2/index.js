@@ -21,5 +21,5 @@ module.exports = {
   twigletsModel,
   twigletsViews,
   twigletEvents,
-  twigletSequences
+  twigletSequences,
 };

@@ -2,8 +2,10 @@
 
 const winston = require('winston');
 const WinstonDailyRotateFile = require('winston-daily-rotate-file');
-const { join } = require('path');
-const config = require('./config');
+const {
+  join,
+} = require('path');
+const { config } = require('./config');
 
 const LOG_FOLDER = join(__dirname, '../../logs');
 
@@ -17,7 +19,7 @@ function transportFactory (fileName) {
       filename: join(LOG_FOLDER, fileName),
       maxFileSize: 10485760,
       json: true,
-      prettyPrint: true
+      prettyPrint: true,
     }));
   }
 
@@ -26,14 +28,16 @@ function transportFactory (fileName) {
       prettyPrint: true,
       colorize: true,
       json: false,
-      level: config.LOG_LEVEL
+      level: config.LOG_LEVEL,
     }));
   }
 
-  return { transports };
+  return {
+    transports,
+  };
 }
 
-const logger = winston.loggers.get('all');
+const logger = winston.createLogger(transportFactory('all.log'));
 
 /**
  * Main Log function. By default, it uses the 'all' winston logger defined above.
@@ -67,7 +71,7 @@ const logger = winston.loggers.get('all');
 function Log (ns = 'Logger', log = logger) {
   ns += '::';
   return [
-    'log', 'error', 'warn', 'info', 'debug'
+    'log', 'error', 'warn', 'info', 'debug',
   ].reduce((type, fn) => {
     if (fn === 'error') {
       type[fn] = (err) => {
@@ -83,19 +87,15 @@ function Log (ns = 'Logger', log = logger) {
       type[fn] = (...messages) => {
         const arr = [ns].concat(messages);
         if (fn === 'log') {
-          log.info.apply(null, arr);
+          log.info(arr);
         }
         else {
-          log[fn].apply(null, arr);
+          log[fn].call(null, arr);
         }
       };
     }
     return type;
   }, {});
 }
-
-winston.loggers.add('all', transportFactory('all.log'));
-winston.loggers.add('db', transportFactory('db.log'));
-winston.loggers.add('routes', transportFactory('routes.log'));
 
 module.exports = Log;

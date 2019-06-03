@@ -1,4 +1,4 @@
-FROM node:boron
+FROM node:dubnium
 
 # Create app directory
 WORKDIR /usr/src/app

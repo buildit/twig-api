@@ -3,8 +3,8 @@
 const config = require('../../src/config');
 
 before(() => {
-  config.DB_URL = 'foo';
-  config.TENANT = '';
+  config.config.DB_URL = 'foo';
+  config.config.TENANT = '';
 });
 
 after(() => {
