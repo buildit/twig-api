@@ -8,14 +8,12 @@
     "start": "nodemon -r dotenv-safe/config --inspect --watch src --ignore '*.unit.js' --ignore '*.e2e.js' src/server.js",
     "test": "mocha --watch --require co-mocha --recursive test/unit **/*.unit.js",
     "test:ci": "nyc --reporter=html --reporter=cobertura --reporter=lcov --report-dir=reports mocha --exit --require co-mocha --recursive --reporter mocha-jenkins-reporter -O junit_report_path=./reports/test-results.xml,junit_report_stack=1 test/unit **/*.unit.js",
-    "test:cix": "mocha --exit --require co-mocha --recursive test/unit **/*.unit.js",
     "test:e2e": "mocha --recursive test/e2e **/*.e2e.js",
     "test:e2e:ci": "mocha --timeout 10000 --recursive --reporter mocha-jenkins-reporter -O junit_report_path=./reports/e2e-test-results.xml,junit_report_name=\"Acceptance Tests\",junit_report_stack=1 test/e2e **/*.e2e.js",
     "validate": "npm ls",
     "version": "git add package.json",
     "postversion": "git push && git push origin HEAD:master && git push --tags",
-    "postinstall": "check-node-version --node ${npm_package_engines_node}",
-    "foo": "echo \"fooo\" && exit 0"
+    "postinstall": "check-node-version --node ${npm_package_engines_node}"
   },
   "author": "Buildit",
   "main": "src/server.js",
@@ -78,7 +76,7 @@
     "lint"
   ],
   "pre-push": [
-    "test:e2e:ci",
-    "test:ci"
+    "test:ci",
+    "test:e2e:ci"
   ]
 }
