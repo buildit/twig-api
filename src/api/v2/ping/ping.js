@@ -42,4 +42,13 @@ module.exports.routes = [
       tags: ['api'],
     },
   },
+  {
+    method: ['GET'],
+    path: '/',
+    handler: (request, h) => h.response().code(204),
+    options: {
+      auth: { mode: 'try' },
+      tags: ['api'],
+    },
+  },
 ];

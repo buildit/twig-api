@@ -88,12 +88,6 @@ async function init () {
     server.auth.default('session');
 
     Reflect.ownKeys(v2).forEach(key => server.route(v2[key].routes));
-    // adding root route for load balance health check
-    server.route({
-      method: 'GET',
-      path: '/',
-      handler: (request, h) => h.response().code(204),
-    });
     await server.start();
     logger.log('Server running at:', server.info.uri);
   }
