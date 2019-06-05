@@ -42,4 +42,14 @@ module.exports.routes = [
       tags: ['api'],
     },
   },
+  {
+    // because the aws load balancer health check hits this route
+    method: ['GET'],
+    path: '/',
+    handler: () => 'I could put anything here',
+    options: {
+      auth: { mode: 'try' },
+      tags: ['api'],
+    },
+  },
 ];
