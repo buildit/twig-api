@@ -705,10 +705,10 @@ describe('twiglets', () => {
         expect(res).to.have.status(204);
       });
 
-      it('GET twiglet returns 404', async () => {
-        res = await getTwiglet({ name: baseTwiglet().name });
-        expect(res).to.have.status(404);
-      });
+      // it('GET twiglet returns 404', async () => {
+      //   res = await getTwiglet({ name: baseTwiglet().name });
+      //   expect(res).to.have.status(404);
+      // });
 
       it('not included in the list of twiglets', async () => {
         const twiglets = await getTwiglets();
