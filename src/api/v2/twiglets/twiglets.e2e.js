@@ -419,6 +419,13 @@ describe('twiglets', () => {
     //     });
     //   });
     // });
+
+    describe('(Error)', () => {
+      it('returns 404', async () => {
+        const res = await getTwiglet({ name: 'non-existant-name' });
+        expect(res).to.have.status(404);
+      });
+    });
   });
 
   describe('PUT /v2/twiglets/{name}', () => {
