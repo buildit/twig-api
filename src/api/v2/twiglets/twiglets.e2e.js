@@ -405,20 +405,20 @@ describe('twiglets', () => {
       });
     });
 
-    describe('(Error)', () => {
-      let promise;
+    // describe('(Error)', () => {
+    //   let promise;
 
-      before(() => {
-        promise = getTwiglet({ name: 'non-existant-name' });
-      });
+    //   before(() => {
+    //     promise = getTwiglet({ name: 'non-existant-name' });
+    //   });
 
-      it('returns 404', (done) => {
-        promise.then((res) => {
-          expect(res).to.have.status(404);
-          done();
-        });
-      });
-    });
+    //   it('returns 404', (done) => {
+    //     promise.then((res) => {
+    //       expect(res).to.have.status(404);
+    //       done();
+    //     });
+    //   });
+    // });
   });
 
   describe('PUT /v2/twiglets/{name}', () => {
