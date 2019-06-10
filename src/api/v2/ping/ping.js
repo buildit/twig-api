@@ -5,7 +5,7 @@ const { config, getContextualConfig } = require('../../../config');
 const { version } = require('../../../../package');
 const logger = require('../../../log')('DB');
 
-const ping = async (request, h) => {
+const ping = async (request) => {
   const contextualConfig = getContextualConfig(request);
   let couchDbResponse = { version: 'COUCH NOT UP' };
   try {
@@ -13,7 +13,6 @@ const ping = async (request, h) => {
   }
   catch (err) {
     logger.error('Could not connect to couch');
-    return h.continue;
   }
 
   return {
