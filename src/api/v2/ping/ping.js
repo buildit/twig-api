@@ -1,15 +1,15 @@
 'use strict';
 
-const rp = require('request-promise');
+// const rp = require('request-promise');
 const { config, getContextualConfig } = require('../../../config');
 const { version } = require('../../../../package');
 const logger = require('../../../log')('DB');
 
 const ping = async (request) => {
   const contextualConfig = getContextualConfig(request);
-  let couchDbResponse = { version: 'COUCH NOT UP' };
+  const couchDbResponse = { version: 'COUCH NOT UP' };
   try {
-    couchDbResponse = JSON.parse(await rp.get(contextualConfig.DB_URL));
+    // couchDbResponse = JSON.parse(await rp.get(contextualConfig.DB_URL));
   }
   catch (err) {
     logger.error('Could not connect to couch');
