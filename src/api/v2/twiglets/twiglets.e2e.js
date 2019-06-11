@@ -420,7 +420,7 @@ describe('twiglets', () => {
     //   });
     // });
 
-    describe('(Error)', () => {
+    describe.only('(Error)', () => {
       it('returns 404', async () => {
         const res = await getTwiglet({ name: 'non-existant-name' });
         expect(res).to.have.status(404);
