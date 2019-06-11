@@ -23,3 +23,19 @@ describe('/v2/ping', () => {
     });
   });
 });
+
+// TODO: make this look into more of the result for better test coverage
+describe('/v2/version', () => {
+  describe('GET', () => {
+    let res;
+
+    before(async () => {
+      // act
+      res = await anonAgent.get('/v2/version');
+    });
+
+    it('returns 200', () => {
+      expect(res).to.have.status(200);
+    });
+  });
+});

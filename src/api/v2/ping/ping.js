@@ -3,17 +3,12 @@
 // const rp = require('request-promise');
 const { config, getContextualConfig } = require('../../../config');
 const { version } = require('../../../../package');
-const logger = require('../../../log')('DB');
 
-const ping = async (request) => {
+const ping = async () => ({});
+
+const getVersion = async (request) => {
   const contextualConfig = getContextualConfig(request);
   const couchDbResponse = { version: 'COUCH NOT UP' };
-  try {
-    // couchDbResponse = JSON.parse(await rp.get(contextualConfig.DB_URL));
-  }
-  catch (err) {
-    logger.error('Could not connect to couch');
-  }
 
   return {
     version,
@@ -37,6 +32,24 @@ module.exports.routes = [
     method: ['GET'],
     path: '/ping',
     handler: ping,
+    options: {
+      auth: { mode: 'try' },
+      tags: ['api'],
+    },
+  },
+  {
+    method: ['GET'],
+    path: '/v2/version',
+    handler: getVersion,
+    options: {
+      auth: { mode: 'try' },
+      tags: ['api'],
+    },
+  },
+  {
+    method: ['GET'],
+    path: '/version',
+    handler: getVersion,
     options: {
       auth: { mode: 'try' },
       tags: ['api'],
