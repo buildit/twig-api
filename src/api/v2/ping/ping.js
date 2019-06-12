@@ -1,9 +1,16 @@
 'use strict';
 
 // const rp = require('request-promise');
+console.log('ping.js before import');
 const { config, getContextualConfig } = require('../../../config');
+
+console.log('ping.js import', config, getContextualConfig);
 const { version } = require('../../../../package');
+
+console.log('ping.js import', version);
 const logger = require('../../../log')('DB');
+
+console.log('ping.js import', logger);
 
 // TODO: get rid of these, just for testing
 let countPing = 0;

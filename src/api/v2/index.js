@@ -11,6 +11,8 @@ const twigletsViews = require('./twiglets/views');
 const twigletEvents = require('./twiglets/events');
 const twigletSequences = require('./twiglets/sequences');
 
+console.log('ping imported into index.js, things are happening.');
+
 module.exports = {
   auth,
   models,
