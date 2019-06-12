@@ -13,7 +13,7 @@ console.log('ping.js init');
 
 const ping = async (request) => {
   console.log('incoming request to ping:', request);
-  countPing++;
+  countPing += 1;
   console.log('countPing num:', countPing);
   console.log('start ping');
   const contextualConfig = getContextualConfig(request);
@@ -63,7 +63,7 @@ module.exports.routes = [
     method: ['GET'],
     path: '/',
     handler: () => {
-      countRoot++;
+      countRoot += 1;
       console.log('countRoot num:', countRoot);
       console.log("I AM THE ROUTE ROOT HANDLER '/', you have hit this route");
       return 'I could put anything here';
