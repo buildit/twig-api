@@ -70,7 +70,10 @@ server.ext('onRequest', (req, reply) => {
   }
   const myUrl = `https://${host}${reply.request.path}`;
   console.log('if block onRequest skipped: returning reply.redirect to:', myUrl);
-  return reply.redirect(myUrl).permanent();
+  return reply
+    .redirect(myUrl)
+    .permanent()
+    .takeover(); // <-- this is the important line
 });
 
 async function init () {
