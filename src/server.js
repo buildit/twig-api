@@ -58,6 +58,7 @@ server.decorate('request', 'buildUrl', request => helpers.buildUrl(request), {
 });
 
 server.ext('onRequest', (req, reply) => {
+  console.log(reply.request.path);
   console.log('in server.onRequest');
   const protocol = req.headers['x-forwarded-proto'] || req.server.info.protocol;
   console.log('protocol', protocol);
@@ -67,7 +68,7 @@ server.ext('onRequest', (req, reply) => {
     console.log('in if block onRequest');
     return reply.continue;
   }
-  const myUrl = `https://${host}${req.url.path}`;
+  const myUrl = `https://${host}${reply.request.path}`;
   console.log('if block onRequest skipped: returning reply.redirect to:', myUrl);
   return reply.redirect(myUrl).permanent();
 });
