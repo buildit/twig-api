@@ -421,7 +421,7 @@ describe('twiglets', () => {
     // });
 
     // TODO: this clears the timeout on aws but returns a 500 - fix and uncomment
-    describe('(Error)', () => {
+    describe.only('(Error)', () => {
       it('returns 404', async () => {
         const res = await getTwiglet({ name: 'non-existant-name' });
         expect(res).to.have.status(404);
@@ -714,7 +714,7 @@ describe('twiglets', () => {
       });
 
       // TODO: this on aws this returns a 500 - fix and uncomment
-      it('GET twiglet returns 404', async () => {
+      it.only('GET twiglet returns 404', async () => {
         res = await getTwiglet({ name: baseTwiglet().name });
         expect(res).to.have.status(404);
       });
