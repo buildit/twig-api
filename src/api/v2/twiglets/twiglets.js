@@ -303,7 +303,7 @@ function linkCleaner (l) {
 }
 
 async function getTwiglet (name, urlBuilder, contextualConfig) {
-  console.log('definetly in GET TWIGLET');
+  console.log('definitely in GET TWIGLET');
   const { twigletInfoOrError, data: twigletData } = await getTwigletInfoDbAndData({
     name,
     contextualConfig,
@@ -335,8 +335,11 @@ async function getTwiglet (name, urlBuilder, contextualConfig) {
 }
 
 const getTwigletHandler = async (request) => {
+  console.log('in getTwigletHandler');
   const contextualConfig = getContextualConfig(request);
+  console.log('in getTwigletHandler contextualConfig', contextualConfig);
   const twiglet = await getTwiglet(request.params.name, request.buildUrl, contextualConfig);
+  console.log('getTwigletHandler after getTwiglet about to return twiglet', twiglet);
   return twiglet;
 };
 
