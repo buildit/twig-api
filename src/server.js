@@ -1,15 +1,12 @@
 'use strict';
 
-console.log('in server before importing.');
 const Hapi = require('@hapi/hapi');
 
-console.log('in server after importing Hapi.');
 const cookieAuth = require('@hapi/cookie');
 const Inert = require('@hapi/inert');
 const Vision = require('@hapi/vision');
 const HapiSwagger = require('hapi-swagger');
 
-console.log('in server after importing HapiSwagger.');
 const semver = require('semver');
 const { version, engines } = require('../package');
 const helpers = require('./server.helpers');
@@ -17,8 +14,6 @@ const v2 = require('./api/v2');
 const { config } = require('./config');
 const logger = require('./log')('SERVER');
 require('./db-init');
-
-console.log('in server after importing.');
 
 const options = {
   info: {
@@ -58,18 +53,12 @@ server.decorate('request', 'buildUrl', request => helpers.buildUrl(request), {
 });
 
 server.ext('onRequest', (req, reply) => {
-  console.log(reply.request.path);
-  console.log('in server.onRequest');
   const protocol = req.headers['x-forwarded-proto'] || req.server.info.protocol;
-  console.log('protocol', protocol);
   const host = req.headers['x-forwarded-host'] || req.info.hostname;
-  console.log('host', host);
   if (host === 'localhost' || protocol === 'https') {
-    console.log('in if block onRequest');
     return reply.continue;
   }
   const myUrl = `https://${host}${reply.request.path}`;
-  console.log('if block onRequest skipped: returning reply.redirect to:', myUrl);
   return reply
     .redirect(myUrl)
     .permanent()
@@ -78,7 +67,6 @@ server.ext('onRequest', (req, reply) => {
 
 async function init () {
   try {
-    console.log('in server.init try block');
     await server.register([
       cookieAuth,
       Inert,
@@ -88,7 +76,6 @@ async function init () {
         options,
       },
     ]);
-    console.log('in server.init try block, after register');
 
     server.auth.strategy('session', 'cookie', {
       cookie: {
@@ -97,14 +84,10 @@ async function init () {
       },
     });
 
-    console.log('in server.init try block, after auth.strategy');
-
     server.auth.default('session');
-    console.log('in server.init try block, after auth.default');
 
     Reflect.ownKeys(v2).forEach(key => server.route(v2[key].routes));
     await server.start();
-    console.log('in server.init try block, server.start()');
     logger.log('Server running at:', server.info.uri);
     console.log('in server.init try block, server.info.uri');
   }

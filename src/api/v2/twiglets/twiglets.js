@@ -303,6 +303,7 @@ function linkCleaner (l) {
 }
 
 async function getTwiglet (name, urlBuilder, contextualConfig) {
+  console.log('definetly in GET TWIGLET');
   const { twigletInfoOrError, data: twigletData } = await getTwigletInfoDbAndData({
     name,
     contextualConfig,
