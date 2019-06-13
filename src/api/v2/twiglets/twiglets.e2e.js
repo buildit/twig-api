@@ -421,12 +421,12 @@ describe('twiglets', () => {
     // });
 
     // TODO: this clears the timeout on aws but returns a 500 - fix and uncomment
-    // describe.only('(Error)', () => {
-    //   it('returns 404', async () => {
-    //     const res = await getTwiglet({ name: 'non-existant-name' });
-    //     expect(res).to.have.status(404);
-    //   });
-    // });
+    describe.only('(Error)', () => {
+      it('returns 404', async () => {
+        const res = await getTwiglet({ name: 'non-existant-name' });
+        expect(res).to.have.status(404);
+      });
+    });
   });
 
   describe('PUT /v2/twiglets/{name}', () => {
@@ -714,10 +714,10 @@ describe('twiglets', () => {
       });
 
       // TODO: this on aws this returns a 500 - fix and uncomment
-      // it('GET twiglet returns 404', async () => {
-      //   res = await getTwiglet({ name: baseTwiglet().name });
-      //   expect(res).to.have.status(404);
-      // });
+      it('GET twiglet returns 404', async () => {
+        res = await getTwiglet({ name: baseTwiglet().name });
+        expect(res).to.have.status(404);
+      });
 
       it('not included in the list of twiglets', async () => {
         const twiglets = await getTwiglets();
