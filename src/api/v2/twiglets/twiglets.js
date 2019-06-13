@@ -309,7 +309,12 @@ async function getTwiglet (name, urlBuilder, contextualConfig) {
     contextualConfig,
     twigletKeys: ['nodes', 'links', 'changelog'],
   });
+  console.log('after getTwigletInfoDbAndData');
   const cleanedTwigletData = R.omit(['changelog', 'views_2', 'events', 'sequences'], twigletData);
+  console.log('after cleanedTwigletData');
+  console.log('twigletInfoOrError', twigletInfoOrError);
+  console.log('twigletData.nodes', twigletData.nodes);
+  console.log('twigletData.links', twigletData.links);
   const presentationTwigletData = {
     _rev: `${twigletInfoOrError._rev}:${twigletData.nodes._rev}:${twigletData.links._rev}`,
     name: twigletInfoOrError.name,
@@ -325,6 +330,7 @@ async function getTwiglet (name, urlBuilder, contextualConfig) {
     events_url: urlBuilder(`/v2/twiglets/${name}/events`),
     sequences_url: urlBuilder(`/v2/twiglets/${name}/sequences`),
   };
+  console.log('after presentationTwigletData');
   return R.merge(cleanedTwigletData, presentationTwigletData);
 }
 

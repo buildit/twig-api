@@ -52,10 +52,12 @@ const getTwigletInfoDbAndData = async ({
   tableString,
   seedEmptyFunc,
 }) => {
+  console.log('into the belly of the beast == getTwigletInfoDbAndData');
   const twigletInfoOrError = await getTwigletInfoByName(name, contextualConfig);
   const db = new PouchDB(contextualConfig.getTenantDatabaseString(twigletInfoOrError.twigId), {
     skip_setup: true,
   });
+  console.log('getTwigletInfoDbAndData -- made db');
   const twigletDocs = twigletKeys
     ? await db.allDocs({
       include_docs: true,
@@ -73,6 +75,7 @@ const getTwigletInfoDbAndData = async ({
     }
   }
 
+  console.log('getTwigletInfoDbAndData before return');
   return Object.assign(
     {
       twigletInfoOrError,
