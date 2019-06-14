@@ -42,5 +42,6 @@ phases:
       - mv /tmp/tmpsrc/ .
       - ls -la tmpsrc
 artifacts:
-  files: /tmp/build.json
-  discard-paths: yes
+  files:
+   - '**/*'
+  base-directory: 'tmpsrc'
