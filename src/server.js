@@ -89,10 +89,8 @@ async function init () {
     Reflect.ownKeys(v2).forEach(key => server.route(v2[key].routes));
     await server.start();
     logger.log('Server running at:', server.info.uri);
-    console.log('in server.init try block, server.info.uri');
   }
   catch (error) {
-    console.log('in server.init catch block, error about to happen');
     console.error(error);
     logger.error(error);
     // eslint-disable-next-line no-process-exit
