@@ -309,6 +309,9 @@ async function getTwiglet (name, urlBuilder, contextualConfig) {
     contextualConfig,
     twigletKeys: ['nodes', 'links', 'changelog'],
   });
+  if (twigletInfoOrError instanceof Error) {
+    throw twigletInfoOrError;
+  }
   console.log('after getTwigletInfoDbAndData');
   const cleanedTwigletData = R.omit(['changelog', 'views_2', 'events', 'sequences'], twigletData);
   console.log('after cleanedTwigletData');
