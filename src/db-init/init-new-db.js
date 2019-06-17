@@ -39,7 +39,7 @@ function importTwiglets (twigletsArray) {
   twigletsArray.forEach(twiglet => twigletLookupDb.allDocs({ include_docs: true })
     .then((docs) => {
       if (docs.rows.some(row => row.doc.name === twiglet.name)) {
-        return console.error(`Twiglet with a name ${twiglet.name} already exists, not imported`);
+        throw new Error(`Twiglet with a name ${twiglet.name} already exists, not imported`);
       }
       const newTwiglet = { name: twiglet.name, description: twiglet.description };
       newTwiglet._id = `twig-${uuidV4()}`;
